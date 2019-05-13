@@ -98,4 +98,15 @@ public class SpansContainer {
 
     }
 
+    public Span getStartFunctionSpan() {
+        return startFunctionSpan;
+    }
+
+    public List<Span> getAllCollectedSpans() {
+        List<Span> spans = new LinkedList<>();
+        spans.addAll(httpSpans);
+        spans.add(endFunctionSpan);
+        return spans;
+    }
+
 }
