@@ -2,19 +2,24 @@ package com.lumigo.handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.lumigo.core.SpansContainer;
+import com.lumigo.core.network.Reporter;
 
 public abstract class LumigoRequestHandler<INPUT, OUTPUT> implements RequestHandler<INPUT, OUTPUT> {
 
     @Override
     public OUTPUT handleRequest(INPUT input, Context context) {
         try {
-            System.out.println("Hook before customer handler run");
-            return doHandleRequest(input, context);
+            SpansContainer.getInstance().init(System.getenv(), context, input);
+            SpansContainer.getInstance().start();
+            OUTPUT response = doHandleRequest(input, context);
+            return response;
         } catch (Throwable e) {
-            System.out.println("Hook after customer handler have exception");
+            SpansContainer.getInstance().addException(e);
             throw e;
         } finally {
-            System.out.println("Hook after customer handler run");
+            SpansContainer.getInstance().end();
+            Reporter.reportSpans(SpansContainer.getInstance());
         }
     }
 

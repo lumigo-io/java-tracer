@@ -2,7 +2,9 @@ package com.lumigo.handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import com.lumigo.core.SpansContainer;
 import com.lumigo.core.configuration.LumigoConfiguration;
+import com.lumigo.core.network.Reporter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,13 +17,15 @@ public abstract class LumigoRequestStreamHandler implements RequestStreamHandler
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
         try {
-            System.out.println("Hook before customer handler run");
+            SpansContainer.getInstance().init(System.getenv(), context, null);
+            SpansContainer.getInstance().start();
             doHandleRequest(inputStream, outputStream, context);
         } catch (Throwable e) {
-            System.out.println("Hook after customer handler have exception");
+            SpansContainer.getInstance().addException(e);
             throw e;
         } finally {
-            System.out.println("Hook after customer handler run");
+            SpansContainer.getInstance().end();
+            Reporter.reportSpans(SpansContainer.getInstance());
         }
     }
 

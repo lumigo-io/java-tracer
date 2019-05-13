@@ -21,4 +21,8 @@ public class LumigoConfiguration {
     public String getLumigoToken() {
         return this.lumigoToken;
     }
+
+    public String getLumigoTracerVersion() {
+        return "1.0";
+    }
 }
