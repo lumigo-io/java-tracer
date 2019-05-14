@@ -1,7 +1,6 @@
 package com.lumigo.core.network;
 
 import com.lumigo.core.configuration.LumigoConfiguration;
-import com.lumigo.handlers.LumigoRequestStreamHandler;
 import com.lumigo.models.Span;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -16,7 +15,7 @@ import java.util.List;
 import static com.lumigo.core.utils.JsonUtils.getObjectAsJsonString;
 
 public class Reporter {
-  private static final Logger LOG = LogManager.getLogger(LumigoRequestStreamHandler.class);
+  private static final Logger LOG = LogManager.getLogger(Reporter.class);
   private static final HttpClient client = HttpClientBuilder.create().build();
 
   public static void reportSpans(Span span) {
@@ -24,7 +23,7 @@ public class Reporter {
   }
 
   public static void reportSpans(List<Span> spans) {
-    LOG.info("Sending the spans: " + spans.toString());
+    LOG.info("Reporting the spans: " + getObjectAsJsonString(spans));
     HttpPost post = new HttpPost(LumigoConfiguration.getInstance().getLumigoEdge());
     try {
       StringEntity postingString = new StringEntity(getObjectAsJsonString(spans));

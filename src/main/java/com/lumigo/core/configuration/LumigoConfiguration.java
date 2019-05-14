@@ -1,4 +1,7 @@
 package com.lumigo.core.configuration;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import sun.rmi.runtime.Log;
 
 public class LumigoConfiguration {
   private static final String EDGE_PREFIX = "https://";
@@ -7,6 +10,7 @@ public class LumigoConfiguration {
 
   private static final String TOKEN_KEY = "LUMIGO_TRACER_TOKEN";
   private static final String TRACER_HOST_KEY = "LUMIGO_TRACER_HOST";
+  private static final String DEBUG_KEY = "LUMIGO_DEBUG";
   private static final String REGION_KEY = "AWS_REGION";
   private static LumigoConfiguration instance;
 
@@ -27,6 +31,14 @@ public class LumigoConfiguration {
       url = String.format(EDGE_DEFAULT_URL, System.getenv(REGION_KEY));
     }
     return EDGE_PREFIX + url + EDGE_SUFFIX;
+  }
+
+  public Level getLumigoLogLevel() {
+    String debug = System.getenv(DEBUG_KEY);
+    if (debug.toLowerCase().equals("true")) {
+      return Level.DEBUG;
+    }
+    return Level.FATAL;
   }
 
   public String getLumigoTracerVersion() {
