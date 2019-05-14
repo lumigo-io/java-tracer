@@ -13,12 +13,8 @@ import java.util.Map;
 public class SpansContainer {
 
     private static final int MAX_LAMBDA_TIME = 15 * 60 * 1000;
-    private static final String AWS_LAMBDA_FUNCTION_NAME = "AWS_LAMBDA_FUNCTION_NAME";
     private static final String AWS_EXECUTION_ENV = "AWS_EXECUTION_ENV";
     private static final String AWS_REGION = "AWS_REGION";
-    private static final String AWS_LAMBDA_FUNCTION_MEMORY_SIZE = "AWS_LAMBDA_FUNCTION_MEMORY_SIZE";
-    private static final String AWS_LAMBDA_LOG_STREAM_NAME = "AWS_LAMBDA_LOG_STREAM_NAME";
-    private static final String AWS_LAMBDA_LOG_GROUP_NAME = "AWS_LAMBDA_LOG_GROUP_NAME";
     private static final String AMZN_TRACE_ID = "_X_AMZN_TRACE_ID";
 
     private Span baseSpan;
@@ -45,14 +41,14 @@ public class SpansContainer {
 
     public void init(Map<String, String> env, Context context, Object event) {
         this.baseSpan = Span.builder().
+                id(context.getAwsRequestId()).
                 started(System.currentTimeMillis()).
-                name(env.get(AWS_LAMBDA_FUNCTION_NAME)).
+                name(context.getFunctionName()).
                 runtime(env.get(AWS_EXECUTION_ENV)).
                 region(env.get(AWS_REGION)).
-                memoryAllocated(env.get(AWS_LAMBDA_FUNCTION_MEMORY_SIZE)).
-                logGroupName(env.get(AWS_LAMBDA_LOG_GROUP_NAME)).
-                logStreamName(env.get(AWS_LAMBDA_LOG_STREAM_NAME)).
-                region(env.get(AWS_REGION)).
+                memoryAllocated(context.getMemoryLimitInMB()).
+                logGroupName(context.getLogGroupName()).
+                logStreamName(context.getLogStreamName()).
                 requestId(context.getAwsRequestId()).
                 account(AwsUtils.extractAwsAccountFromArn(context.getInvokedFunctionArn())).
                 triggerBy(AwsUtils.extractTriggeredByFromEvent(event)).
@@ -92,7 +88,7 @@ public class SpansContainer {
 
     public void end() {
         this.startFunctionSpan = this.baseSpan.toBuilder().
-                id(this.baseSpan.getId() + "_started").
+                id(this.baseSpan.getId()).
                 ended(this.baseSpan.getStarted()).
                 build();
 

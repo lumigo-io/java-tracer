@@ -1,10 +1,13 @@
 package com.lumigo.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
 import java.util.Map;
 
+@AllArgsConstructor
 @Builder(toBuilder = true)
 @Data(staticConstructor = "of")
 public class Span {
@@ -14,7 +17,7 @@ public class Span {
     private String runtime;
     private String id;
     private String type;
-    private String memoryAllocated;
+    private int memoryAllocated;
     private String logStreamName;
     private String logGroupName;
     private String traceRoot;

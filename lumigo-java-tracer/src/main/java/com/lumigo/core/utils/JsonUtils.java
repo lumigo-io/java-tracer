@@ -8,7 +8,7 @@ public class JsonUtils {
 
     public static String getObjectAsJsonString(Object o) {
         try {
-            if(o == null || o instanceof String){
+            if (o == null || o instanceof String) {
                 return (String) o;
             }
             return mapper.writeValueAsString(o);
