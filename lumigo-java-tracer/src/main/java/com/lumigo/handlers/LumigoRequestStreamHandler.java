@@ -24,11 +24,11 @@ public abstract class LumigoRequestStreamHandler implements RequestStreamHandler
             SpansContainer.getInstance().start();
             Reporter.reportSpans(SpansContainer.getInstance().getStartFunctionSpan());
             doHandleRequest(inputStream, outputStream, context);
+            SpansContainer.getInstance().end();
         } catch (Throwable e) {
-            SpansContainer.getInstance().addException(e);
+            SpansContainer.getInstance().endWithException(e);
             throw e;
         } finally {
-            SpansContainer.getInstance().end();
             Reporter.reportSpans(SpansContainer.getInstance().getAllCollectedSpans());
         }
     }

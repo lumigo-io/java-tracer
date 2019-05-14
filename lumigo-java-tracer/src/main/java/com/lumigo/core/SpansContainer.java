@@ -3,6 +3,8 @@ package com.lumigo.core;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.lumigo.core.configuration.LumigoConfiguration;
 import com.lumigo.core.utils.AwsUtils;
+import com.lumigo.core.utils.JsonUtils;
+import com.lumigo.core.utils.StringUtils;
 import com.lumigo.models.Span;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -40,6 +42,7 @@ public class SpansContainer {
 
 
     public void init(Map<String, String> env, Context context, Object event) {
+        String awsTracerId = env.get(AMZN_TRACE_ID);
         this.baseSpan = Span.builder().
                 id(context.getAwsRequestId()).
                 started(System.currentTimeMillis()).
@@ -51,15 +54,11 @@ public class SpansContainer {
                 logStreamName(context.getLogStreamName()).
                 requestId(context.getAwsRequestId()).
                 account(AwsUtils.extractAwsAccountFromArn(context.getInvokedFunctionArn())).
-                triggerBy(AwsUtils.extractTriggeredByFromEvent(event)).
                 maxFinishTime((context.getRemainingTimeInMillis() > 0) ? context.getRemainingTimeInMillis() : MAX_LAMBDA_TIME).
-                traceRoot(AwsUtils.extractAwsTraceRoot(env.get(AMZN_TRACE_ID))).
-                traceIdSuffix(AwsUtils.extractAwsTraceSuffix(env.get(AMZN_TRACE_ID))).
-                transactionId(AwsUtils.extractAwsTraceTransactionId(env.get(AMZN_TRACE_ID))).
+                transactionId(AwsUtils.extractAwsTraceTransactionId(awsTracerId)).
                 info(Span.Info.builder().
-                        tracer(Span.Tracer.builder().
-                                version(LumigoConfiguration.getInstance().getLumigoTracerVersion()).
-                                build()).
+                        tracer(Span.Tracer.builder().version(LumigoConfiguration.getInstance().getLumigoTracerVersion()).build()).
+                        traceId(Span.TraceId.builder().Root(AwsUtils.extractAwsTraceRoot(awsTracerId)).build()).
                         build()).
                 build();
     }
@@ -71,13 +70,16 @@ public class SpansContainer {
                 build();
 
     }
-
-    public void addHttpSpan() {
-        //TODO
+    public void end(Object response) {
+        this.endFunctionSpan = this.baseSpan.toBuilder().
+                id(this.baseSpan.getId()).
+                ended(this.baseSpan.getStarted()).
+                return_value(StringUtils.getMaxSizeString(JsonUtils.getObjectAsJsonString(response))).
+                build();
     }
 
-    public void addException(Throwable e) {
-        this.startFunctionSpan = this.baseSpan.toBuilder().
+    public void endWithException(Throwable e) {
+        this.endFunctionSpan = this.baseSpan.toBuilder().
                 ended(System.currentTimeMillis()).
                 error(Span.Error.builder().message(e.getMessage()).
                         type(e.getClass().getName()).
@@ -87,7 +89,7 @@ public class SpansContainer {
     }
 
     public void end() {
-        this.startFunctionSpan = this.baseSpan.toBuilder().
+        this.endFunctionSpan = this.baseSpan.toBuilder().
                 id(this.baseSpan.getId()).
                 ended(this.baseSpan.getStarted()).
                 build();
@@ -103,6 +105,14 @@ public class SpansContainer {
         spans.addAll(httpSpans);
         spans.add(endFunctionSpan);
         return spans;
+    }
+
+    public Span getEndSpan() {
+        return endFunctionSpan;
+    }
+
+    public List<Span> getHttpSpans() {
+        return httpSpans;
     }
 
 }

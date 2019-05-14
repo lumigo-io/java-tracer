@@ -21,12 +21,12 @@ public abstract class LumigoRequestHandler<INPUT, OUTPUT> implements RequestHand
             SpansContainer.getInstance().start();
             Reporter.reportSpans(SpansContainer.getInstance().getStartFunctionSpan());
             OUTPUT response = doHandleRequest(input, context);
+            SpansContainer.getInstance().end(response);
             return response;
         } catch (Throwable e) {
-            SpansContainer.getInstance().addException(e);
+            SpansContainer.getInstance().endWithException(e);
             throw e;
         } finally {
-            SpansContainer.getInstance().end();
             Reporter.reportSpans(SpansContainer.getInstance().getAllCollectedSpans());
         }
     }

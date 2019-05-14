@@ -1,6 +1,5 @@
 package com.lumigo.core.utils;
 
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,7 +23,7 @@ public class AwsUtils {
      * @param event
      * @return
      */
-    public static Map<String, String> extractTriggeredByFromEvent(Object event) {
+    public static String extractTriggeredByFromEvent(Object event) {
         return null;
     }
 
