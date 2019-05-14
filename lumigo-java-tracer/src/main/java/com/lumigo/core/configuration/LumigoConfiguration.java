@@ -30,7 +30,7 @@ public class LumigoConfiguration {
         return EDGE_PREFIX + url + EDGE_SUFFIX;
     }
 
-    public String getLumigoTracerVersion() {
-        return "1.0";
-    }
+  public String getLumigoTracerVersion() {
+    return "1.0";
+  }
 }

@@ -32,59 +32,56 @@ public class Span {
     private Info info;
     private String readiness;
 
-    @AllArgsConstructor
-    @Builder(toBuilder = true)
-    @Data(staticConstructor = "of")
-    public static class Info {
-        private Tracer tracer;
-        private TraceId traceId;
-        private String logStreamName;
-        private String logGroupName;
-        private String triggeredBy;
-        private HttpInfo httpInfo;
-    }
+  @AllArgsConstructor
+  @Builder(toBuilder = true)
+  @Data(staticConstructor = "of")
+  public static class Info {
+    private Tracer tracer;
+    private TraceId traceId;
+    private String logStreamName;
+    private String logGroupName;
+    private String triggeredBy;
+    private HttpInfo httpInfo;
+  }
 
-    @AllArgsConstructor
-    @Builder(toBuilder = true)
-    @Data(staticConstructor = "of")
-    public static class HttpInfo {
-        private String host;
-        private Http response;
-        private Http request;
+  @AllArgsConstructor
+  @Builder(toBuilder = true)
+  @Data(staticConstructor = "of")
+  public static class HttpInfo {
+    private String host;
+    private Http response;
+    private Http request;
+  }
 
-    }
+  @AllArgsConstructor
+  @Builder(toBuilder = true)
+  @Data(staticConstructor = "of")
+  public static class Http {
+    private String body;
+    private String headers;
+  }
 
-    @AllArgsConstructor
-    @Builder(toBuilder = true)
-    @Data(staticConstructor = "of")
-    public static class Http {
-        private String body;
-        private String headers;
-    }
+  @AllArgsConstructor
+  @Builder(toBuilder = true)
+  @Data(staticConstructor = "of")
+  public static class Tracer {
+    private String version;
+  }
 
-    @AllArgsConstructor
-    @Builder(toBuilder = true)
-    @Data(staticConstructor = "of")
-    public static class Tracer {
-        private String version;
-    }
+  @AllArgsConstructor
+  @Builder(toBuilder = true)
+  @Data(staticConstructor = "of")
+  public static class TraceId {
+    @JsonProperty("Root")
+    private String root;
+  }
 
-    @AllArgsConstructor
-    @Builder(toBuilder = true)
-    @Data(staticConstructor = "of")
-    public static class TraceId {
-        @JsonProperty("Root")
-        private String Root;
-    }
-
-    @AllArgsConstructor
-    @Builder(toBuilder = true)
-    @Data(staticConstructor = "of")
-    public static class Error {
-        private String type;
-        private String message;
-        private String stacktrace;
-    }
+  @AllArgsConstructor
+  @Builder(toBuilder = true)
+  @Data(staticConstructor = "of")
+  public static class Error {
+    private String type;
+    private String message;
+    private String stacktrace;
+  }
 }
-
-

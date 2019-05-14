@@ -16,12 +16,12 @@ import java.util.List;
 import static com.lumigo.core.utils.JsonUtils.getObjectAsJsonString;
 
 public class Reporter {
-    private static final Logger LOG = LogManager.getLogger(LumigoRequestStreamHandler.class);
-    private static final HttpClient client = HttpClientBuilder.create().build();
+  private static final Logger LOG = LogManager.getLogger(LumigoRequestStreamHandler.class);
+  private static final HttpClient client = HttpClientBuilder.create().build();
 
-    public static void reportSpans(Span span) {
-        reportSpans(Collections.singletonList(span));
-    }
+  public static void reportSpans(Span span) {
+    reportSpans(Collections.singletonList(span));
+  }
 
     public static void reportSpans(List<Span> spans) {
         LOG.info("Sending the spans: " + spans.toString());
@@ -31,7 +31,7 @@ public class Reporter {
             post.setEntity(postingString);
             post.setHeader("Content-type", "application/json");
             client.execute(post);
-            LOG.debug("Span sent successfully");
+            LOG.debug("{} Spans sent successfully", spans.size());
         } catch (Exception e) {
             LOG.error("Could not report json", e);
         }
