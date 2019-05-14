@@ -4,6 +4,7 @@ import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.writers.ConsoleWriter;
 
+import java.time.Duration;
 import java.util.Locale;
 
 public class LumigoConfiguration {
@@ -52,5 +53,9 @@ public class LumigoConfiguration {
 
   public String getLumigoTracerVersion() {
     return "1.0";
+  }
+
+  public Duration getLumigoTimeout() {
+    return Duration.ofMillis(3000);
   }
 }
