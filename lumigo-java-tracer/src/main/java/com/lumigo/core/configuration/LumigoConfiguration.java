@@ -1,7 +1,8 @@
 package com.lumigo.core.configuration;
 
 public class LumigoConfiguration {
-    private static final String LUMIGO_TOKEN = "LUMIGO_TOKEN";
+    public static final String EDGE_DEFAULT_URL = "https://5xbf178tgj.execute-api.eu-west-1.amazonaws.com/api/spans";
+    private static final String LUMIGO_TOKEN = "t_347f4e0823dbe4d78154";
     private static LumigoConfiguration instance;
 
 
