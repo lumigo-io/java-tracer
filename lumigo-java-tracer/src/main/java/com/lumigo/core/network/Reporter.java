@@ -23,18 +23,17 @@ public class Reporter {
     reportSpans(Collections.singletonList(span));
   }
 
-    public static void reportSpans(List<Span> spans) {
-        LOG.info("Sending the spans: " + spans.toString());
-        HttpPost post = new HttpPost(LumigoConfiguration.getInstance().getLumigoEdge());
-        try {
-            StringEntity postingString = new StringEntity(getObjectAsJsonString(spans));
-            post.setEntity(postingString);
-            post.setHeader("Content-type", "application/json");
-            client.execute(post);
-            LOG.debug("{} Spans sent successfully", spans.size());
-        } catch (Exception e) {
-            LOG.error("Could not report json", e);
-        }
+  public static void reportSpans(List<Span> spans) {
+    LOG.info("Sending the spans: " + spans.toString());
+    HttpPost post = new HttpPost(LumigoConfiguration.getInstance().getLumigoEdge());
+    try {
+      StringEntity postingString = new StringEntity(getObjectAsJsonString(spans));
+      post.setEntity(postingString);
+      post.setHeader("Content-type", "application/json");
+      client.execute(post);
+      LOG.debug("{} Spans sent successfully", spans.size());
+    } catch (Exception e) {
+      LOG.error("Could not report json", e);
     }
-
+  }
 }

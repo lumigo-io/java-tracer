@@ -17,20 +17,20 @@ import java.util.Map;
 public class SpansContainer {
   private static final Logger LOG = LogManager.getLogger(SpansContainer.class);
 
-    private static final int MAX_LAMBDA_TIME = 15 * 60 * 1000;
-    private static final String AWS_EXECUTION_ENV = "AWS_EXECUTION_ENV";
-    private static final String AWS_REGION = "AWS_REGION";
-    private static final String AMZN_TRACE_ID = "_X_AMZN_TRACE_ID";
-    private static final String FUNCTION_SPAN_TYPE = "function";
-    private static final String HTTP_SPAN_TYPE = "http";
-    private static final String WARM_READINESS = "warm";
+  private static final int MAX_LAMBDA_TIME = 15 * 60 * 1000;
+  private static final String AWS_EXECUTION_ENV = "AWS_EXECUTION_ENV";
+  private static final String AWS_REGION = "AWS_REGION";
+  private static final String AMZN_TRACE_ID = "_X_AMZN_TRACE_ID";
+  private static final String FUNCTION_SPAN_TYPE = "function";
+  private static final String HTTP_SPAN_TYPE = "http";
+  private static final String WARM_READINESS = "warm";
 
-    private Span baseSpan;
-    private Span startFunctionSpan;
-    private Span endFunctionSpan;
-    private List<Span> httpSpans = new LinkedList<>();
+  private Span baseSpan;
+  private Span startFunctionSpan;
+  private Span endFunctionSpan;
+  private List<Span> httpSpans = new LinkedList<>();
 
-  private SpansContainer() {}
+  private static final SpansContainer ourInstance = new SpansContainer();
 
   public static SpansContainer getInstance() {
     return ourInstance;
@@ -42,6 +42,8 @@ public class SpansContainer {
     endFunctionSpan = null;
     httpSpans = new LinkedList<>();
   }
+
+  private SpansContainer() {}
 
   public void init(Map<String, String> env, Context context, Object event) {
     try {
@@ -58,8 +60,6 @@ public class SpansContainer {
               .logGroupName(context.getLogGroupName())
               .logStreamName(context.getLogStreamName())
               .requestId(context.getAwsRequestId())
-              .type(FUNCTION_SPAN_TYPE)
-              .readiness(WARM_READINESS)
               .account(AwsUtils.extractAwsAccountFromArn(context.getInvokedFunctionArn()))
               .maxFinishTime(
                   (context.getRemainingTimeInMillis() > 0)
@@ -77,6 +77,8 @@ public class SpansContainer {
                               .root(AwsUtils.extractAwsTraceRoot(awsTracerId))
                               .build())
                       .build())
+              .type(FUNCTION_SPAN_TYPE)
+              .readiness(WARM_READINESS)
               .build();
     } catch (Exception e) {
       LOG.error("Failed to create base span", e);

@@ -9,28 +9,28 @@ import lombok.Data;
 @Builder(toBuilder = true)
 @Data(staticConstructor = "of")
 public class Span {
-    private String name;
-    private long started;
-    private long ended;
-    private String runtime;
-    private String id;
-    private String type;
-    private int memoryAllocated;
-    private String logStreamName;
-    private String logGroupName;
-    private String transactionId;
-    private String requestId;
-    private String account;
-    private int maxFinishTime;
-    private String event;
-    private String envs;
-    private String region;
-    private Long reporter_rtt;
-    private Error error;
-    private String token;
-    private String return_value;
-    private Info info;
-    private String readiness;
+  private String name;
+  private long started;
+  private long ended;
+  private String runtime;
+  private String id;
+  private String type;
+  private int memoryAllocated;
+  private String logStreamName;
+  private String logGroupName;
+  private String transactionId;
+  private String requestId;
+  private String account;
+  private int maxFinishTime;
+  private String event;
+  private String envs;
+  private String region;
+  private Long reporter_rtt;
+  private Error error;
+  private String token;
+  private String return_value;
+  private Info info;
+  private String readiness;
 
   @AllArgsConstructor
   @Builder(toBuilder = true)
