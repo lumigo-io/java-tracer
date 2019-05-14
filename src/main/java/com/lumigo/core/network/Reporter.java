@@ -6,8 +6,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.pmw.tinylog.Logger;
 
 import java.util.Collections;
 import java.util.List;
@@ -15,7 +14,6 @@ import java.util.List;
 import static com.lumigo.core.utils.JsonUtils.getObjectAsJsonString;
 
 public class Reporter {
-  private static final Logger LOG = LogManager.getLogger(Reporter.class);
   private static final HttpClient client = HttpClientBuilder.create().build();
 
   public static void reportSpans(Span span) {
@@ -23,16 +21,16 @@ public class Reporter {
   }
 
   public static void reportSpans(List<Span> spans) {
-    LOG.info("Reporting the spans: " + getObjectAsJsonString(spans));
+    Logger.info("Reporting the spans: " + getObjectAsJsonString(spans));
     HttpPost post = new HttpPost(LumigoConfiguration.getInstance().getLumigoEdge());
     try {
       StringEntity postingString = new StringEntity(getObjectAsJsonString(spans));
       post.setEntity(postingString);
       post.setHeader("Content-type", "application/json");
       client.execute(post);
-      LOG.debug("{} Spans sent successfully", spans.size());
+      Logger.debug("{} Spans sent successfully", spans.size());
     } catch (Exception e) {
-      LOG.error("Could not report json", e);
+      Logger.error(e, "Could not report json");
     }
   }
 }

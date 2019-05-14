@@ -1,7 +1,10 @@
 package com.lumigo.core.configuration;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import sun.rmi.runtime.Log;
+
+import org.pmw.tinylog.Configurator;
+import org.pmw.tinylog.Level;
+import org.pmw.tinylog.writers.ConsoleWriter;
+
+import java.util.Locale;
 
 public class LumigoConfiguration {
   private static final String EDGE_PREFIX = "https://";
@@ -17,6 +20,12 @@ public class LumigoConfiguration {
   public static synchronized LumigoConfiguration getInstance() {
     if (instance == null) {
       instance = new LumigoConfiguration();
+      Configurator.currentConfig()
+          .writer(new ConsoleWriter())
+          .locale(Locale.US)
+          .level(instance.getLogLevel())
+          .maxStackTraceElements(-1)
+          .activate();
     }
     return instance;
   }
@@ -33,12 +42,12 @@ public class LumigoConfiguration {
     return EDGE_PREFIX + url + EDGE_SUFFIX;
   }
 
-  public Level getLumigoLogLevel() {
+  public Level getLogLevel() {
     String debug = System.getenv(DEBUG_KEY);
-    if (debug.toLowerCase().equals("true")) {
+    if ("true".equalsIgnoreCase(debug)) {
       return Level.DEBUG;
     }
-    return Level.FATAL;
+    return Level.ERROR;
   }
 
   public String getLumigoTracerVersion() {

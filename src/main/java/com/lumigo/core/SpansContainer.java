@@ -7,15 +7,13 @@ import com.lumigo.core.utils.JsonUtils;
 import com.lumigo.core.utils.StringUtils;
 import com.lumigo.models.Span;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.pmw.tinylog.Logger;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 public class SpansContainer {
-  private static final Logger LOG = LogManager.getLogger(SpansContainer.class);
 
   private static final int MAX_LAMBDA_TIME = 15 * 60 * 1000;
   private static final String AWS_EXECUTION_ENV = "AWS_EXECUTION_ENV";
@@ -81,7 +79,7 @@ public class SpansContainer {
               .readiness(WARM_READINESS)
               .build();
     } catch (Exception e) {
-      LOG.error("Failed to create base span", e);
+      Logger.error(e, "Failed to create base span");
     }
   }
 
@@ -94,7 +92,7 @@ public class SpansContainer {
               .ended(this.baseSpan.getStarted())
               .build();
     } catch (Exception e) {
-      LOG.error("Failed to create start span", e);
+      Logger.error(e, "Failed to create start span");
     }
   }
 
@@ -108,7 +106,7 @@ public class SpansContainer {
               .return_value(StringUtils.getMaxSizeString(JsonUtils.getObjectAsJsonString(response)))
               .build();
     } catch (Exception e) {
-      LOG.error("Failed to create start span", e);
+      Logger.error(e, "Failed to create end with response span");
     }
   }
 
@@ -126,7 +124,7 @@ public class SpansContainer {
                       .build())
               .build();
     } catch (Exception ex) {
-      LOG.error("Failed to create start span", ex);
+      Logger.error(ex, "Failed to create endWithException span");
     }
   }
 
@@ -139,7 +137,7 @@ public class SpansContainer {
               .ended(this.baseSpan.getStarted())
               .build();
     } catch (Exception ex) {
-      LOG.error("Failed to create start span", ex);
+      Logger.error(ex, "Failed to create end span");
     }
   }
 
