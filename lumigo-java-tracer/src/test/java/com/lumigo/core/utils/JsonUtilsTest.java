@@ -6,40 +6,36 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class JsonUtilsTest {
 
+  @Test
+  void testGetObjectAsJsonString_null() {
+    assertNull(null, JsonUtils.getObjectAsJsonString(null));
+  }
 
-    @Test
-    void testGetObjectAsJsonString_null(){
-         assertNull(null, JsonUtils.getObjectAsJsonString(null));
+  @Test
+  void testGetObjectAsJsonString_Object() {
+    assertEquals("{\"a\":1,\"b\":\"2\"}", JsonUtils.getObjectAsJsonString(new A()));
+  }
+
+  @Test
+  void testGetObjectAsJsonString_string() {
+    assertEquals("aaa", JsonUtils.getObjectAsJsonString("aaa"));
+  }
+
+  @Test
+  void testGetObjectAsJsonString_int() {
+    assertEquals("1", JsonUtils.getObjectAsJsonString(1));
+  }
+
+  public class A {
+    private int a = 1;
+    private String b = "2";
+
+    public int getA() {
+      return a;
     }
 
-    @Test
-    void testGetObjectAsJsonString_Object(){
-        assertEquals("{\"a\":1,\"b\":\"2\"}", JsonUtils.getObjectAsJsonString(new A()));
+    public String getB() {
+      return b;
     }
-
-    @Test
-    void testGetObjectAsJsonString_string(){
-        assertEquals("aaa", JsonUtils.getObjectAsJsonString("aaa"));
-    }
-
-    @Test
-    void testGetObjectAsJsonString_int(){
-        assertEquals("1", JsonUtils.getObjectAsJsonString(1));
-    }
-
-
-    public class A
-    {
-        private int a = 1;
-        private String b = "2";
-
-        public int getA() {
-            return a;
-        }
-
-        public String getB() {
-            return b;
-        }
-
-    }
+  }
 }

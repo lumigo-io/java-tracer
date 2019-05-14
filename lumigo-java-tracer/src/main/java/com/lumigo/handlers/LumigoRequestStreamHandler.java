@@ -14,26 +14,27 @@ import java.io.OutputStream;
 
 public abstract class LumigoRequestStreamHandler implements RequestStreamHandler {
 
-    private static final Logger LOG = LogManager.getLogger(LumigoRequestStreamHandler.class);
+  private static final Logger LOG = LogManager.getLogger(LumigoRequestStreamHandler.class);
 
-    @Override
-    public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
-        try {
-            LOG.debug("Start {} Lumigo tracer",LumigoRequestStreamHandler.class.getName());
-            SpansContainer.getInstance().init(System.getenv(), context, null);
-            SpansContainer.getInstance().start();
-            Reporter.reportSpans(SpansContainer.getInstance().getStartFunctionSpan());
-            doHandleRequest(inputStream, outputStream, context);
-            SpansContainer.getInstance().end();
-        } catch (Throwable e) {
-            LOG.debug("Customer lambda had exception {}",e.getClass().getName());
-            SpansContainer.getInstance().endWithException(e);
-            throw e;
-        } finally {
-            Reporter.reportSpans(SpansContainer.getInstance().getAllCollectedSpans());
-        }
+  @Override
+  public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
+      throws IOException {
+    try {
+      LOG.debug("Start {} Lumigo tracer", LumigoRequestStreamHandler.class.getName());
+      SpansContainer.getInstance().init(System.getenv(), context, null);
+      SpansContainer.getInstance().start();
+      Reporter.reportSpans(SpansContainer.getInstance().getStartFunctionSpan());
+      doHandleRequest(inputStream, outputStream, context);
+      SpansContainer.getInstance().end();
+    } catch (Throwable e) {
+      LOG.debug("Customer lambda had exception {}", e.getClass().getName());
+      SpansContainer.getInstance().endWithException(e);
+      throw e;
+    } finally {
+      Reporter.reportSpans(SpansContainer.getInstance().getAllCollectedSpans());
     }
+  }
 
-    public abstract void doHandleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException;
-
+  public abstract void doHandleRequest(
+      InputStream inputStream, OutputStream outputStream, Context context) throws IOException;
 }
