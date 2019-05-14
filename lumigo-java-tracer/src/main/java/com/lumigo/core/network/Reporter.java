@@ -31,7 +31,7 @@ public class Reporter {
             post.setEntity(postingString);
             post.setHeader("Content-type", "application/json");
             client.execute(post);
-            LOG.debug("Span sent successfully");
+            LOG.debug("{} Spans sent successfully", spans.size());
         } catch (Exception e) {
             LOG.error("Could not report json", e);
         }
