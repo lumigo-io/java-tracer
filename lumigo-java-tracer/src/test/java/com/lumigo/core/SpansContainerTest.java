@@ -90,6 +90,7 @@ class SpansContainerTest {
         JSONAssert.assertEquals(expectedSpan, JsonUtils.getObjectAsJsonString(actualSpan),
                 new CustomComparator(JSONCompareMode.LENIENT,
                         new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("token", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
 
     }
@@ -143,24 +144,114 @@ class SpansContainerTest {
                 new CustomComparator(JSONCompareMode.LENIENT,
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null),
+                        new Customization("token", (o1, o2) -> o2 != null),
                         new Customization("error.stacktrace", (o1, o2) -> o2 != null)
                 )
         );
     }
 
+    @DisplayName("End span creation")
     @Test
-    void end() {
+    void end() throws JSONException{
+        spansContainer.init(createMockedEnv(), context, null);
+        spansContainer.end();
 
+        Span actualSpan = spansContainer.getEndSpan();
+        String expectedSpan = "{\n" +
+                "  \"name\": \"mocked_function_name\",\n" +
+                "  \"started\": 1557827936392,\n" +
+                "  \"ended\": 1557827936392,\n" +
+                "  \"runtime\": \"JAVA8\",\n" +
+                "  \"id\": \"3n2783hf7823hdui32\",\n" +
+                "  \"type\": null,\n" +
+                "  \"memoryAllocated\": 100,\n" +
+                "  \"logStreamName\": \"2019/05/12/[$LATEST]7f67fc1238a941749d8126be19f0cdc6\",\n" +
+                "  \"logGroupName\": \"/aws/lambda/mocked_function_name\",\n" +
+                "  \"transactionId\": \"3\",\n" +
+                "  \"requestId\": \"3n2783hf7823hdui32\",\n" +
+                "  \"account\": \"1111\",\n" +
+                "  \"maxFinishTime\": 100,\n" +
+                "  \"event\": null,\n" +
+                "  \"envs\": null,\n" +
+                "  \"region\": \"us-west-2\",\n" +
+                "  \"reporter_rtt\": null,\n" +
+                "  \"error\": null,\n" +
+                "  \"token\": null,\n" +
+                "  \"return_value\": null,\n" +
+                "  \"info\": {\n" +
+                "    \"tracer\": {\n" +
+                "      \"version\": \"1.0\"\n" +
+                "    },\n" +
+                "    \"traceId\": {\n" +
+                "      \"Root\": \"1-2-3\"\n" +
+                "    },\n" +
+                "    \"logStreamName\": null,\n" +
+                "    \"logGroupName\": null,\n" +
+                "    \"triggeredBy\": null,\n" +
+                "    \"httpInfo\": null\n" +
+                "  }\n" +
+                "}";
+        JSONAssert.assertEquals(expectedSpan, JsonUtils.getObjectAsJsonString(actualSpan),
+                new CustomComparator(JSONCompareMode.LENIENT,
+                        new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("ended", (o1, o2) -> o2 != null),
+                        new Customization("token", (o1, o2) -> o2 != null),
+                        new Customization("error.stacktrace", (o1, o2) -> o2 != null)
+                )
+        );
     }
 
-    @Test
-    void getStartFunctionSpan() {
-    }
 
+    @DisplayName("End span creation with return value")
     @Test
-    void getAllCollectedSpans() {
-    }
+    void end_with_return_value() throws JSONException{
+        spansContainer.init(createMockedEnv(), context, null);
+        spansContainer.end("RESULT");
 
+        Span actualSpan = spansContainer.getEndSpan();
+        String expectedSpan = "{\n" +
+                "  \"name\": \"mocked_function_name\",\n" +
+                "  \"started\": 1557828102847,\n" +
+                "  \"ended\": 1557828102847,\n" +
+                "  \"runtime\": \"JAVA8\",\n" +
+                "  \"id\": \"3n2783hf7823hdui32\",\n" +
+                "  \"type\": null,\n" +
+                "  \"memoryAllocated\": 100,\n" +
+                "  \"logStreamName\": \"2019/05/12/[$LATEST]7f67fc1238a941749d8126be19f0cdc6\",\n" +
+                "  \"logGroupName\": \"/aws/lambda/mocked_function_name\",\n" +
+                "  \"transactionId\": \"3\",\n" +
+                "  \"requestId\": \"3n2783hf7823hdui32\",\n" +
+                "  \"account\": \"1111\",\n" +
+                "  \"maxFinishTime\": 100,\n" +
+                "  \"event\": null,\n" +
+                "  \"envs\": null,\n" +
+                "  \"region\": \"us-west-2\",\n" +
+                "  \"reporter_rtt\": null,\n" +
+                "  \"error\": null,\n" +
+                "  \"token\": null,\n" +
+                "  \"return_value\": \"RESULT\",\n" +
+                "  \"info\": {\n" +
+                "    \"tracer\": {\n" +
+                "      \"version\": \"1.0\"\n" +
+                "    },\n" +
+                "    \"traceId\": {\n" +
+                "      \"Root\": \"1-2-3\"\n" +
+                "    },\n" +
+                "    \"logStreamName\": null,\n" +
+                "    \"logGroupName\": null,\n" +
+                "    \"triggeredBy\": null,\n" +
+                "    \"httpInfo\": null\n" +
+                "  }\n" +
+                "}";
+        JSONAssert.assertEquals(expectedSpan, JsonUtils.getObjectAsJsonString(actualSpan),
+                new CustomComparator(JSONCompareMode.LENIENT,
+                        new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("ended", (o1, o2) -> o2 != null),
+                        new Customization("token", (o1, o2) -> o2 != null),
+                        new Customization("error.stacktrace", (o1, o2) -> o2 != null)
+                )
+        );
+    }
 
     private Map<String, String> createMockedEnv() {
         Map<String, String> env = new HashMap<>();

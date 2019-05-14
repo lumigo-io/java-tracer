@@ -44,6 +44,7 @@ public class SpansContainer {
     public void init(Map<String, String> env, Context context, Object event) {
         String awsTracerId = env.get(AMZN_TRACE_ID);
         this.baseSpan = Span.builder().
+                token(LumigoConfiguration.getInstance().getLumigoToken()).
                 id(context.getAwsRequestId()).
                 started(System.currentTimeMillis()).
                 name(context.getFunctionName()).
@@ -93,7 +94,6 @@ public class SpansContainer {
                 id(this.baseSpan.getId()).
                 ended(this.baseSpan.getStarted()).
                 build();
-
     }
 
     public Span getStartFunctionSpan() {

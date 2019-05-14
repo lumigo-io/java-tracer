@@ -26,6 +26,7 @@ public abstract class LumigoRequestStreamHandler implements RequestStreamHandler
             doHandleRequest(inputStream, outputStream, context);
             SpansContainer.getInstance().end();
         } catch (Throwable e) {
+            LOG.debug("Customer lambda had exception {}",e.getClass().getName());
             SpansContainer.getInstance().endWithException(e);
             throw e;
         } finally {

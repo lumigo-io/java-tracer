@@ -24,6 +24,7 @@ public abstract class LumigoRequestHandler<INPUT, OUTPUT> implements RequestHand
             SpansContainer.getInstance().end(response);
             return response;
         } catch (Throwable e) {
+            LOG.debug("Customer lambda had exception {}",e.getClass().getName());
             SpansContainer.getInstance().endWithException(e);
             throw e;
         } finally {
