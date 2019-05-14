@@ -24,7 +24,7 @@ public class AwsUtils {
      * @return
      */
     public static String extractTriggeredByFromEvent(Object event) {
-        return null;
+        return "";
     }
 
     /**

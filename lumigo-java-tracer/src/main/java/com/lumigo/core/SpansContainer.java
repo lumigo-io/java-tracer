@@ -18,6 +18,9 @@ public class SpansContainer {
     private static final String AWS_EXECUTION_ENV = "AWS_EXECUTION_ENV";
     private static final String AWS_REGION = "AWS_REGION";
     private static final String AMZN_TRACE_ID = "_X_AMZN_TRACE_ID";
+    private static final String FUNCTION_SPAN_TYPE = "function";
+    private static final String HTTP_SPAN_TYPE = "http";
+    private static final String WARM_READINESS = "warm";
 
     private Span baseSpan;
     private Span startFunctionSpan;
@@ -61,6 +64,8 @@ public class SpansContainer {
                         tracer(Span.Tracer.builder().version(LumigoConfiguration.getInstance().getLumigoTracerVersion()).build()).
                         traceId(Span.TraceId.builder().Root(AwsUtils.extractAwsTraceRoot(awsTracerId)).build()).
                         build()).
+                type(FUNCTION_SPAN_TYPE).
+                readiness(WARM_READINESS).
                 build();
     }
 

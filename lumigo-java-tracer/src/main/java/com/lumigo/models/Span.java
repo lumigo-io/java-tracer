@@ -30,6 +30,7 @@ public class Span {
     private String token;
     private String return_value;
     private Info info;
+    private String readiness;
 
     @AllArgsConstructor
     @Builder(toBuilder = true)
