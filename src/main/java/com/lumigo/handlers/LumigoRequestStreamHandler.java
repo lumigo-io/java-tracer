@@ -4,11 +4,10 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.lumigo.core.SpansContainer;
 import com.lumigo.core.network.Reporter;
-import org.pmw.tinylog.Logger;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import org.pmw.tinylog.Logger;
 
 public abstract class LumigoRequestStreamHandler implements RequestStreamHandler {
 

@@ -1,8 +1,13 @@
 package com.lumigo.core;
 
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.when;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.lumigo.core.utils.JsonUtils;
 import com.lumigo.models.Span;
+import java.util.HashMap;
+import java.util.Map;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,12 +18,6 @@ import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.when;
 
 class SpansContainerTest {
 

@@ -6,12 +6,11 @@ import com.lumigo.core.utils.AwsUtils;
 import com.lumigo.core.utils.JsonUtils;
 import com.lumigo.core.utils.StringUtils;
 import com.lumigo.models.Span;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.pmw.tinylog.Logger;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.pmw.tinylog.Logger;
 
 public class SpansContainer {
 

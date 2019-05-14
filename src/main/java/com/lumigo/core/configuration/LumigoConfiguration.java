@@ -1,10 +1,9 @@
 package com.lumigo.core.configuration;
 
+import java.util.Locale;
 import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.writers.ConsoleWriter;
-
-import java.util.Locale;
 
 public class LumigoConfiguration {
   private static final String EDGE_PREFIX = "https://";

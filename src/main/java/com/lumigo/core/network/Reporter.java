@@ -1,17 +1,16 @@
 package com.lumigo.core.network;
 
+import static com.lumigo.core.utils.JsonUtils.getObjectAsJsonString;
+
 import com.lumigo.core.configuration.LumigoConfiguration;
 import com.lumigo.models.Span;
+import java.util.Collections;
+import java.util.List;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.pmw.tinylog.Logger;
-
-import java.util.Collections;
-import java.util.List;
-
-import static com.lumigo.core.utils.JsonUtils.getObjectAsJsonString;
 
 public class Reporter {
   private static final HttpClient client = HttpClientBuilder.create().build();
