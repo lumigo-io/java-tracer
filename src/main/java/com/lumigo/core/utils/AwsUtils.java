@@ -30,7 +30,12 @@ public class AwsUtils {
     public static String extractTriggeredByFromEvent(Object event) {
         try {
             TriggeredBy triggeredBy = new TriggeredBy();
-            if (event instanceof DynamodbEvent) {
+            Logger.info(
+                    "Trying to find triggered by to event from class {}",
+                    event != null ? event.getClass().getName() : null);
+            if (event == null) {
+                return "{}";
+            } else if (event instanceof DynamodbEvent) {
                 triggeredBy.setTriggeredBy("dynamodb");
                 if (((DynamodbEvent) event).getRecords() != null
                         && ((DynamodbEvent) event).getRecords().size() > 0) {
@@ -109,14 +114,20 @@ public class AwsUtils {
                 triggeredBy.setTriggeredBy("lex");
             } else if (event instanceof CognitoEvent) {
                 triggeredBy.setTriggeredBy("cognito");
+            } else {
+                Logger.error(
+                        "Failed to found relevant triggered by found for event {} ",
+                        event.getClass().getName());
+                return "{}";
             }
 
+            Logger.info("Found triggered by handler fo event {}", event.getClass().getName());
             return JsonUtils.getObjectAsJsonString(triggeredBy);
 
         } catch (RuntimeException | JsonProcessingException e) {
             Logger.error(e, "Failed to extract triggerBy data");
+            return "{}";
         }
-        return "{}";
     }
 
     /**
