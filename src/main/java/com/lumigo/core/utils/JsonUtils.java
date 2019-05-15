@@ -7,8 +7,9 @@ public class JsonUtils {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     /**
-     * @param o is any object
-     * @return serialized json of any object as string, null if null, string if string
+     * @param o Any object
+     * @return object json representation as string
+     * @throws JsonProcessingException
      */
     public static String getObjectAsJsonString(Object o) throws JsonProcessingException {
         if (o == null || o instanceof String) {
