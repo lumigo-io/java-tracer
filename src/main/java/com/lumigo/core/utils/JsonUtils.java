@@ -10,14 +10,10 @@ public class JsonUtils {
      * @param o is any object
      * @return serialized json of any object as string, null if null, string if string
      */
-    public static String getObjectAsJsonString(Object o) {
-        try {
-            if (o == null || o instanceof String) {
-                return (String) o;
-            }
-            return mapper.writeValueAsString(o);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+    public static String getObjectAsJsonString(Object o) throws JsonProcessingException {
+        if (o == null || o instanceof String) {
+            return (String) o;
         }
+        return mapper.writeValueAsString(o);
     }
 }

@@ -8,7 +8,6 @@ import com.lumigo.core.utils.JsonUtils;
 import com.lumigo.models.Span;
 import java.util.HashMap;
 import java.util.Map;
-import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,7 +43,7 @@ class SpansContainerTest {
 
     @DisplayName("Check that start span include all relevant data")
     @Test
-    void createStartSpan() throws JSONException {
+    void createStartSpan() throws Exception {
         spansContainer.init(createMockedEnv(), context, null);
         spansContainer.start();
 
@@ -96,7 +95,7 @@ class SpansContainerTest {
 
     @DisplayName("End span which contains error")
     @Test
-    void endWithException() throws JSONException {
+    void endWithException() throws Exception {
         spansContainer.init(createMockedEnv(), context, null);
         spansContainer.endWithException(new Exception("Error in code"));
 
@@ -153,7 +152,7 @@ class SpansContainerTest {
 
     @DisplayName("End span creation")
     @Test
-    void end() throws JSONException {
+    void end() throws Exception {
         spansContainer.init(createMockedEnv(), context, null);
         spansContainer.end();
 
@@ -206,7 +205,7 @@ class SpansContainerTest {
 
     @DisplayName("End span creation with return value")
     @Test
-    void end_with_return_value() throws JSONException {
+    void end_with_return_value() throws Exception {
         spansContainer.init(createMockedEnv(), context, null);
         spansContainer.end("RESULT");
 

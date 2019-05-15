@@ -21,22 +21,21 @@ public class Reporter {
     }
 
     public static void reportSpans(List<Span> spans) {
-        Logger.info("Reporting the spans: {}", getObjectAsJsonString(spans));
-
-        RequestBody body =
-                RequestBody.create(
-                        MediaType.get("application/json; charset=utf-8"),
-                        getObjectAsJsonString(spans));
-        Request request =
-                new Request.Builder()
-                        .url(LumigoConfiguration.getInstance().getLumigoEdge())
-                        .post(body)
-                        .build();
-
         try {
+            Logger.info("Reporting the spans: {}", getObjectAsJsonString(spans));
+
+            RequestBody body =
+                    RequestBody.create(
+                            MediaType.get("application/json; charset=utf-8"),
+                            getObjectAsJsonString(spans));
+            Request request =
+                    new Request.Builder()
+                            .url(LumigoConfiguration.getInstance().getLumigoEdge())
+                            .post(body)
+                            .build();
             client.newCall(request).execute();
             Logger.debug("{} Spans sent successfully", spans.size());
-        } catch (IOException e) {
+        } catch (Exception e) {
             Logger.error(e, "Fail in reporting: {}", e.getMessage());
         }
     }
@@ -46,19 +45,19 @@ public class Reporter {
     }
 
     public static void reportSpansAsync(List<Span> spans) {
-        Logger.info("Reporting the spans async: {}", getObjectAsJsonString(spans));
-
-        RequestBody body =
-                RequestBody.create(
-                        MediaType.get("application/json; charset=utf-8"),
-                        getObjectAsJsonString(spans));
-        Request request =
-                new Request.Builder()
-                        .url(LumigoConfiguration.getInstance().getLumigoEdge())
-                        .post(body)
-                        .build();
-
         try {
+            Logger.info("Reporting the spans async: {}", getObjectAsJsonString(spans));
+
+            RequestBody body =
+                    RequestBody.create(
+                            MediaType.get("application/json; charset=utf-8"),
+                            getObjectAsJsonString(spans));
+            Request request =
+                    new Request.Builder()
+                            .url(LumigoConfiguration.getInstance().getLumigoEdge())
+                            .post(body)
+                            .build();
+
             client.newCall(request)
                     .enqueue(
                             new Callback() {

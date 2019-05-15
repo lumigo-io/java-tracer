@@ -58,4 +58,8 @@ public class LumigoConfiguration {
     public Duration getLumigoTimeout() {
         return Duration.ofMillis(3000);
     }
+
+    public int maxSpanFieldSize() {
+        return 1024;
+    }
 }
