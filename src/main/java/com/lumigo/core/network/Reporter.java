@@ -22,12 +22,12 @@ public class Reporter {
 
     public static void reportSpans(List<Span> spans) {
         try {
-            Logger.info("Reporting the spans: {}", getObjectAsJsonString(spans));
+            String spansAsString = getObjectAsJsonString(spans);
+            Logger.info("Reporting the spans: {}", spansAsString);
 
             RequestBody body =
                     RequestBody.create(
-                            MediaType.get("application/json; charset=utf-8"),
-                            getObjectAsJsonString(spans));
+                            MediaType.get("application/json; charset=utf-8"), spansAsString);
             Request request =
                     new Request.Builder()
                             .url(LumigoConfiguration.getInstance().getLumigoEdge())
@@ -46,12 +46,12 @@ public class Reporter {
 
     public static void reportSpansAsync(List<Span> spans) {
         try {
-            Logger.info("Reporting the spans async: {}", getObjectAsJsonString(spans));
+            String spansAsString = getObjectAsJsonString(spans);
+            Logger.info("Reporting the spans async: {}", spansAsString);
 
             RequestBody body =
                     RequestBody.create(
-                            MediaType.get("application/json; charset=utf-8"),
-                            getObjectAsJsonString(spans));
+                            MediaType.get("application/json; charset=utf-8"), spansAsString);
             Request request =
                     new Request.Builder()
                             .url(LumigoConfiguration.getInstance().getLumigoEdge())
