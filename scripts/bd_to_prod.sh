@@ -31,7 +31,7 @@ bumpversion patch --message "{current_version} → {new_version}. Changes: ${cha
 
 echo "Uploading to maven repository"
 echo "Release"
-mvn clean release
+#mvn clean release
 
 echo "Create release tag"
 push_tags

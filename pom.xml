@@ -5,9 +5,64 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.lumigo</groupId>
-    <artifactId>tracer</artifactId>
+    <artifactId>java-tracer</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
+
+    <name>Lumigo java tracer</name>
+    <description>The Lumigo java tracer for serverless functions</description>
+    <url>https://lumigo.io/</url>
+
+    <scm>
+        <url>https://github.com/lumigo-io/java-tracer</url>
+        <connection>scm:git:https://github.com:lumigo-io/java-tracer.git</connection>
+        <developerConnection>scm:git:https://github.com:lumigo-io/java-tracer.git</developerConnection>
+        <tag>1.0</tag>
+    </scm>
+
+    <developers>
+        <developer>
+            <name>Lumigo Dev Team</name>
+            <email>dev@lumigo.io</email>
+            <organization>Lumigo</organization>
+            <organizationUrl>https://lumigo.io/</organizationUrl>
+        </developer>
+        <developer>
+            <name>Uri Parush</name>
+            <email>uri@lumigo.io</email>
+            <organization>Lumigo</organization>
+            <organizationUrl>https://lumigo.io</organizationUrl>
+        </developer>
+        <developer>
+            <name>Saar Tochner</name>
+            <email>saart@lumigo.io</email>
+            <organization>Lumigo</organization>
+            <organizationUrl>https://lumigo.io</organizationUrl>
+        </developer>
+    </developers>
+
+    <organization>
+        <name>Lumigo</name>
+        <url>https://lumigo.io/</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -93,6 +148,39 @@
     </dependencies>
     <build>
         <plugins>
+            <!-- Used to make it so the JavaDoc and sources are included. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <showDeprecation>true</showDeprecation>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- End of sources/javadoc inclusion. -->
+
+            <!-- Use for running tests-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -162,6 +250,20 @@
                     </execution>
                 </executions>
             </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-gpg-plugin</artifactId>-->
+<!--                <version>1.6</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>sign-artifacts</id>-->
+<!--                        <phase>verify</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>sign</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
         </plugins>
     </build>
 </project>

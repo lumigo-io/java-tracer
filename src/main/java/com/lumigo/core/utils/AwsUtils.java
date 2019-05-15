@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 public class AwsUtils {
 
     /**
-     * @param arn an arn of the with the format arn:aws:lambda:<region>:<account>:function:<name>
+     * @param arn an arn of the with the format arn:aws:lambda:{region}:{account}:function:{name}
      * @return The account id, or null if we failed to parse
      */
     public static String extractAwsAccountFromArn(String arn) {
@@ -20,8 +20,8 @@ public class AwsUtils {
     /**
      * TODO - not in the MVP.
      *
-     * @param event
-     * @return
+     * @param event an AWS event
+     * @return triggered by
      */
     public static String extractTriggeredByFromEvent(Object event) {
         return null;
