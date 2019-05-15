@@ -40,4 +40,42 @@ public class Reporter {
             Logger.error(e, "Fail in reporting: {}", e.getMessage());
         }
     }
+
+    public static void reportSpansAsync(Span span) {
+        reportSpansAsync(Collections.singletonList(span));
+    }
+
+    public static void reportSpansAsync(List<Span> spans) {
+        Logger.info("Reporting the spans async: {}", getObjectAsJsonString(spans));
+
+        RequestBody body =
+                RequestBody.create(
+                        MediaType.get("application/json; charset=utf-8"),
+                        getObjectAsJsonString(spans));
+        Request request =
+                new Request.Builder()
+                        .url(LumigoConfiguration.getInstance().getLumigoEdge())
+                        .post(body)
+                        .build();
+
+        try {
+            client.newCall(request)
+                    .enqueue(
+                            new Callback() {
+                                @Override
+                                public void onFailure(Call call, IOException e) {
+                                    Logger.error(e, "Fail in reporting: {}", e.getMessage());
+                                }
+
+                                @Override
+                                public void onResponse(Call call, Response response)
+                                        throws IOException {
+                                    Logger.debug("{} Spans sent successfully", spans.size());
+                                }
+                            });
+            Logger.debug("{} Spans sent successfully", spans.size());
+        } catch (Exception e) {
+            Logger.error(e, "Fail in reporting: {}", e.getMessage());
+        }
+    }
 }

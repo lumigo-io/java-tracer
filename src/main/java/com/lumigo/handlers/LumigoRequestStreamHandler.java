@@ -18,7 +18,7 @@ public abstract class LumigoRequestStreamHandler implements RequestStreamHandler
             Logger.debug("Start {} Lumigo tracer", LumigoRequestStreamHandler.class.getName());
             SpansContainer.getInstance().init(System.getenv(), context, null);
             SpansContainer.getInstance().start();
-            Reporter.reportSpans(SpansContainer.getInstance().getStartFunctionSpan());
+            Reporter.reportSpansAsync(SpansContainer.getInstance().getStartFunctionSpan());
             doHandleRequest(inputStream, outputStream, context);
             SpansContainer.getInstance().end();
         } catch (Throwable e) {
