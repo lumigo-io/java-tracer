@@ -1,0 +1,99 @@
+version: 2.1
+defaults: &defaults
+  working_directory: ~/python_tracer
+  docker:
+    - image: circleci/openjdk:8u181-jdk
+
+commands:
+  checkout_utils:
+    description: "Checkout various utilities"
+    steps:
+      - run:
+          command: |
+            mkdir ~/.ssh/ && echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+            cd ..
+            git clone git@github.com:lumigo-io/common-resources.git
+      - run:
+          command: |
+            cd ..
+            git clone git@github.com:lumigo-io/utils.git
+
+  checkout_code:
+    description: "Checkout code and install it"
+    steps:
+      - checkout
+      - run:
+          # Avoid annoying double runs after deploy.
+          # See https://discuss.circleci.com/t/job-runs-even-when-tags-ignore-filter-is-triggered-when-combined-with-branches-only/20664
+          name: Check if tagged
+          command: |
+            tags=$(git tag -l --points-at HEAD)
+            echo "Tags $tags"
+            if [[ ! -z "$tags" ]]
+            then
+              echo "A tagged commit, skip..."
+              circleci step halt
+            fi
+      - run: sudo chown -R circleci:circleci /usr/local/bin
+      - run: sudo chown -R circleci:circleci /usr/local/lib
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - m2-{{ checksum "pom.xml" }}
+            # fallback to using the latest cache if no exact match is found
+            - m2-
+
+      - run:
+          name: Install java tracer
+          command: mvn clean install
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: m2-{{ checksum "pom.xml" }}
+
+workflows:
+  test-deploy:
+    jobs:
+      - test:
+          filters:
+            branches:
+              ignore: master
+      - deploy:
+          filters:
+            branches:
+              only: master
+
+jobs:
+  test:
+    <<: *defaults
+    steps:
+      - checkout_utils
+      - checkout_code
+      # run tests!
+      - run: mkdir ~/.aws && printf "[default] \n aws_access_key_id=dummy \n aws_secret_access_key=dummy" > ~/.aws/credentials
+      - run: export AWS_DEFAULT_REGION=us-west-2 && export USER=CICD && pytest --cov=./
+      - run: export AWS_DEFAULT_REGION=us-west-2 && export USER=CICD && ./scripts/checks.sh
+      - run: bash <(curl -s https://codecov.io/bash)
+
+  integration-test:
+    <<: *defaults
+    steps:
+      - checkout_utils
+      - checkout_code
+      - run: sudo pip install awscli
+      - run: ./scripts/ci_deploy.sh
+      - run: cd ../integration-tests && npm i
+      - run: sudo npm install -g recursive-install
+      - run: cd ../integration-tests && ./scripts/prepare_env.sh
+      - run: cd ../integration-tests && ./scripts/deploy.sh
+      - run: cd ../integration-tests && npm run test
+
+  deploy:
+    <<: *defaults
+    steps:
+      - checkout_utils
+      - checkout_code
+      - run: sudo pip install awscli
+      - run: ./scripts/bd_to_prod.sh
