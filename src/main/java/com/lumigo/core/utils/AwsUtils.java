@@ -54,8 +54,7 @@ public class AwsUtils {
             } else if (event instanceof KinesisAnalyticsStreamsInputPreprocessingEvent) {
                 triggeredBy.setTriggeredBy("kinesis");
                 triggeredBy.setArn(
-                        ((KinesisAnalyticsStreamsInputPreprocessingEvent) event)
-                                .getStreamArn());
+                        ((KinesisAnalyticsStreamsInputPreprocessingEvent) event).getStreamArn());
             } else if (event instanceof S3Event) {
                 triggeredBy.setTriggeredBy("s3");
                 if (((S3Event) event).getRecords() != null
@@ -96,7 +95,8 @@ public class AwsUtils {
                 triggeredBy.setTriggeredBy("cloudwatch");
             } else if (event instanceof ScheduledEvent) {
                 triggeredBy.setTriggeredBy("cloudwatch");
-                if(((ScheduledEvent) event).getResources() != null && ((ScheduledEvent) event).getResources().size() > 0){
+                if (((ScheduledEvent) event).getResources() != null
+                        && ((ScheduledEvent) event).getResources().size() > 0) {
                     triggeredBy.setArn(((ScheduledEvent) event).getResources().get(0));
                 }
             } else if (event instanceof CloudFrontEvent) {
