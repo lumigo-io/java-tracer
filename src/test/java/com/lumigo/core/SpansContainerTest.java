@@ -79,7 +79,7 @@ class SpansContainerTest {
                         + "    },\n"
                         + "    \"logStreamName\": null,\n"
                         + "    \"logGroupName\": null,\n"
-                        + "    \"triggeredBy\": null,\n"
+                        + "    \"triggeredBy\": \"{}\",\n"
                         + "    \"httpInfo\": null\n"
                         + "  }\n"
                         + "}";
@@ -135,7 +135,7 @@ class SpansContainerTest {
                         + "    },\n"
                         + "    \"logStreamName\": null,\n"
                         + "    \"logGroupName\": null,\n"
-                        + "    \"triggeredBy\": null,\n"
+                        + "    \"triggeredBy\": \"{}\",\n"
                         + "    \"httpInfo\": null\n"
                         + "  }\n"
                         + "}";
@@ -188,7 +188,7 @@ class SpansContainerTest {
                         + "    },\n"
                         + "    \"logStreamName\": null,\n"
                         + "    \"logGroupName\": null,\n"
-                        + "    \"triggeredBy\": null,\n"
+                        + "    \"triggeredBy\": \"{}\",\n"
                         + "    \"httpInfo\": null\n"
                         + "  }\n"
                         + "}";
@@ -241,7 +241,7 @@ class SpansContainerTest {
                         + "    },\n"
                         + "    \"logStreamName\": null,\n"
                         + "    \"logGroupName\": null,\n"
-                        + "    \"triggeredBy\": null,\n"
+                        + "    \"triggeredBy\": \"{}\",\n"
                         + "    \"httpInfo\": null\n"
                         + "  }\n"
                         + "}";

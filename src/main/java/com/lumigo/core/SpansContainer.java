@@ -80,6 +80,8 @@ public class SpansContainer {
                                                                     AwsUtils.extractAwsTraceRoot(
                                                                             awsTracerId))
                                                             .build())
+                                            .triggeredBy(
+                                                    AwsUtils.extractTriggeredByFromEvent(event))
                                             .build())
                             .type(FUNCTION_SPAN_TYPE)
                             .readiness(WARM_READINESS)
