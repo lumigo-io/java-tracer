@@ -35,12 +35,12 @@ commands:
               circleci step halt
             fi
 
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-            - m2-{{ checksum "pom.xml" }}
-            # fallback to using the latest cache if no exact match is found
-            - m2-
+#      # Download and cache dependencies
+#      - restore_cache:
+#          keys:
+#            - m2-{{ checksum "pom.xml" }}
+#            # fallback to using the latest cache if no exact match is found
+#            - m2-
 
       - run:
           name: Install java tracer
