@@ -34,7 +34,7 @@ public class AwsUtils {
                     "Trying to find triggered by to event from class {}",
                     event != null ? event.getClass().getName() : null);
             if (event == null) {
-                return "{}";
+                return null;
             } else if (event instanceof DynamodbEvent) {
                 triggeredBy.setTriggeredBy("dynamodb");
                 if (((DynamodbEvent) event).getRecords() != null
@@ -118,7 +118,7 @@ public class AwsUtils {
                 Logger.error(
                         "Failed to found relevant triggered by found for event {} ",
                         event.getClass().getName());
-                return "{}";
+                return null;
             }
 
             Logger.info("Found triggered by handler fo event {}", event.getClass().getName());
@@ -126,7 +126,7 @@ public class AwsUtils {
 
         } catch (RuntimeException | JsonProcessingException e) {
             Logger.error(e, "Failed to extract triggerBy data");
-            return "{}";
+            return null;
         }
     }
 

@@ -1,7 +1,8 @@
 package com.lumigo.core;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.lumigo.core.configuration.LumigoConfiguration;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.lumigo.core.configuration.Configuration;
 import com.lumigo.core.utils.AwsUtils;
 import com.lumigo.core.utils.JsonUtils;
 import com.lumigo.core.utils.StringUtils;
@@ -10,7 +11,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.pmw.tinylog.Logger;
 
 public class SpansContainer {
 
@@ -42,113 +42,107 @@ public class SpansContainer {
 
     private SpansContainer() {}
 
-    public void init(Map<String, String> env, Context context, Object event) {
-        try {
-            String awsTracerId = env.get(AMZN_TRACE_ID);
-            this.baseSpan =
-                    Span.builder()
-                            .token(LumigoConfiguration.getInstance().getLumigoToken())
-                            .id(context.getAwsRequestId())
-                            .started(System.currentTimeMillis())
-                            .name(context.getFunctionName())
-                            .runtime(env.get(AWS_EXECUTION_ENV))
-                            .region(env.get(AWS_REGION))
-                            .memoryAllocated(context.getMemoryLimitInMB())
-                            .logGroupName(context.getLogGroupName())
-                            .logStreamName(context.getLogStreamName())
-                            .requestId(context.getAwsRequestId())
-                            .account(
-                                    AwsUtils.extractAwsAccountFromArn(
-                                            context.getInvokedFunctionArn()))
-                            .maxFinishTime(
-                                    (context.getRemainingTimeInMillis() > 0)
-                                            ? context.getRemainingTimeInMillis()
-                                            : MAX_LAMBDA_TIME)
-                            .transactionId(AwsUtils.extractAwsTraceTransactionId(awsTracerId))
-                            .info(
-                                    Span.Info.builder()
-                                            .tracer(
-                                                    Span.Tracer.builder()
-                                                            .version(
-                                                                    LumigoConfiguration
-                                                                            .getInstance()
-                                                                            .getLumigoTracerVersion())
-                                                            .build())
-                                            .traceId(
-                                                    Span.TraceId.builder()
-                                                            .root(
-                                                                    AwsUtils.extractAwsTraceRoot(
-                                                                            awsTracerId))
-                                                            .build())
-                                            .triggeredBy(
-                                                    AwsUtils.extractTriggeredByFromEvent(event))
-                                            .build())
-                            .type(FUNCTION_SPAN_TYPE)
-                            .readiness(WARM_READINESS)
-                            .build();
-        } catch (Exception e) {
-            Logger.error(e, "Failed to create base span");
-        }
+    public void init(Map<String, String> env, Context context, Object event)
+            throws JsonProcessingException {
+        this.clear();
+        String awsTracerId = env.get(AMZN_TRACE_ID);
+        this.baseSpan =
+                Span.builder()
+                        .token(Configuration.getInstance().getLumigoToken())
+                        .id(context.getAwsRequestId())
+                        .started(System.currentTimeMillis())
+                        .name(context.getFunctionName())
+                        .runtime(env.get(AWS_EXECUTION_ENV))
+                        .region(env.get(AWS_REGION))
+                        .memoryAllocated(context.getMemoryLimitInMB())
+                        .logGroupName(context.getLogGroupName())
+                        .logStreamName(context.getLogStreamName())
+                        .requestId(context.getAwsRequestId())
+                        .account(AwsUtils.extractAwsAccountFromArn(context.getInvokedFunctionArn()))
+                        .maxFinishTime(
+                                (context.getRemainingTimeInMillis() > 0)
+                                        ? context.getRemainingTimeInMillis()
+                                        : MAX_LAMBDA_TIME)
+                        .transactionId(AwsUtils.extractAwsTraceTransactionId(awsTracerId))
+                        .info(
+                                Span.Info.builder()
+                                        .tracer(
+                                                Span.Tracer.builder()
+                                                        .version(
+                                                                Configuration.getInstance()
+                                                                        .getLumigoTracerVersion())
+                                                        .build())
+                                        .traceId(
+                                                Span.TraceId.builder()
+                                                        .root(
+                                                                AwsUtils.extractAwsTraceRoot(
+                                                                        awsTracerId))
+                                                        .build())
+                                        .triggeredBy(AwsUtils.extractTriggeredByFromEvent(event))
+                                        .build())
+                        .type(FUNCTION_SPAN_TYPE)
+                        .readiness(WARM_READINESS)
+                        .envs(
+                                Configuration.getInstance().isLumigoVerboseMode()
+                                        ? StringUtils.getMaxSizeString(
+                                                JsonUtils.getObjectAsJsonString(env))
+                                        : null)
+                        .event(
+                                Configuration.getInstance().isLumigoVerboseMode()
+                                        ? StringUtils.getMaxSizeString(
+                                                JsonUtils.getObjectAsJsonString(event))
+                                        : null)
+                        .build();
     }
 
     public void start() {
-        try {
-            this.startFunctionSpan =
-                    this.baseSpan
-                            .toBuilder()
-                            .id(this.baseSpan.getId() + "_started")
-                            .ended(this.baseSpan.getStarted())
-                            .build();
-        } catch (Exception e) {
-            Logger.error(e, "Failed to create start span");
-        }
+
+        this.startFunctionSpan =
+                this.baseSpan
+                        .toBuilder()
+                        .id(this.baseSpan.getId() + "_started")
+                        .ended(this.baseSpan.getStarted())
+                        .build();
     }
 
-    public void end(Object response) {
-        try {
-            this.endFunctionSpan =
-                    this.baseSpan
-                            .toBuilder()
-                            .id(this.baseSpan.getId())
-                            .ended(this.baseSpan.getStarted())
-                            .return_value(
-                                    StringUtils.getMaxSizeString(
-                                            JsonUtils.getObjectAsJsonString(response)))
-                            .build();
-        } catch (Exception e) {
-            Logger.error(e, "Failed to create end with response span");
-        }
+    public void end(Object response) throws JsonProcessingException {
+
+        this.endFunctionSpan =
+                this.baseSpan
+                        .toBuilder()
+                        .id(this.baseSpan.getId())
+                        .ended(System.currentTimeMillis())
+                        .return_value(
+                                Configuration.getInstance().isLumigoVerboseMode()
+                                        ? StringUtils.getMaxSizeString(
+                                                JsonUtils.getObjectAsJsonString(response))
+                                        : null)
+                        .build();
     }
 
     public void endWithException(Throwable e) {
-        try {
-            this.endFunctionSpan =
-                    this.baseSpan
-                            .toBuilder()
-                            .ended(System.currentTimeMillis())
-                            .error(
-                                    Span.Error.builder()
-                                            .message(e.getMessage())
-                                            .type(e.getClass().getName())
-                                            .stacktrace(ExceptionUtils.getStackTrace(e))
-                                            .build())
-                            .build();
-        } catch (Exception ex) {
-            Logger.error(ex, "Failed to create endWithException span");
-        }
+
+        this.endFunctionSpan =
+                this.baseSpan
+                        .toBuilder()
+                        .ended(System.currentTimeMillis())
+                        .error(
+                                Span.Error.builder()
+                                        .message(e.getMessage())
+                                        .type(e.getClass().getName())
+                                        .stacktrace(ExceptionUtils.getStackTrace(e))
+                                        .build())
+                        .build();
     }
 
     public void end() {
-        try {
-            this.endFunctionSpan =
-                    this.baseSpan
-                            .toBuilder()
-                            .id(this.baseSpan.getId())
-                            .ended(this.baseSpan.getStarted())
-                            .build();
-        } catch (Exception ex) {
-            Logger.error(ex, "Failed to create end span");
-        }
+
+        this.endFunctionSpan =
+                this.baseSpan
+                        .toBuilder()
+                        .id(this.baseSpan.getId())
+                        .ended(System.currentTimeMillis())
+                        .build();
     }
 
     public Span getStartFunctionSpan() {

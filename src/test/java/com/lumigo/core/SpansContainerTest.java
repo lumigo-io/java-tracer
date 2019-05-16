@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.lumigo.core.utils.JsonUtils;
 import com.lumigo.models.Span;
 import java.util.HashMap;
@@ -32,7 +33,7 @@ class SpansContainerTest {
 
     @DisplayName("Check that clear SpansContainer state working")
     @Test
-    void clear() {
+    void clear() throws JsonProcessingException {
         spansContainer.init(createMockedEnv(), context, null);
         spansContainer.start();
 
@@ -64,7 +65,7 @@ class SpansContainerTest {
                         + "  \"account\": \"1111\",\n"
                         + "  \"maxFinishTime\": 100,\n"
                         + "  \"event\": null,\n"
-                        + "  \"envs\": null,\n"
+                        + "  \"envs\": \"{\\\"AWS_REGION\\\":\\\"us-west-2\\\",\\\"_X_AMZN_TRACE_ID\\\":\\\"Root=1-2-3;Another=456;Bla=789\\\",\\\"AWS_EXECUTION_ENV\\\":\\\"JAVA8\\\"}\",\n"
                         + "  \"region\": \"us-west-2\",\n"
                         + "  \"reporter_rtt\": null,\n"
                         + "  \"error\": null,\n"
@@ -79,7 +80,7 @@ class SpansContainerTest {
                         + "    },\n"
                         + "    \"logStreamName\": null,\n"
                         + "    \"logGroupName\": null,\n"
-                        + "    \"triggeredBy\": \"{}\",\n"
+                        + "    \"triggeredBy\": null,\n"
                         + "    \"httpInfo\": null\n"
                         + "  }\n"
                         + "}";
@@ -116,7 +117,7 @@ class SpansContainerTest {
                         + "  \"account\": \"1111\",\n"
                         + "  \"maxFinishTime\": 100,\n"
                         + "  \"event\": null,\n"
-                        + "  \"envs\": null,\n"
+                        + "  \"envs\": \"{\\\"AWS_REGION\\\":\\\"us-west-2\\\",\\\"_X_AMZN_TRACE_ID\\\":\\\"Root=1-2-3;Another=456;Bla=789\\\",\\\"AWS_EXECUTION_ENV\\\":\\\"JAVA8\\\"}\",\n"
                         + "  \"region\": \"us-west-2\",\n"
                         + "  \"reporter_rtt\": null,\n"
                         + "  \"error\": {\n"
@@ -135,7 +136,7 @@ class SpansContainerTest {
                         + "    },\n"
                         + "    \"logStreamName\": null,\n"
                         + "    \"logGroupName\": null,\n"
-                        + "    \"triggeredBy\": \"{}\",\n"
+                        + "    \"triggeredBy\": null,\n"
                         + "    \"httpInfo\": null\n"
                         + "  }\n"
                         + "}";
@@ -173,7 +174,7 @@ class SpansContainerTest {
                         + "  \"account\": \"1111\",\n"
                         + "  \"maxFinishTime\": 100,\n"
                         + "  \"event\": null,\n"
-                        + "  \"envs\": null,\n"
+                        + "  \"envs\": \"{\\\"AWS_REGION\\\":\\\"us-west-2\\\",\\\"_X_AMZN_TRACE_ID\\\":\\\"Root=1-2-3;Another=456;Bla=789\\\",\\\"AWS_EXECUTION_ENV\\\":\\\"JAVA8\\\"}\",\n"
                         + "  \"region\": \"us-west-2\",\n"
                         + "  \"reporter_rtt\": null,\n"
                         + "  \"error\": null,\n"
@@ -188,7 +189,7 @@ class SpansContainerTest {
                         + "    },\n"
                         + "    \"logStreamName\": null,\n"
                         + "    \"logGroupName\": null,\n"
-                        + "    \"triggeredBy\": \"{}\",\n"
+                        + "    \"triggeredBy\": null,\n"
                         + "    \"httpInfo\": null\n"
                         + "  }\n"
                         + "}";
@@ -226,7 +227,7 @@ class SpansContainerTest {
                         + "  \"account\": \"1111\",\n"
                         + "  \"maxFinishTime\": 100,\n"
                         + "  \"event\": null,\n"
-                        + "  \"envs\": null,\n"
+                        + "  \"envs\": \"{\\\"AWS_REGION\\\":\\\"us-west-2\\\",\\\"_X_AMZN_TRACE_ID\\\":\\\"Root=1-2-3;Another=456;Bla=789\\\",\\\"AWS_EXECUTION_ENV\\\":\\\"JAVA8\\\"}\",\n"
                         + "  \"region\": \"us-west-2\",\n"
                         + "  \"reporter_rtt\": null,\n"
                         + "  \"error\": null,\n"
@@ -241,7 +242,7 @@ class SpansContainerTest {
                         + "    },\n"
                         + "    \"logStreamName\": null,\n"
                         + "    \"logGroupName\": null,\n"
-                        + "    \"triggeredBy\": \"{}\",\n"
+                        + "    \"triggeredBy\": null,\n"
                         + "    \"httpInfo\": null\n"
                         + "  }\n"
                         + "}";

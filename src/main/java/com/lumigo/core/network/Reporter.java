@@ -2,7 +2,7 @@ package com.lumigo.core.network;
 
 import static com.lumigo.core.utils.JsonUtils.getObjectAsJsonString;
 
-import com.lumigo.core.configuration.LumigoConfiguration;
+import com.lumigo.core.configuration.Configuration;
 import com.lumigo.models.Span;
 import java.io.IOException;
 import java.util.Collections;
@@ -11,70 +11,77 @@ import okhttp3.*;
 import org.pmw.tinylog.Logger;
 
 public class Reporter {
-    private static final OkHttpClient client =
-            new OkHttpClient.Builder()
-                    .callTimeout(LumigoConfiguration.getInstance().getLumigoTimeout())
-                    .build();
+    private final OkHttpClient client;
 
-    public static void reportSpans(Span span) {
+    public Reporter() {
+        client =
+                new OkHttpClient.Builder()
+                        .callTimeout(Configuration.getInstance().getLumigoTimeout())
+                        .build();
+    }
+
+    public void reportSpans(Span span) throws IOException {
         reportSpans(Collections.singletonList(span));
     }
 
-    public static void reportSpans(List<Span> spans) {
-        try {
-            String spansAsString = getObjectAsJsonString(spans);
-            Logger.info("Reporting the spans: {}", spansAsString);
+    public void reportSpans(List<Span> spans) throws IOException {
+        String spansAsString = getObjectAsJsonString(spans);
+        Logger.info("Reporting the spans: {}", spansAsString);
 
+        if (Configuration.getInstance().isAwsEnvironment()) {
             RequestBody body =
                     RequestBody.create(
                             MediaType.get("application/json; charset=utf-8"), spansAsString);
             Request request =
                     new Request.Builder()
-                            .url(LumigoConfiguration.getInstance().getLumigoEdge())
+                            .url(Configuration.getInstance().getLumigoEdge())
                             .post(body)
                             .build();
+
             client.newCall(request).execute();
+
             Logger.debug("{} Spans sent successfully", spans.size());
-        } catch (Exception e) {
-            Logger.error(e, "Fail in reporting: {}", e.getMessage());
         }
     }
 
-    public static void reportSpansAsync(Span span) {
-        reportSpansAsync(Collections.singletonList(span));
-    }
+    //    public void reportSpansAsync(Span span) throws JsonProcessingException {
+    //        reportSpansAsync(Collections.singletonList(span));
+    //    }
+    //
+    //    public void reportSpansAsync(List<Span> spans) throws JsonProcessingException {
+    //        String spansAsString = getObjectAsJsonString(spans);
+    //        Logger.info("Reporting the spans async: {}", spansAsString);
+    //
+    //        if (Configuration.getInstance().isAwsEnvironment()) {
+    //            RequestBody body =
+    //                    RequestBody.create(
+    //                            MediaType.get("application/json; charset=utf-8"), spansAsString);
+    //            Request request =
+    //                    new Request.Builder()
+    //                            .url(Configuration.getInstance().getLumigoEdge())
+    //                            .post(body)
+    //                            .build();
+    //
+    //            client.newCall(request).enqueue(new AsyncHandler(spans.size()));
+    //            Logger.info("{} Spans sent successfully", spans.size());
+    //        }
+    //    }
 
-    public static void reportSpansAsync(List<Span> spans) {
-        try {
-            String spansAsString = getObjectAsJsonString(spans);
-            Logger.info("Reporting the spans async: {}", spansAsString);
+    private static class AsyncHandler implements Callback {
+        private int numberOfSpans;
 
-            RequestBody body =
-                    RequestBody.create(
-                            MediaType.get("application/json; charset=utf-8"), spansAsString);
-            Request request =
-                    new Request.Builder()
-                            .url(LumigoConfiguration.getInstance().getLumigoEdge())
-                            .post(body)
-                            .build();
+        public AsyncHandler(int numberOfSpans) {
+            this.numberOfSpans = numberOfSpans;
+        }
 
-            client.newCall(request)
-                    .enqueue(
-                            new Callback() {
-                                @Override
-                                public void onFailure(Call call, IOException e) {
-                                    Logger.error(e, "Fail in reporting: {}", e.getMessage());
-                                }
-
-                                @Override
-                                public void onResponse(Call call, Response response)
-                                        throws IOException {
-                                    Logger.debug("{} Spans sent successfully", spans.size());
-                                }
-                            });
-            Logger.debug("{} Spans sent successfully", spans.size());
-        } catch (Exception e) {
+        @Override
+        public void onFailure(Call call, IOException e) {
             Logger.error(e, "Fail in reporting: {}", e.getMessage());
+        }
+
+        @Override
+        public void onResponse(Call call, Response response) {
+            Logger.debug("{} Spans sent successfully", numberOfSpans);
         }
     }
 }

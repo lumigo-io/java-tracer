@@ -1,10 +1,10 @@
 package com.lumigo.core.utils;
 
-import com.lumigo.core.configuration.LumigoConfiguration;
+import com.lumigo.core.configuration.Configuration;
 
 public class StringUtils {
 
-    private static final int MAX_STRING_SIZE = LumigoConfiguration.getInstance().maxSpanFieldSize();
+    private static final int MAX_STRING_SIZE = Configuration.getInstance().maxSpanFieldSize();
 
     public static String getMaxSizeString(String input) {
         if (input != null && input.length() > MAX_STRING_SIZE) {
