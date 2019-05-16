@@ -34,8 +34,6 @@ commands:
               echo "A tagged commit, skip..."
               circleci step halt
             fi
-      - run: sudo chown -R circleci:circleci /usr/local/bin
-      - run: sudo chown -R circleci:circleci /usr/local/lib
 
       # Download and cache dependencies
       - restore_cache:
@@ -47,6 +45,8 @@ commands:
       - run:
           name: Install java tracer
           command: mvn clean install
+
+      - run: bash <(curl -s https://codecov.io/bash)
 
       - save_cache:
           paths:
@@ -71,11 +71,6 @@ jobs:
     steps:
       - checkout_utils
       - checkout_code
-      # run tests!
-      - run: mkdir ~/.aws && printf "[default] \n aws_access_key_id=dummy \n aws_secret_access_key=dummy" > ~/.aws/credentials
-      - run: export AWS_DEFAULT_REGION=us-west-2 && export USER=CICD && pytest --cov=./
-      - run: export AWS_DEFAULT_REGION=us-west-2 && export USER=CICD && ./scripts/checks.sh
-      - run: bash <(curl -s https://codecov.io/bash)
 
   integration-test:
     <<: *defaults
