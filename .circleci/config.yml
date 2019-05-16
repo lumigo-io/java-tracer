@@ -64,8 +64,8 @@ workflows:
           filters:
             branches:
               ignore: master
-      requires:
-        - test
+          requires:
+            - test
       - deploy:
           filters:
             branches:
