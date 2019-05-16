@@ -60,6 +60,12 @@ workflows:
           filters:
             branches:
               ignore: master
+      - integration-test:
+          filters:
+            branches:
+              ignore: master
+      requires:
+        - test
       - deploy:
           filters:
             branches:
