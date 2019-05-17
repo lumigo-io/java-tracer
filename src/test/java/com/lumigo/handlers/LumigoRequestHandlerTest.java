@@ -89,8 +89,8 @@ class LumigoRequestHandlerTest {
     @Mock Context context;
     @Mock EnvUtil envUtil;
     @Mock Reporter reporter;
-    Map<String, String> env = new HashMap<>();
-    KinesisEvent kinesisEvent;
+    private Map<String, String> env = new HashMap<>();
+    private KinesisEvent kinesisEvent;
 
     @BeforeEach
     void setUp() {
@@ -178,10 +178,9 @@ class LumigoRequestHandlerTest {
         handler.setReporter(reporter);
         Configuration.getInstance().setEnvUtil(envUtil);
 
-        try {
-            handler.handleRequest(kinesisEvent, context);
-        } catch (Exception e) {
-        }
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> handler.handleRequest(kinesisEvent, context));
 
         ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
         ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
@@ -299,10 +298,9 @@ class LumigoRequestHandlerTest {
         handler.setReporter(reporter);
         Configuration.getInstance().setEnvUtil(envUtil);
 
-        try {
-            handler.handleRequest(null, null, context);
-        } catch (Exception e) {
-        }
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> handler.handleRequest(null, null, context));
 
         ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
         ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
