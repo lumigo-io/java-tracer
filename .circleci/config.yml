@@ -17,6 +17,19 @@ commands:
           command: |
             cd ..
             git clone git@github.com:lumigo-io/utils.git
+      - run:
+          name: install python 3.7
+          command: |
+            sudo apt update && sudo apt upgrade -y
+            sudo add-apt-repository --yes ppa:deadsnakes/ppa
+            sudo apt-get update
+            sudo apt-get install python3.7
+            wget https://bootstrap.pypa.io/get-pip.py
+            sudo python3.7 get-pip.py
+            sudo python3.7 -m pip install --upgrade pip setuptools wheel
+            sudo python3.7 -m pip install pipenv
+            sudo chown -R circleci:circleci /usr/local/bin
+            sudo chown -R circleci:circleci /usr/local/lib/python3.7/site-packages
 
   checkout_code:
     description: "Checkout code and install it"
@@ -43,8 +56,8 @@ commands:
             - m2-
 
       - run:
-          name: Install java tracer
-          command: ./scripts/checks.sh
+          name: Install project dependencies of java tracer
+          command: mvn dependency:go-offline
 
       - run: bash <(curl -s https://codecov.io/bash)
 
@@ -77,6 +90,7 @@ jobs:
     steps:
       - checkout_utils
       - checkout_code
+      - ./scripts/checks.sh
 
   integration-test:
     <<: *defaults
