@@ -88,9 +88,8 @@ jobs:
   test:
     <<: *defaults
     steps:
-      - checkout_utils
       - checkout_code
-      - ./scripts/checks.sh
+      - run: ./scripts/checks.sh
 
   integration-test:
     <<: *defaults
