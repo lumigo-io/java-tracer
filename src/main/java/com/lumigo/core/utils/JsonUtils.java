@@ -9,7 +9,7 @@ public class JsonUtils {
     /**
      * @param o Any object
      * @return object json representation as string
-     * @throws JsonProcessingException
+     * @throws JsonProcessingException the object can't be serialize to json
      */
     public static String getObjectAsJsonString(Object o) throws JsonProcessingException {
         if (o == null || o instanceof String) {

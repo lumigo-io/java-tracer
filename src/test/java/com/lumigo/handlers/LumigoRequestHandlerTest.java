@@ -69,8 +69,7 @@ class LumigoRequestHandlerTest {
     static class HandlerStreamWithException extends LumigoRequestStreamHandler {
         @Override
         public void doHandleRequest(
-                InputStream inputStream, OutputStream outputStream, Context context)
-                throws IOException {
+                InputStream inputStream, OutputStream outputStream, Context context) {
             throw new UnsupportedOperationException();
         }
     }
