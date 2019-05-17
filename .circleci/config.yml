@@ -20,7 +20,7 @@ commands:
       - run:
           name: install python 3.7
           command: |
-            sudo apt update && sudo apt upgrade -y
+            sudo apt-get install -y python-software-properties
             sudo add-apt-repository --yes ppa:deadsnakes/ppa
             sudo apt-get update
             sudo apt-get install python3.7
