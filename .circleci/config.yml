@@ -59,8 +59,6 @@ commands:
           name: Install project dependencies of java tracer
           command: mvn dependency:go-offline
 
-      - run: bash <(curl -s https://codecov.io/bash)
-
       - save_cache:
           paths:
             - ~/.m2
@@ -90,6 +88,7 @@ jobs:
     steps:
       - checkout_code
       - run: ./scripts/checks.sh
+      - run: bash <(curl -s https://codecov.io/bash)
 
   integration-test:
     <<: *defaults
