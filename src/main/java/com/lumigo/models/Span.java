@@ -16,8 +16,6 @@ public class Span {
     private String id;
     private String type;
     private int memoryAllocated;
-    private String logStreamName;
-    private String logGroupName;
     private String transactionId;
     private String requestId;
     private String account;

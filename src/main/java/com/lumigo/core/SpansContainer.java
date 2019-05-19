@@ -55,8 +55,6 @@ public class SpansContainer {
                         .runtime(env.get(AWS_EXECUTION_ENV))
                         .region(env.get(AWS_REGION))
                         .memoryAllocated(context.getMemoryLimitInMB())
-                        .logGroupName(context.getLogGroupName())
-                        .logStreamName(context.getLogStreamName())
                         .requestId(context.getAwsRequestId())
                         .account(AwsUtils.extractAwsAccountFromArn(context.getInvokedFunctionArn()))
                         .maxFinishTime(
@@ -79,6 +77,8 @@ public class SpansContainer {
                                                                         awsTracerId))
                                                         .build())
                                         .triggeredBy(AwsUtils.extractTriggeredByFromEvent(event))
+                                        .logGroupName(context.getLogGroupName())
+                                        .logStreamName(context.getLogStreamName())
                                         .build())
                         .type(FUNCTION_SPAN_TYPE)
                         .readiness(WARM_READINESS)

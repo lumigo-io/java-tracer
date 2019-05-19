@@ -382,8 +382,6 @@ class LumigoRequestHandlerTest {
                 .id("3n2783hf7823hdui32_started")
                 .memoryAllocated(100)
                 .type("function")
-                .logStreamName("2019/05/12/[$LATEST]7f67fc1238a941749d8126be19f0cdc6")
-                .logGroupName("/aws/lambda/mocked_function_name")
                 .transactionId("3")
                 .requestId("3n2783hf7823hdui32")
                 .account("1111")
@@ -400,6 +398,8 @@ class LumigoRequestHandlerTest {
                                         includeRiggeredBy
                                                 ? "{\"triggeredBy\":\"kinesis\",\"arn\":\"arn\"}"
                                                 : null)
+                                .logStreamName("2019/05/12/[$LATEST]7f67fc1238a941749d8126be19f0cdc6")
+                                .logGroupName("/aws/lambda/mocked_function_name")
                                 .build())
                 .readiness("warm")
                 .build();
@@ -417,8 +417,6 @@ class LumigoRequestHandlerTest {
                 .id("3n2783hf7823hdui32")
                 .memoryAllocated(100)
                 .type("function")
-                .logStreamName("2019/05/12/[$LATEST]7f67fc1238a941749d8126be19f0cdc6")
-                .logGroupName("/aws/lambda/mocked_function_name")
                 .transactionId("3")
                 .requestId("3n2783hf7823hdui32")
                 .account("1111")
@@ -435,6 +433,8 @@ class LumigoRequestHandlerTest {
                                         triggerBy
                                                 ? "{\"triggeredBy\":\"kinesis\",\"arn\":\"arn\"}"
                                                 : null)
+                                .logStreamName("2019/05/12/[$LATEST]7f67fc1238a941749d8126be19f0cdc6")
+                                .logGroupName("/aws/lambda/mocked_function_name")
                                 .build())
                 .readiness("warm")
                 .return_value(
