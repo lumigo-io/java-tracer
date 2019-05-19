@@ -2,9 +2,27 @@ version: 2.1
 defaults: &defaults
   working_directory: ~/java-tracer
   docker:
-    - image: circleci/openjdk:8u181-jdk
+    - image: circleci/python:3.7
 
 commands:
+  install_java:
+    description: "Install java 8 JDK & maven"
+    steps:
+      - run:
+          command: |
+            sudo apt-get update
+            sudo apt-get install openjdk-8-jdk
+            sudo update-alternatives --config java
+            sudo apt install maven
+
+  install_node:
+    description: "Install node 10"
+    steps:
+      - run: curl -sL https://deb.nodesource.com/setup_10.x | sudo bash -
+      - run: sudo apt install nodejs
+      - run: sudo npm install -g serverless@1.41.1
+
+
   checkout_utils:
     description: "Checkout various utilities"
     steps:
@@ -17,20 +35,7 @@ commands:
           command: |
             cd ..
             git clone git@github.com:lumigo-io/utils.git
-      - run:
-          name: install python 3.7
-          command: |
-            sudo apt update
-            sudo apt install software-properties-common
-            sudo add-apt-repository ppa:deadsnakes/ppa
-            sudo apt update
-            sudo apt install python3.7
-            wget https://bootstrap.pypa.io/get-pip.py
-            sudo python3.7 get-pip.py
-            sudo python3.7 -m pip install --upgrade pip setuptools wheel
-            sudo python3.7 -m pip install pipenv
-            sudo chown -R circleci:circleci /usr/local/bin
-            sudo chown -R circleci:circleci /usr/local/lib/python3.7/site-packages
+
 
   checkout_code:
     description: "Checkout code and install it"
@@ -48,6 +53,8 @@ commands:
               echo "A tagged commit, skip..."
               circleci step halt
             fi
+      - run: sudo chown -R circleci:circleci /usr/local/bin
+      - run: sudo chown -R circleci:circleci /usr/local/lib/python3.7/site-packages
 
       # Download and cache dependencies
       - restore_cache:
@@ -59,6 +66,7 @@ commands:
       - run:
           name: Install project dependencies of java tracer
           command: mvn dependency:go-offline
+
 
       - save_cache:
           paths:
@@ -87,6 +95,7 @@ jobs:
   test:
     <<: *defaults
     steps:
+      - install_java
       - checkout_code
       - run: ./scripts/checks.sh
       - run: bash <(curl -s https://codecov.io/bash)
@@ -94,6 +103,8 @@ jobs:
   integration-test:
     <<: *defaults
     steps:
+      - install_java
+      - install_node
       - checkout_utils
       - checkout_code
       - run: sudo pip install awscli
@@ -107,6 +118,7 @@ jobs:
   deploy:
     <<: *defaults
     steps:
+      - install_java
       - checkout_utils
       - checkout_code
       - run: ./scripts/bd_to_prod.sh
