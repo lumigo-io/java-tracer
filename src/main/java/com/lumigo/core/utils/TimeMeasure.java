@@ -1,8 +1,7 @@
 package com.lumigo.core.utils;
 
-import org.pmw.tinylog.Logger;
-
 import java.util.concurrent.TimeUnit;
+import org.pmw.tinylog.Logger;
 
 public class TimeMeasure implements AutoCloseable {
 
@@ -16,6 +15,9 @@ public class TimeMeasure implements AutoCloseable {
 
     @Override
     public void close() {
-        Logger.debug("Took {} milliseconds to run {}", TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - this.time), message);
+        Logger.debug(
+                "Took {} milliseconds to run {}",
+                TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - this.time),
+                message);
     }
 }
