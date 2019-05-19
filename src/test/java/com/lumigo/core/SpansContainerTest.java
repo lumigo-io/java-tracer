@@ -27,6 +27,7 @@ class SpansContainerTest {
 
     @BeforeEach
     void setUp() {
+        spansContainer.clear();
         MockitoAnnotations.initMocks(this);
         mockContext();
     }
