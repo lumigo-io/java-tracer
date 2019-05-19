@@ -82,4 +82,9 @@ public class Span {
         private String message;
         private String stacktrace;
     }
+
+    public enum READINESS {
+        WARM,
+        COLD
+    }
 }

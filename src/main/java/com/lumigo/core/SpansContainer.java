@@ -21,7 +21,6 @@ public class SpansContainer {
     private static final String AMZN_TRACE_ID = "_X_AMZN_TRACE_ID";
     private static final String FUNCTION_SPAN_TYPE = "function";
     private static final String HTTP_SPAN_TYPE = "http";
-    private static final String WARM_READINESS = "warm";
 
     private Span baseSpan;
     private Span startFunctionSpan;
@@ -82,7 +81,7 @@ public class SpansContainer {
                                         .logStreamName(context.getLogStreamName())
                                         .build())
                         .type(FUNCTION_SPAN_TYPE)
-                        .readiness(WARM_READINESS)
+                        .readiness(AwsUtils.getFunctionReadiness())
                         .envs(
                                 Configuration.getInstance().isLumigoVerboseMode()
                                         ? StringUtils.getMaxSizeString(

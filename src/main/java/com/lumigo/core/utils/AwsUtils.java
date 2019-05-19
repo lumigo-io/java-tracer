@@ -3,6 +3,8 @@ package com.lumigo.core.utils;
 import com.amazonaws.services.lambda.runtime.events.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.lumigo.models.Span;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.Data;
@@ -10,6 +12,8 @@ import lombok.NoArgsConstructor;
 import org.pmw.tinylog.Logger;
 
 public class AwsUtils {
+
+    private static final String COLD_START_KEY = "COLD_START_KEY";
 
     /**
      * @param arn an arn of the with the format arn:aws:lambda:{region}:{account}:function:{name}
@@ -177,5 +181,14 @@ public class AwsUtils {
         private String resource;
         private String api;
         private String stage;
+    }
+
+    public static String getFunctionReadiness() {
+        if (System.getProperty(COLD_START_KEY) != null) {
+            return Span.READINESS.WARM.name().toLowerCase(Locale.ENGLISH);
+        } else {
+            System.setProperty(COLD_START_KEY, "false");
+            return Span.READINESS.COLD.name().toLowerCase(Locale.ENGLISH);
+        }
     }
 }
