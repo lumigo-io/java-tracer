@@ -398,7 +398,8 @@ class LumigoRequestHandlerTest {
                                         includeRiggeredBy
                                                 ? "{\"triggeredBy\":\"kinesis\",\"arn\":\"arn\"}"
                                                 : null)
-                                .logStreamName("2019/05/12/[$LATEST]7f67fc1238a941749d8126be19f0cdc6")
+                                .logStreamName(
+                                        "2019/05/12/[$LATEST]7f67fc1238a941749d8126be19f0cdc6")
                                 .logGroupName("/aws/lambda/mocked_function_name")
                                 .build())
                 .readiness("warm")
@@ -433,7 +434,8 @@ class LumigoRequestHandlerTest {
                                         triggerBy
                                                 ? "{\"triggeredBy\":\"kinesis\",\"arn\":\"arn\"}"
                                                 : null)
-                                .logStreamName("2019/05/12/[$LATEST]7f67fc1238a941749d8126be19f0cdc6")
+                                .logStreamName(
+                                        "2019/05/12/[$LATEST]7f67fc1238a941749d8126be19f0cdc6")
                                 .logGroupName("/aws/lambda/mocked_function_name")
                                 .build())
                 .readiness("warm")
