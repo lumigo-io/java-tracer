@@ -81,7 +81,7 @@ public class SpansContainer {
                                         .logStreamName(context.getLogStreamName())
                                         .build())
                         .type(FUNCTION_SPAN_TYPE)
-                        .readiness(AwsUtils.getFunctionReadiness())
+                        .readiness(AwsUtils.getFunctionReadiness().toString())
                         .envs(
                                 Configuration.getInstance().isLumigoVerboseMode()
                                         ? StringUtils.getMaxSizeString(

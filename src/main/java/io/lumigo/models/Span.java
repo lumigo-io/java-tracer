@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.Locale;
+
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Data(staticConstructor = "of")
@@ -67,6 +69,10 @@ public class Span {
 
     public enum READINESS {
         WARM,
-        COLD
+        COLD;
+
+        public String toString() {
+            return name().toLowerCase(Locale.ENGLISH);
+        }
     }
 }

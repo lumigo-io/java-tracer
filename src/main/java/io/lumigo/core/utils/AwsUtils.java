@@ -183,12 +183,12 @@ public class AwsUtils {
         private String stage;
     }
 
-    public static String getFunctionReadiness() {
+    public static Span.READINESS getFunctionReadiness() {
         if (System.getProperty(COLD_START_KEY) != null) {
-            return Span.READINESS.WARM.name().toLowerCase(Locale.ENGLISH);
+            return Span.READINESS.WARM;
         } else {
             System.setProperty(COLD_START_KEY, "false");
-            return Span.READINESS.COLD.name().toLowerCase(Locale.ENGLISH);
+            return Span.READINESS.COLD;
         }
     }
 }
