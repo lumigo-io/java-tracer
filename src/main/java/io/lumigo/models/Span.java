@@ -1,11 +1,10 @@
 package io.lumigo.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Locale;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-
-import java.util.Locale;
 
 @AllArgsConstructor
 @Builder(toBuilder = true)

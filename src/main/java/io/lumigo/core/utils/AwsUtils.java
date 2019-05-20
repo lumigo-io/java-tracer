@@ -4,7 +4,6 @@ import com.amazonaws.services.lambda.runtime.events.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.lumigo.models.Span;
-import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.Data;
