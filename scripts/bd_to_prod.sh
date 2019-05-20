@@ -30,8 +30,8 @@ sudo pip install --upgrade bumpversion
 bumpversion patch --message "{current_version} → {new_version}. Changes: ${changes}"
 
     echo "Uploading lumigo java tracer to maven central repository"
-sudo cp -rf maven/settings.xml /usr/share/maven/conf
-mvn clean deploy
+#sudo cp -rf maven/settings.xml /usr/share/maven/conf
+#mvn clean deploy
 
 echo "Create release tag"
 push_tags
