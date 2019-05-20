@@ -30,7 +30,7 @@ sudo pip install --upgrade bumpversion
 bumpversion patch --message "{current_version} → {new_version}. Changes: ${changes}"
 
 echo "Uploading to maven repository to central repository"
-cp ../maven/settings.xml /usr/share/maven/conf
+sudo cp -rf ../maven/settings.xml /usr/share/maven/conf
 mvn clean deploy
 
 echo "Create release tag"
