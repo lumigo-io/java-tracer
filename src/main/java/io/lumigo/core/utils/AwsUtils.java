@@ -182,7 +182,7 @@ public class AwsUtils {
         private String stage;
     }
 
-    public static Span.READINESS getFunctionReadiness() {
+    public static synchronized Span.READINESS getFunctionReadiness() {
         if (System.getProperty(COLD_START_KEY) != null) {
             return Span.READINESS.WARM;
         } else {
