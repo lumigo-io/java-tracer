@@ -103,6 +103,9 @@
             <artifactId>aws-java-sdk-dynamodb</artifactId>
             <version>1.11.551</version>
         </dependency>
+
+
+        <!-- Tracer dependencies -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
@@ -114,8 +117,6 @@
             <artifactId>okhttp</artifactId>
             <version>3.14.1</version>
         </dependency>
-
-        <!-- Tracer dependencies -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
