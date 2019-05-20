@@ -9,7 +9,6 @@ import io.lumigo.core.utils.TimeMeasure;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
 import lombok.Setter;
 import org.pmw.tinylog.Logger;
 

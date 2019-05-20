@@ -1,12 +1,11 @@
 package io.lumigo.core.network;
 
 import io.lumigo.core.configuration.Configuration;
+import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.models.Span;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-
-import io.lumigo.core.utils.JsonUtils;
 import okhttp3.*;
 import org.pmw.tinylog.Logger;
 

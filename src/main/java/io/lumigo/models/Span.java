@@ -41,7 +41,6 @@ public class Span {
         private String triggeredBy;
     }
 
-
     @AllArgsConstructor
     @Builder(toBuilder = true)
     @Data(staticConstructor = "of")

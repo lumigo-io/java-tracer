@@ -7,7 +7,6 @@ import io.lumigo.core.utils.AwsUtils;
 import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.core.utils.StringUtils;
 import io.lumigo.models.Span;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.LinkedList;

@@ -4,7 +4,6 @@ import io.lumigo.core.utils.EnvUtil;
 import io.lumigo.handlers.LumigoConfiguration;
 import java.time.Duration;
 import java.util.Locale;
-
 import lombok.Setter;
 import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Level;

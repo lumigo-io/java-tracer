@@ -18,7 +18,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -87,10 +86,8 @@ class LumigoRequestHandlerTest {
     }
 
     @Mock Context context;
-    @Mock
-    EnvUtil envUtil;
-    @Mock
-    Reporter reporter;
+    @Mock EnvUtil envUtil;
+    @Mock Reporter reporter;
     private Map<String, String> env = new HashMap<>();
     private KinesisEvent kinesisEvent;
 
