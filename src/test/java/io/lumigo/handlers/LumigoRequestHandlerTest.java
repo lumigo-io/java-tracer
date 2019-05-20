@@ -1,5 +1,6 @@
 package io.lumigo.handlers;
 
+import static io.lumigo.core.utils.AwsUtils.COLD_START_KEY;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -103,6 +104,7 @@ class LumigoRequestHandlerTest {
         kinesisEvent.setRecords(Collections.singletonList(record));
 
         LumigoConfiguration.builder().build().init();
+        System.clearProperty(COLD_START_KEY);
     }
 
     private void mockContext() {
@@ -401,7 +403,7 @@ class LumigoRequestHandlerTest {
                                         "2019/05/12/[$LATEST]7f67fc1238a941749d8126be19f0cdc6")
                                 .logGroupName("/aws/lambda/mocked_function_name")
                                 .build())
-                .readiness("warm")
+                .readiness(Span.READINESS.COLD.name().toLowerCase())
                 .build();
     }
 
@@ -437,7 +439,7 @@ class LumigoRequestHandlerTest {
                                         "2019/05/12/[$LATEST]7f67fc1238a941749d8126be19f0cdc6")
                                 .logGroupName("/aws/lambda/mocked_function_name")
                                 .build())
-                .readiness("warm")
+                .readiness(Span.READINESS.COLD.name().toLowerCase())
                 .return_value(
                         returnValue != null ? JsonUtils.getObjectAsJsonString(returnValue) : null)
                 .error(
