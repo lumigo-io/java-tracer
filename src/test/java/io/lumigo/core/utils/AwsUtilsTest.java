@@ -69,6 +69,11 @@ class AwsUtilsTest {
     }
 
     @Test
+    void test_extractTriggeredByFromEvent_null() {
+        assertNull(AwsUtils.extractTriggeredByFromEvent(null));
+    }
+
+    @Test
     void test_extractTriggeredByFromEvent_s3() throws JSONException {
         JSONAssert.assertEquals(
                 "{\"triggeredBy\": \"s3\", \"arn\": \"s3-arn\"}",

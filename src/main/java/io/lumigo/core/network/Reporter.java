@@ -6,6 +6,7 @@ import io.lumigo.models.Span;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import okhttp3.*;
 import org.pmw.tinylog.Logger;
 
@@ -24,8 +25,9 @@ public class Reporter {
     }
 
     public void reportSpans(List<Span> spans) throws IOException {
+        long time = System.nanoTime();
         String spansAsString = JsonUtils.getObjectAsJsonString(spans);
-        Logger.info("Reporting the spans: {}", spansAsString);
+        Logger.debug("Reporting the spans: {}", spansAsString);
 
         if (Configuration.getInstance().isAwsEnvironment()) {
             RequestBody body =
@@ -39,7 +41,11 @@ public class Reporter {
 
             client.newCall(request).execute();
 
-            Logger.debug("{} Spans sent successfully", spans.size());
+            Logger.info(
+                    "Took: {} milliseconds to send {} Spans to URL: {}",
+                    TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - time),
+                    spans.size(),
+                    Configuration.getInstance().getLumigoEdge());
         }
     }
 }

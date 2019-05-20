@@ -29,7 +29,7 @@ changes=$(git log $(git describe --tags --abbrev=0)..HEAD --oneline)
 sudo pip install --upgrade bumpversion
 bumpversion patch --message "{current_version} → {new_version}. Changes: ${changes}"
 
-echo "Uploading to maven repository to central repository"
+    echo "Uploading lumigo java tracer to maven central repository"
 sudo cp -rf ../maven/settings.xml /usr/share/maven/conf
 mvn clean deploy
 
