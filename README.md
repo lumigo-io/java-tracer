@@ -17,7 +17,7 @@ Find the latest version here (the format of the version will be n.n.n):
 
 # Wrapping your Lambda
 * Wrap your lambda function using by extending one of the next classes `LumigoRequestHandler` or `LumigoRequestStreamHandler`
-```
+```java
 class MyFunction extends LumigoRequestHandler<String, String> {
 
         @Override
@@ -35,7 +35,7 @@ There are 2 way to pass configuration properties
     Adding `LUMIGO_TRACER_TOKEN` environment variables
 
 ### Static code initiation
-```
+```java
 class MyFunction extends LumigoRequestHandler<String, String> {
 
         static{
