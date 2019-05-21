@@ -33,9 +33,9 @@ echo "Override maven settings"
 sudo cp -rf maven/settings.xml /usr/share/maven/conf
 echo "Import gpg key"
 export GPG_TTY=$(tty)
-echo -e "$GPG_KEY" | gpg --import
+echo -e "$GPG_KEY" | gpg --import --passphrase "$GPG_PASSPHRASE" --pinentry-mode loopback
 echo "Uploading lumigo java tracer to maven central repository"
-mvn clean deploy
+mvn nexus-staging:release
 
 echo "Create release tag"
 push_tags
