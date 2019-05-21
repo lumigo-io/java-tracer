@@ -55,7 +55,8 @@ class LumigoRequestHandlerTest {
     static class HandlerWithHttpCall extends LumigoRequestHandler<KinesisEvent, String> {
         @Override
         public String doHandleRequest(KinesisEvent kinesisEvent, Context context) {
-            AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard().withRegion("us-west-2").build();
+            AmazonDynamoDB client =
+                    AmazonDynamoDBClientBuilder.standard().withRegion("us-west-2").build();
             DynamoDB dynamoDB = new DynamoDB(client);
 
             try {
