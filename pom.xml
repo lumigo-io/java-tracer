@@ -219,6 +219,7 @@
                 <version>2.22.2</version>
                 <configuration>
                     <useSystemClassLoader>false</useSystemClassLoader>
+                    <runOrder>alphabetical</runOrder>
                 </configuration>
             </plugin>
             <plugin>
