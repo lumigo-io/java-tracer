@@ -32,6 +32,7 @@ bumpversion patch --message "{current_version} → {new_version}. Changes: ${cha
 echo "Override maven settings"
 sudo cp -rf maven/settings.xml /usr/share/maven/conf
 echo "Import gpg key"
+export GPG_TTY=$(tty)
 echo -e "$GPG_KEY" | gpg --import
 echo "Uploading lumigo java tracer to maven central repository"
 mvn clean deploy
