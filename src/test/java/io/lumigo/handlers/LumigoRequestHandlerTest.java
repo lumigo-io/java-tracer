@@ -210,29 +210,35 @@ class LumigoRequestHandlerTest {
         verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture());
         verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture());
 
-        HttpSpan s = HttpSpan.builder()
-                .id("3n2783hf7823hdui32")
-                .type("http")
-                .transactionId("3")
-                .account("1111")
-                .region("us-west-2")
-                .token("test-token")
-                .info(HttpSpan.Info.builder()
-                        .httpInfo(HttpSpan.HttpInfo.builder()
-                                .host("dynamodb.us-west-2.amazonaws.com")
-                                .request(HttpSpan.HttpData.builder()
-                                        .headers("")
+        HttpSpan s =
+                HttpSpan.builder()
+                        .id("3n2783hf7823hdui32")
+                        .type("http")
+                        .transactionId("3")
+                        .account("1111")
+                        .region("us-west-2")
+                        .token("test-token")
+                        .info(
+                                HttpSpan.Info.builder()
+                                        .httpInfo(
+                                                HttpSpan.HttpInfo.builder()
+                                                        .host("dynamodb.us-west-2.amazonaws.com")
+                                                        .request(
+                                                                HttpSpan.HttpData.builder()
+                                                                        .headers("")
+                                                                        .build())
+                                                        .build())
                                         .build())
-                                .build())
-                        .build())
-                .build();
+                        .build();
         JSONAssert.assertEquals(
                 JsonUtils.getObjectAsJsonString(s),
-                JsonUtils.getObjectAsJsonString(argumentCaptorAllSpans.getAllValues().get(0).get(1)),
+                JsonUtils.getObjectAsJsonString(
+                        argumentCaptorAllSpans.getAllValues().get(0).get(1)),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
                         new Customization("started", (o1, o2) -> o2 != null),
-                        new Customization("info.httpInfo.request.headers", (o1, o2) -> o2 != null)));
+                        new Customization(
+                                "info.httpInfo.request.headers", (o1, o2) -> o2 != null)));
     }
 
     @Test

@@ -1,6 +1,7 @@
 package io.lumigo.core.hooks;
 
 import io.lumigo.core.SpansContainer;
+import java.net.URI;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.ByteBuddyAgent;
 import net.bytebuddy.dynamic.loading.ClassReloadingStrategy;
@@ -13,8 +14,6 @@ import org.apache.http.client.utils.URIUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.pmw.tinylog.Logger;
 
-import java.net.URI;
-
 public class Hooker {
     public static boolean hookRequests() {
         try {
@@ -25,7 +24,8 @@ public class Hooker {
                     .method(ElementMatchers.named("determineTarget"))
                     .intercept(MethodDelegation.to(RequestHooker.class))
                     .make()
-                    .load(CloseableHttpClient.class.getClassLoader(),
+                    .load(
+                            CloseableHttpClient.class.getClassLoader(),
                             ClassReloadingStrategy.fromInstalledAgent())
                     .getLoaded();
 
@@ -37,7 +37,8 @@ public class Hooker {
     }
 
     public static class RequestHooker {
-        public static HttpHost determineTarget(HttpUriRequest request) throws ClientProtocolException {
+        public static HttpHost determineTarget(HttpUriRequest request)
+                throws ClientProtocolException {
             try {
                 SpansContainer.getInstance().addHttpSpan(request.getURI(), request.getAllHeaders());
             } catch (Exception e) {
@@ -49,19 +50,20 @@ public class Hooker {
         /**
          * This is the original code of CloseableHttpClient#determineTarget.
          *
-         * FIND A WAY TO DO THAT BETTER!
+         * <p>FIND A WAY TO DO THAT BETTER!
          */
-        private static HttpHost originalDetermineTarget(HttpUriRequest request) throws ClientProtocolException {
+        private static HttpHost originalDetermineTarget(HttpUriRequest request)
+                throws ClientProtocolException {
             HttpHost target = null;
             URI requestURI = request.getURI();
             if (requestURI.isAbsolute()) {
                 target = URIUtils.extractHost(requestURI);
                 if (target == null) {
-                    throw new ClientProtocolException("URI does not specify a valid host name: " + requestURI);
+                    throw new ClientProtocolException(
+                            "URI does not specify a valid host name: " + requestURI);
                 }
             }
             return target;
         }
     }
-
 }

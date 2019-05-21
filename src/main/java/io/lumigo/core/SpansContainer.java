@@ -2,20 +2,17 @@ package io.lumigo.core;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.sun.tools.javac.util.ArrayUtils;
 import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.utils.AwsUtils;
 import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.core.utils.StringUtils;
 import io.lumigo.models.HttpSpan;
 import io.lumigo.models.Span;
-import org.apache.http.Header;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
 import java.util.*;
-import java.util.stream.Collectors;
+import org.apache.http.Header;
 
 public class SpansContainer {
 
@@ -181,22 +178,29 @@ public class SpansContainer {
             headersMap.put(h.getName(), h.getValue());
         }
 
-        httpSpans.add(HttpSpan.builder()
-                .id(baseSpan.getId())
-                .started(System.currentTimeMillis())
-                .transactionId(baseSpan.getTransactionId())
-                .account(baseSpan.getAccount())
-                .region(baseSpan.getRegion())
-                .token(baseSpan.getToken())
-                .type(HTTP_SPAN_TYPE)
-                .info(HttpSpan.Info.builder()
-                        .httpInfo(HttpSpan.HttpInfo.builder()
-                                .host(uri.getHost())
-                                .request(HttpSpan.HttpData.builder()
-                                        .headers(JsonUtils.getObjectAsJsonString(headersMap))
+        httpSpans.add(
+                HttpSpan.builder()
+                        .id(baseSpan.getId())
+                        .started(System.currentTimeMillis())
+                        .transactionId(baseSpan.getTransactionId())
+                        .account(baseSpan.getAccount())
+                        .region(baseSpan.getRegion())
+                        .token(baseSpan.getToken())
+                        .type(HTTP_SPAN_TYPE)
+                        .info(
+                                HttpSpan.Info.builder()
+                                        .httpInfo(
+                                                HttpSpan.HttpInfo.builder()
+                                                        .host(uri.getHost())
+                                                        .request(
+                                                                HttpSpan.HttpData.builder()
+                                                                        .headers(
+                                                                                JsonUtils
+                                                                                        .getObjectAsJsonString(
+                                                                                                headersMap))
+                                                                        .build())
+                                                        .build())
                                         .build())
-                                .build())
-                        .build())
-                .build());
+                        .build());
     }
 }
