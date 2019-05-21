@@ -16,7 +16,7 @@ Include lumigo java tracer dependency, for [Maven](https://maven.apache.org) pro
 Find the latest version here (the format of the version will be n.n.n):
 
 # Wrapping your Lambda
-* Wrap your lambda function using by extending one of the next classes `LumigoRequestHandler` or `LumigoRequestStreamHandler`
+* Wrap your lambda function by extending one of the next classes `LumigoRequestHandler` or `LumigoRequestStreamHandler`
 ```java
 class MyFunction extends LumigoRequestHandler<String, String> {
 
