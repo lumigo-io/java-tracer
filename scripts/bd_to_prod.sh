@@ -29,10 +29,10 @@ changes=$(git log $(git describe --tags --abbrev=0)..HEAD --oneline)
 sudo pip install --upgrade bumpversion
 bumpversion patch --message "{current_version} → {new_version}. Changes: ${changes}"
 
-echo "Override maven settings.xml"
+echo "Override maven settings"
 sudo cp -rf maven/settings.xml /usr/share/maven/conf
-echo "Import gpg key"
-sudo echo -e "$GPG_KEY" | gpg --import
+echo "Update gpg key"
+echo -e "$GPG_KEY" | gpg --import
 echo "Uploading lumigo java tracer to maven central repository"
 mvn clean deploy
 
