@@ -24,7 +24,7 @@ public class Reporter {
         reportSpans(Collections.singletonList(span));
     }
 
-    public void reportSpans(List<Span> spans) throws IOException {
+    public void reportSpans(List<Object> spans) throws IOException {
         long time = System.nanoTime();
         String spansAsString = JsonUtils.getObjectAsJsonString(spans);
         Logger.debug("Reporting the spans: {}", spansAsString);

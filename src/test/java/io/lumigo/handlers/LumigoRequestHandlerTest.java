@@ -4,6 +4,11 @@ import static io.lumigo.core.utils.AwsUtils.COLD_START_KEY;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
+import com.amazonaws.services.dynamodbv2.document.Item;
+import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -11,6 +16,7 @@ import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.network.Reporter;
 import io.lumigo.core.utils.EnvUtil;
 import io.lumigo.core.utils.JsonUtils;
+import io.lumigo.models.HttpSpan;
 import io.lumigo.models.Span;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,6 +49,24 @@ class LumigoRequestHandlerTest {
         @Override
         public String doHandleRequest(KinesisEvent kinesisEvent, Context context) {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    static class HandlerWithHttpCall extends LumigoRequestHandler<KinesisEvent, String> {
+        @Override
+        public String doHandleRequest(KinesisEvent kinesisEvent, Context context) {
+            AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard().build();
+            DynamoDB dynamoDB = new DynamoDB(client);
+
+            try {
+                Table table = dynamoDB.getTable("abbbbb");
+                Item item = new Item().withPrimaryKey("key", 1).withString("a", "b");
+                table.putItem(item);
+            } catch (RuntimeException e) {
+                // do nothing
+            }
+
+            return "Response";
         }
     }
 
@@ -170,6 +194,45 @@ class LumigoRequestHandlerTest {
                         JSONCompareMode.LENIENT,
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
+    }
+
+    @Test
+    public void LumigoRequestHandler_happy_flow_hooking() throws Exception {
+        HandlerWithHttpCall handler = new HandlerWithHttpCall();
+        handler.setEnvUtil(envUtil);
+        handler.setReporter(reporter);
+        Configuration.getInstance().setEnvUtil(envUtil);
+
+        handler.handleRequest(kinesisEvent, context);
+
+        ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture());
+
+        HttpSpan s = HttpSpan.builder()
+                .id("3n2783hf7823hdui32")
+                .type("http")
+                .transactionId("3")
+                .account("1111")
+                .region("us-west-2")
+                .token("test-token")
+                .info(HttpSpan.Info.builder()
+                        .httpInfo(HttpSpan.HttpInfo.builder()
+                                .host("dynamodb.us-west-2.amazonaws.com")
+                                .request(HttpSpan.HttpData.builder()
+                                        .headers("")
+                                        .build())
+                                .build())
+                        .build())
+                .build();
+        JSONAssert.assertEquals(
+                JsonUtils.getObjectAsJsonString(s),
+                JsonUtils.getObjectAsJsonString(argumentCaptorAllSpans.getAllValues().get(0).get(1)),
+                new CustomComparator(
+                        JSONCompareMode.LENIENT,
+                        new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("info.httpInfo.request.headers", (o1, o2) -> o2 != null)));
     }
 
     @Test

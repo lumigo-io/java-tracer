@@ -2,16 +2,20 @@ package io.lumigo.core;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.sun.tools.javac.util.ArrayUtils;
 import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.utils.AwsUtils;
 import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.core.utils.StringUtils;
+import io.lumigo.models.HttpSpan;
 import io.lumigo.models.Span;
+import org.apache.http.Header;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.net.URI;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SpansContainer {
 
@@ -25,7 +29,7 @@ public class SpansContainer {
     private Span baseSpan;
     private Span startFunctionSpan;
     private Span endFunctionSpan;
-    private List<Span> httpSpans = new LinkedList<>();
+    private List<HttpSpan> httpSpans = new LinkedList<>();
 
     private static final SpansContainer ourInstance = new SpansContainer();
 
@@ -149,10 +153,10 @@ public class SpansContainer {
         return startFunctionSpan;
     }
 
-    public List<Span> getAllCollectedSpans() {
-        List<Span> spans = new LinkedList<>();
-        spans.addAll(httpSpans);
+    public List<Object> getAllCollectedSpans() {
+        List<Object> spans = new LinkedList<>();
         spans.add(endFunctionSpan);
+        spans.addAll(httpSpans);
         return spans;
     }
 
@@ -160,7 +164,7 @@ public class SpansContainer {
         return endFunctionSpan;
     }
 
-    public List<Span> getHttpSpans() {
+    public List<HttpSpan> getHttpSpans() {
         return httpSpans;
     }
 
@@ -169,5 +173,30 @@ public class SpansContainer {
         PrintWriter pw = new PrintWriter(sw, true);
         throwable.printStackTrace(pw);
         return sw.getBuffer().toString();
+    }
+
+    public void addHttpSpan(URI uri, Header[] allHeaders) throws Exception {
+        Map<String, String> headersMap = new HashMap<>();
+        for (Header h : allHeaders) {
+            headersMap.put(h.getName(), h.getValue());
+        }
+
+        httpSpans.add(HttpSpan.builder()
+                .id(baseSpan.getId())
+                .started(System.currentTimeMillis())
+                .transactionId(baseSpan.getTransactionId())
+                .account(baseSpan.getAccount())
+                .region(baseSpan.getRegion())
+                .token(baseSpan.getToken())
+                .type(HTTP_SPAN_TYPE)
+                .info(HttpSpan.Info.builder()
+                        .httpInfo(HttpSpan.HttpInfo.builder()
+                                .host(uri.getHost())
+                                .request(HttpSpan.HttpData.builder()
+                                        .headers(JsonUtils.getObjectAsJsonString(headersMap))
+                                        .build())
+                                .build())
+                        .build())
+                .build());
     }
 }
