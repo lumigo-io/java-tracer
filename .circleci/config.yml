@@ -121,4 +121,6 @@ jobs:
       - install_java
       - checkout_utils
       - checkout_code
+      - run: mvn clean install
+      - run: bash <(curl -s https://codecov.io/bash)
       - run: ./scripts/bd_to_prod.sh
