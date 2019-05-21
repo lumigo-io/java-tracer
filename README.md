@@ -18,12 +18,14 @@ Find the latest version here (the format of the version will be n.n.n):
 # Wrapping your Lambda
 * Wrap your lambda function by extending one of the next classes `LumigoRequestHandler` or `LumigoRequestStreamHandler`
 ```java
-class MyFunction extends LumigoRequestHandler<String, String> {
+class MyFunction extends LumigoRequestHandler<Map<String,String>, Map<String,String>> {
 
         @Override
-        public String doHandleRequest(String input, Context context) {
+        public String doHandleRequest(Map<String,String> input, Context context) {
             //Your Lambda code
-            return "Response";
+            Map<String,String> res = new HashMap<>();
+            res.put("Response", "success");
+            return res;
         }
     }
 ```
@@ -36,16 +38,18 @@ There are 2 way to pass configuration properties
 
 ### Static code initiation
 ```java
-class MyFunction extends LumigoRequestHandler<String, String> {
+class MyFunction extends LumigoRequestHandler<Map<String,String>, Map<String,String>> {
 
         static{
             LumigoConfiguration.builder().token("xxx").build().init();
         }
 
         @Override
-        public String doHandleRequest(String input, Context context) {
+        public String doHandleRequest(Map<String,String> input, Context context) {
             //Your Lambda code
-            return "Response";
+            Map<String,String> res = new HashMap<>();
+            res.put("Response", "success");
+            return res;
         }
     }
 ```
