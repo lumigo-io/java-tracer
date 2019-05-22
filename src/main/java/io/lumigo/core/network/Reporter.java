@@ -7,11 +7,14 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import lombok.AccessLevel;
+import lombok.Setter;
 import okhttp3.*;
 import org.pmw.tinylog.Logger;
 
 public class Reporter {
-    private final OkHttpClient client;
+    @Setter(AccessLevel.PACKAGE)
+    private OkHttpClient client;
 
     public Reporter() {
         client =

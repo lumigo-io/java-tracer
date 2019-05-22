@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.lumigo.core.SpansContainer;
 import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.network.Reporter;
 import io.lumigo.core.utils.EnvUtil;
@@ -20,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
@@ -140,8 +142,9 @@ class LumigoRequestHandlerTest {
      *
      * <p>************************************
      */
+    @DisplayName("Create a handler with a response, Lumigo tracer send relevant spans")
     @Test
-    public void LumigoRequestHandler_happy_flow_response() throws Exception {
+    public void LumigoRequestHandler_with_response_happy_flow() throws Exception {
         Handler handler = new Handler();
         handler.setEnvUtil(envUtil);
         handler.setReporter(reporter);
@@ -172,8 +175,10 @@ class LumigoRequestHandlerTest {
                         new Customization("ended", (o1, o2) -> o2 != null)));
     }
 
+    @DisplayName(
+            "Create a handler that throw exception response, Lumigo tracer send relevant spans")
     @Test
-    public void LumigoRequestHandler_happy_flow_error() throws Exception {
+    public void LumigoRequestHandler_with_exception_happy_flow() throws Exception {
         HandlerWithException handler = new HandlerWithException();
         handler.setEnvUtil(envUtil);
         handler.setReporter(reporter);
@@ -207,8 +212,11 @@ class LumigoRequestHandlerTest {
                         new Customization("ended", (o1, o2) -> o2 != null)));
     }
 
+    @DisplayName(
+            "Create a handler that return a response, Lumigo tracer is configuration is inline and tracer send relevant spans")
     @Test
-    public void LumigoRequestHandler_happy_with_inline_configuration() throws Exception {
+    public void LumigoRequestHandler_with_inline_configuration_return_reponse_happy_flow()
+            throws Exception {
         HandlerStaticInit handler = new HandlerStaticInit();
         handler.setEnvUtil(envUtil);
         handler.setReporter(reporter);
@@ -252,6 +260,52 @@ class LumigoRequestHandlerTest {
                         new Customization("ended", (o1, o2) -> o2 != null)));
     }
 
+    @DisplayName(
+            "Create a handler that return a response, Lumigo tracer have exception but customer handler finish successfully")
+    @Test
+    public void LumigoRequestHandler_internal_exception() throws Exception {
+        Handler handler = new Handler();
+        SpansContainer spansContainerMock = Mockito.mock(SpansContainer.class);
+        doThrow(new RuntimeException()).when(spansContainerMock).start();
+        doThrow(new RuntimeException()).when(spansContainerMock).getStartFunctionSpan();
+        doThrow(new RuntimeException()).when(spansContainerMock).end(any());
+        doThrow(new RuntimeException()).when(spansContainerMock).getAllCollectedSpans();
+        handler.setReporter(reporter);
+        handler.setSpansContainer(spansContainerMock);
+        Configuration.getInstance().setEnvUtil(envUtil);
+
+        String response = handler.handleRequest(kinesisEvent, context);
+
+        ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture());
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture());
+        assertEquals("Response", response);
+    }
+
+    @DisplayName(
+            "Create a handler that throw exception, Lumigo tracer have exception but customer handler finish successfully")
+    @Test
+    public void LumigoRequestHandler_internal_exception_with_lambda_exception() throws Exception {
+        HandlerWithException handler = new HandlerWithException();
+        SpansContainer spansContainerMock = Mockito.mock(SpansContainer.class);
+        doThrow(new RuntimeException()).when(spansContainerMock).start();
+        doThrow(new RuntimeException()).when(spansContainerMock).getStartFunctionSpan();
+        doThrow(new RuntimeException()).when(spansContainerMock).endWithException(any());
+        doThrow(new RuntimeException()).when(spansContainerMock).getAllCollectedSpans();
+        handler.setReporter(reporter);
+        handler.setSpansContainer(spansContainerMock);
+        Configuration.getInstance().setEnvUtil(envUtil);
+
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> handler.handleRequest(kinesisEvent, context));
+
+        ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture());
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture());
+    }
     /**
      * *************************************
      *
@@ -259,6 +313,7 @@ class LumigoRequestHandlerTest {
      *
      * <p>************************************
      */
+    @DisplayName("Create a handler with output stream, Lumigo tracer send spans successfully")
     @Test
     public void LumigoRequestStreamHandler_happy_flow_response() throws Exception {
         HandlerStream handler = new HandlerStream();
@@ -292,6 +347,7 @@ class LumigoRequestHandlerTest {
                         new Customization("ended", (o1, o2) -> o2 != null)));
     }
 
+    @DisplayName("Create a handler that throw exception, Lumigo tracer send spans successfully")
     @Test
     public void LumigoRequestStreamHandler_happy_flow_error() throws Exception {
         HandlerStreamWithException handler = new HandlerStreamWithException();
@@ -331,6 +387,8 @@ class LumigoRequestHandlerTest {
                         new Customization("ended", (o1, o2) -> o2 != null)));
     }
 
+    @DisplayName(
+            "Create a handler with return value, Lumigo tracer configuration inline and tracer send spans successfully")
     @Test
     public void LumigoRequestStreamHandler_happy_with_inline_configuration() throws Exception {
         HandlerStreamStaticInit handler = new HandlerStreamStaticInit();
@@ -374,6 +432,53 @@ class LumigoRequestHandlerTest {
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("error.stacktrace", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
+    }
+
+    @DisplayName(
+            "Create a stream handler that return a response, Lumigo tracer have exceptions but customer handler finish successfully")
+    @Test
+    public void LumigoRequestStreamHandler_internal_exception() throws Exception {
+        HandlerStream handler = new HandlerStream();
+        SpansContainer spansContainerMock = Mockito.mock(SpansContainer.class);
+        doThrow(new RuntimeException()).when(spansContainerMock).start();
+        doThrow(new RuntimeException()).when(spansContainerMock).getStartFunctionSpan();
+        doThrow(new RuntimeException()).when(spansContainerMock).end();
+        doThrow(new RuntimeException()).when(spansContainerMock).getAllCollectedSpans();
+        handler.setReporter(reporter);
+        handler.setSpansContainer(spansContainerMock);
+        Configuration.getInstance().setEnvUtil(envUtil);
+
+        handler.handleRequest(null, null, context);
+
+        ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture());
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture());
+    }
+
+    @DisplayName(
+            "Create a stream handler that throw exception, Lumigo tracer have exceptions but customer handler finish successfully")
+    @Test
+    public void LumigoRequestStreamHandler_internal_exception_with_lambda_exception()
+            throws Exception {
+        HandlerStreamWithException handler = new HandlerStreamWithException();
+        SpansContainer spansContainerMock = Mockito.mock(SpansContainer.class);
+        doThrow(new RuntimeException()).when(spansContainerMock).start();
+        doThrow(new RuntimeException()).when(spansContainerMock).getStartFunctionSpan();
+        doThrow(new RuntimeException()).when(spansContainerMock).endWithException(any());
+        doThrow(new RuntimeException()).when(spansContainerMock).getAllCollectedSpans();
+        handler.setReporter(reporter);
+        handler.setSpansContainer(spansContainerMock);
+        Configuration.getInstance().setEnvUtil(envUtil);
+
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> handler.handleRequest(null, null, context));
+
+        ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture());
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture());
     }
 
     private Span getStartSpan(boolean includeRiggeredBy) throws JsonProcessingException {

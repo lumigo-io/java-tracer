@@ -67,7 +67,7 @@ class ConfigurationTest {
     @Test
     void getLogLevel_default() {
         Configuration.getInstance().setEnvUtil(envUtil);
-        assertEquals(Level.ERROR, Configuration.getInstance().getLogLevel());
+        assertEquals(Level.OFF, Configuration.getInstance().getLogLevel());
     }
 
     @Test
