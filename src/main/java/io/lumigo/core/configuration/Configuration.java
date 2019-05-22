@@ -19,9 +19,11 @@ public class Configuration {
     public static final String DEBUG_KEY = "LUMIGO_DEBUG";
     public static final String REGION_KEY = "AWS_REGION";
     public static final String LUMIGO_VERBOSE = "LUMIGO_VERBOSE";
+    public static final String REPORTER_TIMEOUT = "LUMIGO_REPORTER_TIMEOUT";
 
     private static Configuration instance;
     private LumigoConfiguration inlineConf;
+
     @Setter private EnvUtil envUtil = new EnvUtil();
 
     public static void init(LumigoConfiguration lumigoConfiguration) {
@@ -44,6 +46,8 @@ public class Configuration {
                     .locale(Locale.US)
                     .level(instance.getLogLevel())
                     .maxStackTraceElements(-1)
+                    .formatPattern(
+                            "{date:yyyy-MM-dd HH:mm:ss} {level} [thread-{thread}] {class}.{method}() - {message}")
                     .activate();
         }
         return instance;
@@ -69,7 +73,7 @@ public class Configuration {
         if ("true".equalsIgnoreCase(debug)) {
             return Level.DEBUG;
         }
-        return Level.ERROR;
+        return Level.OFF;
     }
 
     public String getLumigoTracerVersion() {
@@ -77,6 +81,10 @@ public class Configuration {
     }
 
     public Duration getLumigoTimeout() {
+        String timeout = envUtil.getEnv(REPORTER_TIMEOUT);
+        if (timeout != null) {
+            return Duration.ofMillis(Long.parseLong(timeout));
+        }
         return Duration.ofMillis(3000);
     }
 

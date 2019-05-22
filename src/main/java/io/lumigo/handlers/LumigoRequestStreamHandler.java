@@ -8,13 +8,20 @@ import io.lumigo.core.utils.EnvUtil;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import lombok.AccessLevel;
 import lombok.Setter;
 import org.pmw.tinylog.Logger;
 
 public abstract class LumigoRequestStreamHandler implements RequestStreamHandler {
 
-    @Setter private EnvUtil envUtil = new EnvUtil();
-    @Setter private Reporter reporter = new Reporter();
+    @Setter(AccessLevel.MODULE)
+    private EnvUtil envUtil = new EnvUtil();
+
+    @Setter(AccessLevel.MODULE)
+    private Reporter reporter = new Reporter();
+
+    @Setter(AccessLevel.MODULE)
+    private SpansContainer spansContainer = SpansContainer.getInstance();
 
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
@@ -22,33 +29,33 @@ public abstract class LumigoRequestStreamHandler implements RequestStreamHandler
         try {
             Logger.debug("Start {} Lumigo tracer", LumigoRequestStreamHandler.class.getName());
             try {
-                SpansContainer.getInstance().init(envUtil.getEnv(), context, null);
-                SpansContainer.getInstance().start();
+                spansContainer.init(envUtil.getEnv(), context, null);
+                spansContainer.start();
             } catch (Throwable ex) {
                 Logger.error(ex, "Failed to init span container");
             }
             try {
-                reporter.reportSpans(SpansContainer.getInstance().getStartFunctionSpan());
+                reporter.reportSpans(spansContainer.getStartFunctionSpan());
             } catch (Throwable ex) {
                 Logger.error(ex, "Failed to create end span");
             }
             doHandleRequest(inputStream, outputStream, context);
             try {
-                SpansContainer.getInstance().end();
+                spansContainer.end();
             } catch (Throwable ex) {
                 Logger.error(ex, "Failed to create end span");
             }
         } catch (Throwable throwable) {
             Logger.debug("Customer lambda had exception {}", throwable.getClass().getName());
             try {
-                SpansContainer.getInstance().endWithException(throwable);
+                spansContainer.endWithException(throwable);
             } catch (Throwable ex) {
                 Logger.error(ex, "Failed to create end span");
             }
             throw throwable;
         } finally {
             try {
-                reporter.reportSpans(SpansContainer.getInstance().getAllCollectedSpans());
+                reporter.reportSpans(spansContainer.getAllCollectedSpans());
             } catch (Throwable ex) {
                 Logger.error(ex, "Failed to send all spans");
             }
