@@ -46,6 +46,8 @@ public class Configuration {
                     .locale(Locale.US)
                     .level(instance.getLogLevel())
                     .maxStackTraceElements(-1)
+                    .formatPattern(
+                            "{date:yyyy-MM-dd HH:mm:ss} {level} [thread-{thread}] {class}.{method}() - {message}")
                     .activate();
         }
         return instance;
