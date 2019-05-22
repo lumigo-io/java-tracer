@@ -23,6 +23,7 @@ public class Configuration {
 
     private static Configuration instance;
     private LumigoConfiguration inlineConf;
+
     @Setter private EnvUtil envUtil = new EnvUtil();
 
     public static void init(LumigoConfiguration lumigoConfiguration) {

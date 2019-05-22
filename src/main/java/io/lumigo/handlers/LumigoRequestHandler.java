@@ -5,14 +5,20 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import io.lumigo.core.SpansContainer;
 import io.lumigo.core.network.Reporter;
 import io.lumigo.core.utils.EnvUtil;
+import lombok.AccessLevel;
 import lombok.Setter;
 import org.pmw.tinylog.Logger;
 
 public abstract class LumigoRequestHandler<INPUT, OUTPUT> implements RequestHandler<INPUT, OUTPUT> {
 
-    @Setter private EnvUtil envUtil = new EnvUtil();
-    @Setter private Reporter reporter = new Reporter();
-    @Setter private SpansContainer spansContainer = SpansContainer.getInstance();
+    @Setter(AccessLevel.MODULE)
+    private EnvUtil envUtil = new EnvUtil();
+
+    @Setter(AccessLevel.MODULE)
+    private Reporter reporter = new Reporter();
+
+    @Setter(AccessLevel.MODULE)
+    private SpansContainer spansContainer = SpansContainer.getInstance();
 
     @Override
     public OUTPUT handleRequest(INPUT input, Context context) {

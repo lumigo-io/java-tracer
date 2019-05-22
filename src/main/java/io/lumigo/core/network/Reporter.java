@@ -7,10 +7,13 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import lombok.AccessLevel;
+import lombok.Setter;
 import okhttp3.*;
 import org.pmw.tinylog.Logger;
 
 public class Reporter {
+    @Setter(AccessLevel.PACKAGE)
     private OkHttpClient client;
 
     public Reporter() {
@@ -47,9 +50,5 @@ public class Reporter {
                     spans.size(),
                     Configuration.getInstance().getLumigoEdge());
         }
-    }
-
-    public void setClient(OkHttpClient client) {
-        this.client = client;
     }
 }

@@ -8,14 +8,20 @@ import io.lumigo.core.utils.EnvUtil;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import lombok.AccessLevel;
 import lombok.Setter;
 import org.pmw.tinylog.Logger;
 
 public abstract class LumigoRequestStreamHandler implements RequestStreamHandler {
 
-    @Setter private EnvUtil envUtil = new EnvUtil();
-    @Setter private Reporter reporter = new Reporter();
-    @Setter private SpansContainer spansContainer = SpansContainer.getInstance();
+    @Setter(AccessLevel.MODULE)
+    private EnvUtil envUtil = new EnvUtil();
+
+    @Setter(AccessLevel.MODULE)
+    private Reporter reporter = new Reporter();
+
+    @Setter(AccessLevel.MODULE)
+    private SpansContainer spansContainer = SpansContainer.getInstance();
 
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
