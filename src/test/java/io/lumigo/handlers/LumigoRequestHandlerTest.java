@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.lumigo.core.SpansContainer;
 import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.network.Reporter;
 import io.lumigo.core.utils.EnvUtil;
@@ -252,6 +253,48 @@ class LumigoRequestHandlerTest {
                         new Customization("ended", (o1, o2) -> o2 != null)));
     }
 
+    @Test
+    public void LumigoRequestHandler_internal_exception() throws Exception {
+        Handler handler = new Handler();
+        SpansContainer spansContainerMock = Mockito.mock(SpansContainer.class);
+        doThrow(new RuntimeException()).when(spansContainerMock).start();
+        doThrow(new RuntimeException()).when(spansContainerMock).getStartFunctionSpan();
+        doThrow(new RuntimeException()).when(spansContainerMock).end(any());
+        doThrow(new RuntimeException()).when(spansContainerMock).getAllCollectedSpans();
+        handler.setReporter(reporter);
+        handler.setSpansContainer(spansContainerMock);
+        Configuration.getInstance().setEnvUtil(envUtil);
+
+        String response = handler.handleRequest(kinesisEvent, context);
+
+        ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture());
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture());
+        assertEquals("Response", response);
+    }
+
+    @Test
+    public void LumigoRequestHandler_internal_exception_with_lambda_exception() throws Exception {
+        HandlerWithException handler = new HandlerWithException();
+        SpansContainer spansContainerMock = Mockito.mock(SpansContainer.class);
+        doThrow(new RuntimeException()).when(spansContainerMock).start();
+        doThrow(new RuntimeException()).when(spansContainerMock).getStartFunctionSpan();
+        doThrow(new RuntimeException()).when(spansContainerMock).endWithException(any());
+        doThrow(new RuntimeException()).when(spansContainerMock).getAllCollectedSpans();
+        handler.setReporter(reporter);
+        handler.setSpansContainer(spansContainerMock);
+        Configuration.getInstance().setEnvUtil(envUtil);
+
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> handler.handleRequest(kinesisEvent, context));
+
+        ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture());
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture());
+    }
     /**
      * *************************************
      *
@@ -374,6 +417,49 @@ class LumigoRequestHandlerTest {
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("error.stacktrace", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
+    }
+
+    @Test
+    public void LumigoRequestStreamHandler_internal_exception() throws Exception {
+        HandlerStream handler = new HandlerStream();
+        SpansContainer spansContainerMock = Mockito.mock(SpansContainer.class);
+        doThrow(new RuntimeException()).when(spansContainerMock).start();
+        doThrow(new RuntimeException()).when(spansContainerMock).getStartFunctionSpan();
+        doThrow(new RuntimeException()).when(spansContainerMock).end();
+        doThrow(new RuntimeException()).when(spansContainerMock).getAllCollectedSpans();
+        handler.setReporter(reporter);
+        handler.setSpansContainer(spansContainerMock);
+        Configuration.getInstance().setEnvUtil(envUtil);
+
+        handler.handleRequest(null, null, context);
+
+        ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture());
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture());
+    }
+
+    @Test
+    public void LumigoRequestStreamHandler_internal_exception_with_lambda_exception()
+            throws Exception {
+        HandlerStreamWithException handler = new HandlerStreamWithException();
+        SpansContainer spansContainerMock = Mockito.mock(SpansContainer.class);
+        doThrow(new RuntimeException()).when(spansContainerMock).start();
+        doThrow(new RuntimeException()).when(spansContainerMock).getStartFunctionSpan();
+        doThrow(new RuntimeException()).when(spansContainerMock).endWithException(any());
+        doThrow(new RuntimeException()).when(spansContainerMock).getAllCollectedSpans();
+        handler.setReporter(reporter);
+        handler.setSpansContainer(spansContainerMock);
+        Configuration.getInstance().setEnvUtil(envUtil);
+
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> handler.handleRequest(null, null, context));
+
+        ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture());
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture());
     }
 
     private Span getStartSpan(boolean includeRiggeredBy) throws JsonProcessingException {

@@ -11,7 +11,7 @@ import okhttp3.*;
 import org.pmw.tinylog.Logger;
 
 public class Reporter {
-    private final OkHttpClient client;
+    private OkHttpClient client;
 
     public Reporter() {
         client =
@@ -47,5 +47,9 @@ public class Reporter {
                     spans.size(),
                     Configuration.getInstance().getLumigoEdge());
         }
+    }
+
+    public void setClient(OkHttpClient client) {
+        this.client = client;
     }
 }
