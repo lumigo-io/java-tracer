@@ -1,4 +1,4 @@
-package io.lumigo.core.hooks;
+package io.lumigo.core.instrumentation;
 
 import io.lumigo.core.SpansContainer;
 import java.net.URI;
@@ -14,11 +14,10 @@ import org.apache.http.client.utils.URIUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.pmw.tinylog.Logger;
 
-public class Hooker {
+public class ApacheHttpInstrumentation {
     public static boolean hookRequests() {
         try {
             ByteBuddyAgent.install();
-
             new ByteBuddy()
                     .redefine(CloseableHttpClient.class)
                     .method(ElementMatchers.named("determineTarget"))
@@ -28,7 +27,6 @@ public class Hooker {
                             CloseableHttpClient.class.getClassLoader(),
                             ClassReloadingStrategy.fromInstalledAgent())
                     .getLoaded();
-
             return true;
         } catch (Exception e) {
             Logger.error(e, "Exception while hooking the CloseableHttpClient class");

@@ -3,6 +3,7 @@ package io.lumigo.handlers;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import io.lumigo.core.SpansContainer;
+import io.lumigo.core.instrumentation.ApacheHttpInstrumentation;
 import io.lumigo.core.network.Reporter;
 import io.lumigo.core.utils.EnvUtil;
 import java.io.IOException;
@@ -29,6 +30,7 @@ public abstract class LumigoRequestStreamHandler implements RequestStreamHandler
         try {
             Logger.debug("Start {} Lumigo tracer", LumigoRequestStreamHandler.class.getName());
             try {
+                ApacheHttpInstrumentation.hookRequests();
                 spansContainer.init(envUtil.getEnv(), context, null);
                 spansContainer.start();
             } catch (Throwable ex) {

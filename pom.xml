@@ -107,10 +107,14 @@
 
         <!-- Tracer dependencies -->
         <dependency>
+            <groupId>com.ea.agentloader</groupId>
+            <artifactId>ea-agent-loader</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>${jackson.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
