@@ -13,6 +13,7 @@ import org.pmw.tinylog.Logger;
 public class AwsUtils {
 
     public static final String COLD_START_KEY = "LUMIGO_COLD_START_KEY";
+    private static final String TRIGGERED_BY_FALLBACK = "No recognized trigger";
 
     /**
      * @param arn an arn of the with the format arn:aws:lambda:{region}:{account}:function:{name}
@@ -121,7 +122,7 @@ public class AwsUtils {
                 Logger.error(
                         "Failed to found relevant triggered by found for event {} ",
                         event.getClass().getName());
-                return null;
+                return TRIGGERED_BY_FALLBACK;
             }
 
             Logger.info("Found triggered by handler fo event {}", event.getClass().getName());
