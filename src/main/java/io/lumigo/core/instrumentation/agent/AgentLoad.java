@@ -9,6 +9,8 @@ import net.bytebuddy.agent.builder.AgentBuilder;
 
 public class AgentLoad {
 
+    private static boolean firstDeploy = true;
+
     public static void agentmain(String agentArgs, Instrumentation inst) {
         ApacheHttpInstrumentation instrumentation = new ApacheHttpInstrumentation();
         AgentBuilder builder =
@@ -22,6 +24,9 @@ public class AgentLoad {
     }
 
     public static void load() {
-        AgentLoader.loadAgentClass(AgentLoad.class.getName(), null);
+        if (firstDeploy) {
+            AgentLoader.loadAgentClass(AgentLoad.class.getName(), null);
+            firstDeploy = false;
+        }
     }
 }

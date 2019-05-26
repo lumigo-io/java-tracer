@@ -39,14 +39,9 @@ public class ApacheHttpInstrumentation implements LumigoInstrumentationApi {
                         AmazonHttpClientAdvice.class.getName());
     }
 
-    @Override
-    public String packageName() {
-        return "org.apache.http.client";
-    }
-
     public static class AmazonHttpClientAdvice {
 
-        public static Set<Integer> handled = Collections.synchronizedSet(new HashSet<>());
+        public static final Set<Integer> handled = Collections.synchronizedSet(new HashSet<>());
 
         @Advice.OnMethodEnter
         public static void executeEnter(@Advice.Argument(0) final HttpUriRequest request) {

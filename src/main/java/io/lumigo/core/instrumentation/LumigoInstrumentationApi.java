@@ -9,6 +9,4 @@ public interface LumigoInstrumentationApi {
     ElementMatcher<TypeDescription> getTypeMatcher();
 
     AgentBuilder.Transformer.ForAdvice getTransformer();
-
-    String packageName();
 }
