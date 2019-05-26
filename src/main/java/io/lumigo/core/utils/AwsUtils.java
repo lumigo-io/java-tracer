@@ -122,7 +122,7 @@ public class AwsUtils {
                 Logger.error(
                         "Failed to found relevant triggered by found for event {} ",
                         event.getClass().getName());
-                return TRIGGERED_BY_FALLBACK;
+                return null;
             }
 
             Logger.info("Found triggered by handler fo event {}", event.getClass().getName());
@@ -130,7 +130,7 @@ public class AwsUtils {
 
         } catch (RuntimeException | JsonProcessingException e) {
             Logger.error(e, "Failed to extract triggerBy data");
-            return null;
+            return TRIGGERED_BY_FALLBACK;
         }
     }
 
