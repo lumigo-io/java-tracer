@@ -195,7 +195,8 @@ public class AwsUtils {
     /**
      * This function seeks for the value of className in all the super classes of the given object.
      *
-     * We use this [weird] functionality because we prefer to not use directly the classes to avoid big dependencies.
+     * <p>We use this [weird] functionality because we prefer to not use directly the classes to
+     * avoid big dependencies.
      */
     private static boolean instanceofByName(Object event, String className) {
         Class c = event.getClass();
