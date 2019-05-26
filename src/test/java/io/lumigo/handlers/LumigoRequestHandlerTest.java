@@ -324,9 +324,9 @@ class LumigoRequestHandlerTest {
         verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture());
     }
 
-    @DisplayName("Check the kill switch")
+    @DisplayName("Check the kill switch (RequestHandler)")
     @Test
-    public void LumigoRequestHandler_internal_exception_with_kill_switch() throws Exception {
+    public void LumigoRequestHandler_with_kill_switch() {
         Handler handler = new Handler();
         SpansContainer spansContainerMock = Mockito.mock(SpansContainer.class);
         when(envUtil.getEnv("LUMIGO_SWITCH_OFF")).thenReturn("true");
@@ -511,6 +511,20 @@ class LumigoRequestHandlerTest {
         ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
         verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture());
         verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture());
+    }
+
+    @DisplayName("Check the kill switch (StreamHandler))")
+    @Test
+    public void LumigoRequestStreamHandler_with_kill_switch() throws Exception {
+        HandlerStream handler = new HandlerStream();
+        SpansContainer spansContainerMock = Mockito.mock(SpansContainer.class);
+        when(envUtil.getEnv("LUMIGO_SWITCH_OFF")).thenReturn("true");
+        handler.setSpansContainer(spansContainerMock);
+        Configuration.getInstance().setEnvUtil(envUtil);
+
+        handler.handleRequest(null, null, context);
+
+        verify(spansContainerMock, Mockito.times(0)).start();
     }
 
     /**

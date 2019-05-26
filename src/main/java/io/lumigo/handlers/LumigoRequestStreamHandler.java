@@ -3,6 +3,7 @@ package io.lumigo.handlers;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import io.lumigo.core.SpansContainer;
+import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.network.Reporter;
 import io.lumigo.core.utils.EnvUtil;
 import java.io.IOException;
@@ -26,6 +27,10 @@ public abstract class LumigoRequestStreamHandler implements RequestStreamHandler
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
             throws IOException {
+        if (Configuration.getInstance().isKillingSwitchActivated()) {
+            doHandleRequest(inputStream, outputStream, context);
+            return;
+        }
         try {
             Logger.debug("Start {} Lumigo tracer", LumigoRequestStreamHandler.class.getName());
             try {
