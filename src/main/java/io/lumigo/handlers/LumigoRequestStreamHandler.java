@@ -34,15 +34,10 @@ public abstract class LumigoRequestStreamHandler implements RequestStreamHandler
         try {
             Logger.debug("Start {} Lumigo tracer", LumigoRequestStreamHandler.class.getName());
             try {
-                spansContainer.init(envUtil.getEnv(), context, null);
+                spansContainer.init(envUtil.getEnv(), reporter, context, null);
                 spansContainer.start();
             } catch (Throwable ex) {
                 Logger.error(ex, "Failed to init span container");
-            }
-            try {
-                reporter.reportSpans(spansContainer.getStartFunctionSpan());
-            } catch (Throwable ex) {
-                Logger.error(ex, "Failed to create end span");
             }
             doHandleRequest(inputStream, outputStream, context);
             try {
@@ -58,12 +53,6 @@ public abstract class LumigoRequestStreamHandler implements RequestStreamHandler
                 Logger.error(ex, "Failed to create end span");
             }
             throw throwable;
-        } finally {
-            try {
-                reporter.reportSpans(spansContainer.getAllCollectedSpans());
-            } catch (Throwable ex) {
-                Logger.error(ex, "Failed to send all spans");
-            }
         }
     }
 

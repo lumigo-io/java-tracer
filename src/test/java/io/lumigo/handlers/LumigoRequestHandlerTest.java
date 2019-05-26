@@ -166,6 +166,7 @@ class LumigoRequestHandlerTest {
         handler.setEnvUtil(envUtil);
         handler.setReporter(reporter);
         Configuration.getInstance().setEnvUtil(envUtil);
+        when(reporter.reportSpans((Span) any())).thenReturn(999L);
 
         String response = handler.handleRequest(kinesisEvent, context);
 
@@ -182,8 +183,10 @@ class LumigoRequestHandlerTest {
                         JSONCompareMode.LENIENT,
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
+        Span endSpan = getEndSpan("Response", null);
+        endSpan.setReporter_rtt(999L);
         JSONAssert.assertEquals(
-                JsonUtils.getObjectAsJsonString(getEndSpan("Response", null)),
+                JsonUtils.getObjectAsJsonString(endSpan),
                 JsonUtils.getObjectAsJsonString(
                         argumentCaptorAllSpans.getAllValues().get(0).get(0)),
                 new CustomComparator(
@@ -352,6 +355,7 @@ class LumigoRequestHandlerTest {
         handler.setEnvUtil(envUtil);
         handler.setReporter(reporter);
         Configuration.getInstance().setEnvUtil(envUtil);
+        when(reporter.reportSpans((Span) any())).thenReturn(999L);
 
         handler.handleRequest(null, null, context);
 
@@ -370,7 +374,11 @@ class LumigoRequestHandlerTest {
                         new Customization("ended", (o1, o2) -> o2 != null)));
         JSONAssert.assertEquals(
                 JsonUtils.getObjectAsJsonString(
-                        getEndSpan(null, null, false).toBuilder().event(null).build()),
+                        getEndSpan(null, null, false)
+                                .toBuilder()
+                                .event(null)
+                                .reporter_rtt(999L)
+                                .build()),
                 JsonUtils.getObjectAsJsonString(
                         argumentCaptorAllSpans.getAllValues().get(0).get(0)),
                 new CustomComparator(
@@ -409,6 +417,7 @@ class LumigoRequestHandlerTest {
                         getEndSpan(null, new UnsupportedOperationException(), false)
                                 .toBuilder()
                                 .event(null)
+                                .reporter_rtt(0L)
                                 .build()),
                 JsonUtils.getObjectAsJsonString(
                         argumentCaptorAllSpans.getAllValues().get(0).get(0)),
@@ -456,6 +465,7 @@ class LumigoRequestHandlerTest {
                                 .envs(null)
                                 .event(null)
                                 .return_value(null)
+                                .reporter_rtt(0L)
                                 .build()),
                 JsonUtils.getObjectAsJsonString(
                         argumentCaptorAllSpans.getAllValues().get(0).get(0)),
@@ -585,6 +595,7 @@ class LumigoRequestHandlerTest {
                 .envs(JsonUtils.getObjectAsJsonString(env))
                 .region("us-west-2")
                 .token("test-token")
+                .reporter_rtt(0L)
                 .info(
                         Span.Info.builder()
                                 .tracer(Span.Tracer.builder().version("1.0").build())

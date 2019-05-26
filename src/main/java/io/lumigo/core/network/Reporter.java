@@ -23,11 +23,11 @@ public class Reporter {
                         .build();
     }
 
-    public void reportSpans(Span span) throws IOException {
-        reportSpans(Collections.singletonList(span));
+    public long reportSpans(Span span) throws IOException {
+        return reportSpans(Collections.singletonList(span));
     }
 
-    public void reportSpans(List<Span> spans) throws IOException {
+    public long reportSpans(List<Span> spans) throws IOException {
         long time = System.nanoTime();
         String spansAsString = JsonUtils.getObjectAsJsonString(spans);
         Logger.debug("Reporting the spans: {}", spansAsString);
@@ -44,11 +44,14 @@ public class Reporter {
 
             client.newCall(request).execute();
 
+            long duration = System.nanoTime() - time;
             Logger.info(
                     "Took: {} milliseconds to send {} Spans to URL: {}",
-                    TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - time),
+                    TimeUnit.NANOSECONDS.toMillis(duration),
                     spans.size(),
                     Configuration.getInstance().getLumigoEdge());
+            return duration;
         }
+        return 0;
     }
 }

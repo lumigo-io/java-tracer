@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.lumigo.core.network.Reporter;
 import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.models.Span;
 import java.util.HashMap;
@@ -24,6 +25,7 @@ class SpansContainerTest {
     private SpansContainer spansContainer = SpansContainer.getInstance();
 
     @Mock private Context context;
+    @Mock Reporter reporter;
 
     @BeforeEach
     void setUp() {
@@ -35,7 +37,7 @@ class SpansContainerTest {
     @DisplayName("Check that clear SpansContainer state working")
     @Test
     void clear() throws JsonProcessingException {
-        spansContainer.init(createMockedEnv(), context, null);
+        spansContainer.init(createMockedEnv(), reporter, context, null);
         spansContainer.start();
 
         spansContainer.clear();
@@ -46,7 +48,7 @@ class SpansContainerTest {
     @DisplayName("Check that start span include all relevant data")
     @Test
     void createStartSpan() throws Exception {
-        spansContainer.init(createMockedEnv(), context, null);
+        spansContainer.init(createMockedEnv(), reporter, context, null);
         spansContainer.start();
 
         Span actualSpan = spansContainer.getStartFunctionSpan();
@@ -95,7 +97,7 @@ class SpansContainerTest {
     @DisplayName("End span which contains error")
     @Test
     void endWithException() throws Exception {
-        spansContainer.init(createMockedEnv(), context, null);
+        spansContainer.init(createMockedEnv(), reporter, context, null);
         spansContainer.endWithException(new Exception("Error in code"));
 
         Span actualSpan = spansContainer.getEndSpan();
@@ -149,7 +151,7 @@ class SpansContainerTest {
     @DisplayName("End span creation")
     @Test
     void end() throws Exception {
-        spansContainer.init(createMockedEnv(), context, null);
+        spansContainer.init(createMockedEnv(), reporter, context, null);
         spansContainer.end();
 
         Span actualSpan = spansContainer.getEndSpan();
@@ -199,7 +201,7 @@ class SpansContainerTest {
     @DisplayName("End span creation with return value")
     @Test
     void end_with_return_value() throws Exception {
-        spansContainer.init(createMockedEnv(), context, null);
+        spansContainer.init(createMockedEnv(), reporter, context, null);
         spansContainer.end("RESULT");
 
         Span actualSpan = spansContainer.getEndSpan();
