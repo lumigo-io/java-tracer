@@ -1,13 +1,14 @@
 package io.lumigo.core.instrumentation;
 
+import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
-import java.util.Map;
-
-public interface LumigoInstrumentionApi {
+public interface LumigoInstrumentationApi {
 
     ElementMatcher<TypeDescription> getTypeMatcher();
-    Map<ElementMatcher, String> getTransformers();
 
+    AgentBuilder.Transformer.ForAdvice getTransformer();
+
+    String packageName();
 }

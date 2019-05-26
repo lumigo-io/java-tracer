@@ -12,7 +12,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
 import java.util.*;
-import org.apache.http.Header;
 
 public class SpansContainer {
 
@@ -172,12 +171,7 @@ public class SpansContainer {
         return sw.getBuffer().toString();
     }
 
-    public void addHttpSpan(URI uri, Header[] allHeaders) throws Exception {
-        Map<String, String> headersMap = new HashMap<>();
-        for (Header h : allHeaders) {
-            headersMap.put(h.getName(), h.getValue());
-        }
-
+    public void addHttpSpan(URI uri, Map<String, String> headers) throws Exception {
         httpSpans.add(
                 HttpSpan.builder()
                         .id(baseSpan.getId())
@@ -195,9 +189,11 @@ public class SpansContainer {
                                                         .request(
                                                                 HttpSpan.HttpData.builder()
                                                                         .headers(
-                                                                                JsonUtils
-                                                                                        .getObjectAsJsonString(
-                                                                                                headersMap))
+                                                                                StringUtils
+                                                                                        .getMaxSizeString(
+                                                                                                JsonUtils
+                                                                                                        .getObjectAsJsonString(
+                                                                                                                headers)))
                                                                         .build())
                                                         .build())
                                         .build())
