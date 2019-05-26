@@ -3,6 +3,7 @@ package io.lumigo.handlers;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import io.lumigo.core.SpansContainer;
+import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.network.Reporter;
 import io.lumigo.core.utils.EnvUtil;
 import lombok.AccessLevel;
@@ -22,6 +23,9 @@ public abstract class LumigoRequestHandler<INPUT, OUTPUT> implements RequestHand
 
     @Override
     public OUTPUT handleRequest(INPUT input, Context context) {
+        if (Configuration.getInstance().isKillingSwitchActivated()) {
+            return doHandleRequest(input, context);
+        }
         try {
             Logger.debug("Start {} Lumigo tracer", LumigoRequestHandler.class.getName());
             try {

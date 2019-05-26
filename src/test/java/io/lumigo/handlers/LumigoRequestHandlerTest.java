@@ -34,6 +34,13 @@ import org.skyscreamer.jsonassert.comparator.CustomComparator;
 @RunWith(MockitoJUnitRunner.class)
 class LumigoRequestHandlerTest {
 
+    /**
+     * *************************************
+     *
+     * <p>Test Handlers
+     *
+     * <p>************************************
+     */
     static class Handler extends LumigoRequestHandler<KinesisEvent, String> {
         @Override
         public String doHandleRequest(KinesisEvent kinesisEvent, Context context) {
@@ -88,6 +95,13 @@ class LumigoRequestHandlerTest {
                 throws IOException {}
     }
 
+    /**
+     * *************************************
+     *
+     * <p>Setup
+     *
+     * <p>************************************
+     */
     @Mock Context context;
     @Mock EnvUtil envUtil;
     @Mock Reporter reporter;
@@ -120,6 +134,8 @@ class LumigoRequestHandlerTest {
         when(context.getLogGroupName()).thenReturn("/aws/lambda/mocked_function_name");
         when(context.getLogStreamName())
                 .thenReturn("2019/05/12/[$LATEST]7f67fc1238a941749d8126be19f0cdc6");
+
+        when(envUtil.getBooleanEnv(any(), any())).thenCallRealMethod();
     }
 
     private void createMockedEnv() {
@@ -306,6 +322,22 @@ class LumigoRequestHandlerTest {
         verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture());
         verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture());
     }
+
+    @DisplayName("Check the kill switch")
+    @Test
+    public void LumigoRequestHandler_internal_exception_with_kill_switch() throws Exception {
+        Handler handler = new Handler();
+        SpansContainer spansContainerMock = Mockito.mock(SpansContainer.class);
+        when(envUtil.getEnv("LUMIGO_SWITCH_OFF")).thenReturn("true");
+        handler.setSpansContainer(spansContainerMock);
+        Configuration.getInstance().setEnvUtil(envUtil);
+
+        handler.handleRequest(kinesisEvent, context);
+
+        verify(spansContainerMock, Mockito.times(0)).start();
+    }
+
+
     /**
      * *************************************
      *
@@ -481,6 +513,13 @@ class LumigoRequestHandlerTest {
         verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture());
     }
 
+    /**
+     * *************************************
+     *
+     * <p>Utils Functions
+     *
+     * <p>************************************
+     */
     private Span getStartSpan(boolean includeRiggeredBy) throws JsonProcessingException {
         return Span.builder()
                 .name("mocked_function_name")
