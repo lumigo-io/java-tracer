@@ -103,6 +103,7 @@ class LumigoRequestHandlerTest {
      * <p>************************************
      */
     @Mock Context context;
+
     @Mock EnvUtil envUtil;
     @Mock Reporter reporter;
     private Map<String, String> env = new HashMap<>();
@@ -336,7 +337,6 @@ class LumigoRequestHandlerTest {
 
         verify(spansContainerMock, Mockito.times(0)).start();
     }
-
 
     /**
      * *************************************

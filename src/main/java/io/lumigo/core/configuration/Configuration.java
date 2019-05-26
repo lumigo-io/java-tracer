@@ -70,9 +70,7 @@ public class Configuration {
     }
 
     public Level getLogLevel() {
-        return envUtil.getBooleanEnv(DEBUG_KEY, false)
-            ? Level.DEBUG
-            : Level.OFF;
+        return envUtil.getBooleanEnv(DEBUG_KEY, false) ? Level.DEBUG : Level.OFF;
     }
 
     public String getLumigoTracerVersion() {
