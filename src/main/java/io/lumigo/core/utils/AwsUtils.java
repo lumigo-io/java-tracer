@@ -64,7 +64,7 @@ public class AwsUtils {
                 triggeredBy.setTriggeredBy("kinesis");
                 triggeredBy.setArn(
                         ((KinesisAnalyticsStreamsInputPreprocessingEvent) event).getStreamArn());
-            } else if (event instanceof S3Event) {
+            } else if (instanceofByName(event, "S3Event")) {
                 triggeredBy.setTriggeredBy("s3");
                 if (((S3Event) event).getRecords() != null
                         && ((S3Event) event).getRecords().size() > 0) {
@@ -190,5 +190,21 @@ public class AwsUtils {
             System.setProperty(COLD_START_KEY, "false");
             return Span.READINESS.COLD;
         }
+    }
+
+    /**
+     * This function seeks for the value of className in all the super classes of the given object.
+     *
+     * We use this [weird] functionality because we prefer to not use directly the classes to avoid big dependencies.
+     */
+    private static boolean instanceofByName(Object event, String className) {
+        Class c = event.getClass();
+        while (c != null) {
+            if (c.getSimpleName().equals(className)) {
+                return true;
+            }
+            c = c.getSuperclass();
+        }
+        return false;
     }
 }
