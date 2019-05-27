@@ -24,7 +24,7 @@ public class Installer {
                     Logger.error(e, "Fail to attach agent, no instrumentation");
                 }
             }
-        }else{
+        } else {
             Logger.info("Agent installation is skipped because of local running");
         }
     }

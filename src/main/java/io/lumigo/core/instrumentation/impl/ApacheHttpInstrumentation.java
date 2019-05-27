@@ -52,7 +52,7 @@ public class ApacheHttpInstrumentation implements LumigoInstrumentationApi {
                             "Got new response "
                                     + ((HttpResponse) result).getStatusLine().getStatusCode());
                 handled.add(result.hashCode());
-            }else {
+            } else {
                 Logger.warn("Handle request again");
             }
         }

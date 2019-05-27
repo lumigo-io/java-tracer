@@ -12,11 +12,11 @@ import io.lumigo.models.Span;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.pmw.tinylog.Logger;
-import java.net.URI;
 
 public class SpansContainer {
 

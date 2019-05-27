@@ -2,7 +2,6 @@ package io.lumigo.core.network;
 
 import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.utils.JsonUtils;
-import io.lumigo.models.Span;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -23,11 +22,11 @@ public class Reporter {
                         .build();
     }
 
-    public long reportSpans(Span span) throws IOException {
+    public long reportSpans(Object span) throws IOException {
         return reportSpans(Collections.singletonList(span));
     }
 
-    public long reportSpans(List<Span> spans) throws IOException {
+    public long reportSpans(List<Object> spans) throws IOException {
         long time = System.nanoTime();
         String spansAsString = JsonUtils.getObjectAsJsonString(spans);
         Logger.debug("Reporting the spans: {}", spansAsString);
