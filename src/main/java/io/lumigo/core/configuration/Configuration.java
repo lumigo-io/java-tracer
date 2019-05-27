@@ -20,6 +20,7 @@ public class Configuration {
     public static final String REGION_KEY = "AWS_REGION";
     public static final String LUMIGO_VERBOSE = "LUMIGO_VERBOSE";
     public static final String REPORTER_TIMEOUT = "LUMIGO_REPORTER_TIMEOUT";
+    public static final String LUMIGO_KILL_SWITCH = "LUMIGO_SWITCH_OFF";
 
     private static Configuration instance;
     private LumigoConfiguration inlineConf;
@@ -69,11 +70,7 @@ public class Configuration {
     }
 
     public Level getLogLevel() {
-        String debug = envUtil.getEnv(DEBUG_KEY);
-        if ("true".equalsIgnoreCase(debug)) {
-            return Level.DEBUG;
-        }
-        return Level.OFF;
+        return envUtil.getBooleanEnv(DEBUG_KEY, false) ? Level.DEBUG : Level.OFF;
     }
 
     public String getLumigoTracerVersion() {
@@ -97,13 +94,14 @@ public class Configuration {
     }
 
     public boolean isLumigoVerboseMode() {
-        String verbos =
-                inlineConf.getVerbose() != null
-                        ? inlineConf.getVerbose().toString()
-                        : envUtil.getEnv(LUMIGO_VERBOSE);
-        if ("false".equalsIgnoreCase(verbos)) {
-            return false;
-        }
-        return true;
+        return inlineConf.getVerbose() != null
+                ? inlineConf.getVerbose()
+                : envUtil.getBooleanEnv(LUMIGO_VERBOSE, true);
+    }
+
+    public boolean isKillingSwitchActivated() {
+        return inlineConf.getKillSwitch() != null
+                ? inlineConf.getKillSwitch()
+                : envUtil.getBooleanEnv(LUMIGO_KILL_SWITCH, false);
     }
 }

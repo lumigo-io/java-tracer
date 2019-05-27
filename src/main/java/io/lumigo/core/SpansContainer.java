@@ -3,15 +3,20 @@ package io.lumigo.core;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.lumigo.core.configuration.Configuration;
+import io.lumigo.core.network.Reporter;
 import io.lumigo.core.utils.AwsUtils;
 import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.core.utils.StringUtils;
 import io.lumigo.models.HttpSpan;
 import io.lumigo.models.Span;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import org.pmw.tinylog.Logger;
 import java.net.URI;
-import java.util.*;
 
 public class SpansContainer {
 
@@ -24,7 +29,9 @@ public class SpansContainer {
 
     private Span baseSpan;
     private Span startFunctionSpan;
+    private Long rttDuration;
     private Span endFunctionSpan;
+    private Reporter reporter;
     private List<HttpSpan> httpSpans = new LinkedList<>();
 
     private static final SpansContainer ourInstance = new SpansContainer();
@@ -36,15 +43,18 @@ public class SpansContainer {
     public void clear() {
         baseSpan = null;
         startFunctionSpan = null;
+        rttDuration = null;
         endFunctionSpan = null;
+        reporter = null;
         httpSpans = new LinkedList<>();
     }
 
     private SpansContainer() {}
 
-    public void init(Map<String, String> env, Context context, Object event)
+    public void init(Map<String, String> env, Reporter reporter, Context context, Object event)
             throws JsonProcessingException {
         this.clear();
+        this.reporter = reporter;
         String awsTracerId = env.get(AMZN_TRACE_ID);
         this.baseSpan =
                 Span.builder()
@@ -96,53 +106,58 @@ public class SpansContainer {
     }
 
     public void start() {
-
         this.startFunctionSpan =
                 this.baseSpan
                         .toBuilder()
                         .id(this.baseSpan.getId() + "_started")
                         .ended(this.baseSpan.getStarted())
                         .build();
+
+        try {
+            rttDuration = reporter.reportSpans(startFunctionSpan);
+        } catch (Throwable e) {
+            Logger.error(e, "Failed to send start span");
+        }
     }
 
-    public void end(Object response) throws JsonProcessingException {
-
-        this.endFunctionSpan =
+    public void end(Object response) throws IOException {
+        end(
                 this.baseSpan
                         .toBuilder()
-                        .id(this.baseSpan.getId())
-                        .ended(System.currentTimeMillis())
                         .return_value(
                                 Configuration.getInstance().isLumigoVerboseMode()
                                         ? StringUtils.getMaxSizeString(
                                                 JsonUtils.getObjectAsJsonString(response))
                                         : null)
-                        .build();
+                        .build());
     }
 
-    public void endWithException(Throwable e) {
-
-        this.endFunctionSpan =
+    public void endWithException(Throwable e) throws IOException {
+        end(
                 this.baseSpan
                         .toBuilder()
-                        .ended(System.currentTimeMillis())
                         .error(
                                 Span.Error.builder()
                                         .message(e.getMessage())
                                         .type(e.getClass().getName())
                                         .stacktrace(getStackTrace(e))
                                         .build())
-                        .build();
+                        .build());
     }
 
-    public void end() {
+    public void end() throws IOException {
+        end(this.baseSpan);
+    }
 
+    private void end(Span endFunctionSpan) throws IOException {
         this.endFunctionSpan =
-                this.baseSpan
+                endFunctionSpan
                         .toBuilder()
-                        .id(this.baseSpan.getId())
+                        .reporter_rtt(rttDuration)
                         .ended(System.currentTimeMillis())
+                        .id(this.baseSpan.getId())
                         .build();
+        reporter.reportSpans(getAllCollectedSpans());
     }
 
     public Span getStartFunctionSpan() {
@@ -151,8 +166,8 @@ public class SpansContainer {
 
     public List<Object> getAllCollectedSpans() {
         List<Object> spans = new LinkedList<>();
-        spans.add(endFunctionSpan);
         spans.addAll(httpSpans);
+        spans.add(endFunctionSpan);
         return spans;
     }
 
