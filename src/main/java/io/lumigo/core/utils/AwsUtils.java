@@ -13,6 +13,7 @@ import org.pmw.tinylog.Logger;
 public class AwsUtils {
 
     public static final String COLD_START_KEY = "LUMIGO_COLD_START_KEY";
+    private static final String TRIGGERED_BY_FALLBACK = "No recognized trigger";
 
     /**
      * @param arn an arn of the with the format arn:aws:lambda:{region}:{account}:function:{name}
@@ -63,7 +64,7 @@ public class AwsUtils {
                 triggeredBy.setTriggeredBy("kinesis");
                 triggeredBy.setArn(
                         ((KinesisAnalyticsStreamsInputPreprocessingEvent) event).getStreamArn());
-            } else if (event instanceof S3Event) {
+            } else if (instanceofByName(event, "S3Event")) {
                 triggeredBy.setTriggeredBy("s3");
                 if (((S3Event) event).getRecords() != null
                         && ((S3Event) event).getRecords().size() > 0) {
@@ -129,7 +130,7 @@ public class AwsUtils {
 
         } catch (RuntimeException | JsonProcessingException e) {
             Logger.error(e, "Failed to extract triggerBy data");
-            return null;
+            return TRIGGERED_BY_FALLBACK;
         }
     }
 
@@ -189,5 +190,22 @@ public class AwsUtils {
             System.setProperty(COLD_START_KEY, "false");
             return Span.READINESS.COLD;
         }
+    }
+
+    /**
+     * This function seeks for the value of className in all the super classes of the given object.
+     *
+     * <p>We use this [weird] functionality because we prefer to not use directly the classes to
+     * avoid big dependencies.
+     */
+    private static boolean instanceofByName(Object event, String className) {
+        Class c = event.getClass();
+        while (c != null) {
+            if (c.getSimpleName().equals(className)) {
+                return true;
+            }
+            c = c.getSuperclass();
+        }
+        return false;
     }
 }

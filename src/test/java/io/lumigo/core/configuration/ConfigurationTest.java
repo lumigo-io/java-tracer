@@ -1,6 +1,7 @@
 package io.lumigo.core.configuration;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import io.lumigo.core.utils.EnvUtil;
@@ -19,6 +20,7 @@ class ConfigurationTest {
     void setUp() {
         MockitoAnnotations.initMocks(this);
         Configuration.getInstance().init(null);
+        when(envUtil.getBooleanEnv(any(), any())).thenCallRealMethod();
     }
 
     @Test
@@ -87,6 +89,8 @@ class ConfigurationTest {
     @Test
     void isLumigoVerboseMode_default_true() {
         Configuration.getInstance().setEnvUtil(envUtil);
+        when(envUtil.getEnv(any())).thenReturn(null);
+
         assertTrue(Configuration.getInstance().isLumigoVerboseMode());
     }
 

@@ -7,6 +7,11 @@ public class EnvUtil {
         return System.getenv(key);
     }
 
+    public Boolean getBooleanEnv(String key, Boolean dflt) {
+        String value = getEnv(key);
+        return value == null ? dflt : "true".equalsIgnoreCase(value);
+    }
+
     public Map<String, String> getEnv() {
         return System.getenv();
     }

@@ -34,6 +34,13 @@ import org.skyscreamer.jsonassert.comparator.CustomComparator;
 @RunWith(MockitoJUnitRunner.class)
 class LumigoRequestHandlerTest {
 
+    /**
+     * *************************************
+     *
+     * <p>Test Handlers
+     *
+     * <p>************************************
+     */
     static class Handler extends LumigoRequestHandler<KinesisEvent, String> {
         @Override
         public String doHandleRequest(KinesisEvent kinesisEvent, Context context) {
@@ -88,7 +95,15 @@ class LumigoRequestHandlerTest {
                 throws IOException {}
     }
 
+    /**
+     * *************************************
+     *
+     * <p>Setup
+     *
+     * <p>************************************
+     */
     @Mock Context context;
+
     @Mock EnvUtil envUtil;
     @Mock Reporter reporter;
     private Map<String, String> env = new HashMap<>();
@@ -120,6 +135,8 @@ class LumigoRequestHandlerTest {
         when(context.getLogGroupName()).thenReturn("/aws/lambda/mocked_function_name");
         when(context.getLogStreamName())
                 .thenReturn("2019/05/12/[$LATEST]7f67fc1238a941749d8126be19f0cdc6");
+
+        when(envUtil.getBooleanEnv(any(), any())).thenCallRealMethod();
     }
 
     private void createMockedEnv() {
@@ -149,6 +166,7 @@ class LumigoRequestHandlerTest {
         handler.setEnvUtil(envUtil);
         handler.setReporter(reporter);
         Configuration.getInstance().setEnvUtil(envUtil);
+        when(reporter.reportSpans((Span) any())).thenReturn(999L);
 
         String response = handler.handleRequest(kinesisEvent, context);
 
@@ -165,8 +183,10 @@ class LumigoRequestHandlerTest {
                         JSONCompareMode.LENIENT,
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
+        Span endSpan = getEndSpan("Response", null);
+        endSpan.setReporter_rtt(999L);
         JSONAssert.assertEquals(
-                JsonUtils.getObjectAsJsonString(getEndSpan("Response", null)),
+                JsonUtils.getObjectAsJsonString(endSpan),
                 JsonUtils.getObjectAsJsonString(
                         argumentCaptorAllSpans.getAllValues().get(0).get(0)),
                 new CustomComparator(
@@ -306,6 +326,21 @@ class LumigoRequestHandlerTest {
         verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture());
         verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture());
     }
+
+    @DisplayName("Check the kill switch (RequestHandler)")
+    @Test
+    public void LumigoRequestHandler_with_kill_switch() {
+        Handler handler = new Handler();
+        SpansContainer spansContainerMock = Mockito.mock(SpansContainer.class);
+        when(envUtil.getEnv("LUMIGO_SWITCH_OFF")).thenReturn("true");
+        handler.setSpansContainer(spansContainerMock);
+        Configuration.getInstance().setEnvUtil(envUtil);
+
+        handler.handleRequest(kinesisEvent, context);
+
+        verify(spansContainerMock, Mockito.times(0)).start();
+    }
+
     /**
      * *************************************
      *
@@ -320,6 +355,7 @@ class LumigoRequestHandlerTest {
         handler.setEnvUtil(envUtil);
         handler.setReporter(reporter);
         Configuration.getInstance().setEnvUtil(envUtil);
+        when(reporter.reportSpans((Span) any())).thenReturn(999L);
 
         handler.handleRequest(null, null, context);
 
@@ -338,7 +374,11 @@ class LumigoRequestHandlerTest {
                         new Customization("ended", (o1, o2) -> o2 != null)));
         JSONAssert.assertEquals(
                 JsonUtils.getObjectAsJsonString(
-                        getEndSpan(null, null, false).toBuilder().event(null).build()),
+                        getEndSpan(null, null, false)
+                                .toBuilder()
+                                .event(null)
+                                .reporter_rtt(999L)
+                                .build()),
                 JsonUtils.getObjectAsJsonString(
                         argumentCaptorAllSpans.getAllValues().get(0).get(0)),
                 new CustomComparator(
@@ -377,6 +417,7 @@ class LumigoRequestHandlerTest {
                         getEndSpan(null, new UnsupportedOperationException(), false)
                                 .toBuilder()
                                 .event(null)
+                                .reporter_rtt(0L)
                                 .build()),
                 JsonUtils.getObjectAsJsonString(
                         argumentCaptorAllSpans.getAllValues().get(0).get(0)),
@@ -424,6 +465,7 @@ class LumigoRequestHandlerTest {
                                 .envs(null)
                                 .event(null)
                                 .return_value(null)
+                                .reporter_rtt(0L)
                                 .build()),
                 JsonUtils.getObjectAsJsonString(
                         argumentCaptorAllSpans.getAllValues().get(0).get(0)),
@@ -481,6 +523,27 @@ class LumigoRequestHandlerTest {
         verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture());
     }
 
+    @DisplayName("Check the kill switch (StreamHandler))")
+    @Test
+    public void LumigoRequestStreamHandler_with_kill_switch() throws Exception {
+        HandlerStream handler = new HandlerStream();
+        SpansContainer spansContainerMock = Mockito.mock(SpansContainer.class);
+        when(envUtil.getEnv("LUMIGO_SWITCH_OFF")).thenReturn("true");
+        handler.setSpansContainer(spansContainerMock);
+        Configuration.getInstance().setEnvUtil(envUtil);
+
+        handler.handleRequest(null, null, context);
+
+        verify(spansContainerMock, Mockito.times(0)).start();
+    }
+
+    /**
+     * *************************************
+     *
+     * <p>Utils Functions
+     *
+     * <p>************************************
+     */
     private Span getStartSpan(boolean includeRiggeredBy) throws JsonProcessingException {
         return Span.builder()
                 .name("mocked_function_name")
@@ -532,6 +595,7 @@ class LumigoRequestHandlerTest {
                 .envs(JsonUtils.getObjectAsJsonString(env))
                 .region("us-west-2")
                 .token("test-token")
+                .reporter_rtt(0L)
                 .info(
                         Span.Info.builder()
                                 .tracer(Span.Tracer.builder().version("1.0").build())

@@ -12,6 +12,7 @@ public class LumigoConfiguration {
     private String edgeHost;
     private String token;
     private Boolean verbose;
+    private Boolean killSwitch;
 
     public void init() {
         Configuration.getInstance().init(this);

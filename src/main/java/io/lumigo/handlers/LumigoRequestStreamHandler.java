@@ -3,6 +3,7 @@ package io.lumigo.handlers;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import io.lumigo.core.SpansContainer;
+import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.network.Reporter;
 import io.lumigo.core.utils.EnvUtil;
 import java.io.IOException;
@@ -26,18 +27,17 @@ public abstract class LumigoRequestStreamHandler implements RequestStreamHandler
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
             throws IOException {
+        if (Configuration.getInstance().isKillingSwitchActivated()) {
+            doHandleRequest(inputStream, outputStream, context);
+            return;
+        }
         try {
             Logger.debug("Start {} Lumigo tracer", LumigoRequestStreamHandler.class.getName());
             try {
-                spansContainer.init(envUtil.getEnv(), context, null);
+                spansContainer.init(envUtil.getEnv(), reporter, context, null);
                 spansContainer.start();
             } catch (Throwable ex) {
                 Logger.error(ex, "Failed to init span container");
-            }
-            try {
-                reporter.reportSpans(spansContainer.getStartFunctionSpan());
-            } catch (Throwable ex) {
-                Logger.error(ex, "Failed to create end span");
             }
             doHandleRequest(inputStream, outputStream, context);
             try {
@@ -53,12 +53,6 @@ public abstract class LumigoRequestStreamHandler implements RequestStreamHandler
                 Logger.error(ex, "Failed to create end span");
             }
             throw throwable;
-        } finally {
-            try {
-                reporter.reportSpans(spansContainer.getAllCollectedSpans());
-            } catch (Throwable ex) {
-                Logger.error(ex, "Failed to send all spans");
-            }
         }
     }
 
