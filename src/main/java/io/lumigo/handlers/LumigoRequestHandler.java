@@ -3,7 +3,7 @@ package io.lumigo.handlers;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import io.lumigo.core.SpansContainer;
-import io.lumigo.core.instrumentation.agent.AgentLoad;
+import io.lumigo.core.instrumentation.agent.Installer;
 import io.lumigo.core.network.Reporter;
 import io.lumigo.core.utils.EnvUtil;
 import lombok.AccessLevel;
@@ -26,7 +26,7 @@ public abstract class LumigoRequestHandler<INPUT, OUTPUT> implements RequestHand
         try {
             Logger.debug("Start {} Lumigo tracer", LumigoRequestHandler.class.getName());
             try {
-                AgentLoad.load();
+                Installer.install();
                 spansContainer.init(envUtil.getEnv(), context, input);
                 spansContainer.start();
             } catch (Throwable e) {

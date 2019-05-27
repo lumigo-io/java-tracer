@@ -2,15 +2,14 @@ package io.lumigo.core.instrumentation.impl;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import io.lumigo.core.SpansContainer;
 import io.lumigo.core.instrumentation.LumigoInstrumentationApi;
-import io.lumigo.core.instrumentation.agent.AgentLoad;
+import io.lumigo.core.instrumentation.agent.Loader;
 import java.util.*;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.apache.http.Header;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.pmw.tinylog.Logger;
 
@@ -25,7 +24,7 @@ public class ApacheHttpInstrumentation implements LumigoInstrumentationApi {
     public AgentBuilder.Transformer.ForAdvice getTransformer() {
 
         return new AgentBuilder.Transformer.ForAdvice()
-                .include(AgentLoad.class.getClassLoader())
+                .include(Loader.class.getClassLoader())
                 .advice(
                         isMethod()
                                 .and(named("execute"))
@@ -43,26 +42,18 @@ public class ApacheHttpInstrumentation implements LumigoInstrumentationApi {
 
         public static final Set<Integer> handled = Collections.synchronizedSet(new HashSet<>());
 
-        @Advice.OnMethodEnter
-        public static void executeEnter(@Advice.Argument(0) final HttpUriRequest request) {
-            try {
-                if (!handled.contains(request.hashCode())) {
-                    handled.add(request.hashCode());
-                    Map<String, String> headers = new HashMap<>();
-                    for (Header header : request.getAllHeaders()) {
-                        headers.put(header.getName(), header.getValue());
-                    }
-                    SpansContainer.getInstance().addHttpSpan(request.getURI(), headers);
-                }
-            } catch (Exception e) {
-                Logger.error(e, "Failed to collect http span");
-            }
-        }
-
         @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
-        public static void methodExit(@Advice.Return final Object result) {
+        public static void methodExit(
+                @Advice.Argument(0) HttpUriRequest request, @Advice.Return final Object result) {
             if (!handled.contains(result.hashCode())) {
+                Logger.warn("Handle http request response");
+                if (result instanceof HttpResponse)
+                    Logger.info(
+                            "Got new response "
+                                    + ((HttpResponse) result).getStatusLine().getStatusCode());
                 handled.add(result.hashCode());
+            }else {
+                Logger.warn("Handle request again");
             }
         }
     }
