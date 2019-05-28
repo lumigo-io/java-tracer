@@ -12,10 +12,12 @@ import io.lumigo.models.Span;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.URI;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.util.EntityUtils;
 import org.pmw.tinylog.Logger;
 
 public class SpansContainer {
@@ -186,21 +188,38 @@ public class SpansContainer {
         return sw.getBuffer().toString();
     }
 
-    public void addHttpSpan(URI uri, Map<String, String> headers) throws Exception {
+    public void addHttpSpan(Long startTime, HttpUriRequest request, HttpResponse response)
+            throws Exception {
         httpSpans.add(
                 HttpSpan.builder()
-                        .id(baseSpan.getId())
+                        .id(UUID.randomUUID().toString())
                         .started(System.currentTimeMillis())
+                        .ended(System.currentTimeMillis())
                         .transactionId(baseSpan.getTransactionId())
                         .account(baseSpan.getAccount())
                         .region(baseSpan.getRegion())
                         .token(baseSpan.getToken())
                         .type(HTTP_SPAN_TYPE)
+                        .parentId(baseSpan.getRequestId())
                         .info(
                                 HttpSpan.Info.builder()
+                                        .tracer(
+                                                HttpSpan.Tracer.builder()
+                                                        .version(
+                                                                baseSpan.getInfo()
+                                                                        .getTracer()
+                                                                        .getVersion())
+                                                        .build())
+                                        .traceId(
+                                                HttpSpan.TraceId.builder()
+                                                        .root(
+                                                                baseSpan.getInfo()
+                                                                        .getTraceId()
+                                                                        .getRoot())
+                                                        .build())
                                         .httpInfo(
                                                 HttpSpan.HttpInfo.builder()
-                                                        .host(uri.getHost())
+                                                        .host(request.getURI().getHost())
                                                         .request(
                                                                 HttpSpan.HttpData.builder()
                                                                         .headers(
@@ -208,10 +227,64 @@ public class SpansContainer {
                                                                                         .getMaxSizeString(
                                                                                                 JsonUtils
                                                                                                         .getObjectAsJsonString(
-                                                                                                                headers)))
+                                                                                                                convertHeadersToMap(
+                                                                                                                        request
+                                                                                                                                .getAllHeaders()))))
+                                                                        .uri(
+                                                                                request.getURI()
+                                                                                        .toString())
+                                                                        .method(request.getMethod())
+                                                                        .body(
+                                                                                extractBodyFromRequest(
+                                                                                        request))
+                                                                        .build())
+                                                        .response(
+                                                                HttpSpan.HttpData.builder()
+                                                                        .headers(
+                                                                                StringUtils
+                                                                                        .getMaxSizeString(
+                                                                                                JsonUtils
+                                                                                                        .getObjectAsJsonString(
+                                                                                                                convertHeadersToMap(
+                                                                                                                        response
+                                                                                                                                .getAllHeaders()))))
+                                                                        .body(
+                                                                                StringUtils
+                                                                                        .getMaxSizeString(
+                                                                                                EntityUtils
+                                                                                                        .toString(
+                                                                                                                response
+                                                                                                                        .getEntity())))
+                                                                        .statusCode(
+                                                                                response.getStatusLine()
+                                                                                        .getStatusCode())
                                                                         .build())
                                                         .build())
                                         .build())
                         .build());
+    }
+
+    private Map<String, String> convertHeadersToMap(Header[] headers) {
+        Map<String, String> headersMap = new HashMap<>();
+        if (headers != null) {
+            for (Header header : headers) {
+                headersMap.put(header.getName(), header.getValue());
+            }
+        }
+        return headersMap;
+    }
+
+    private static String extractBodyFromRequest(HttpUriRequest request) {
+        try {
+            if (request instanceof HttpEntityEnclosingRequestBase) {
+                return StringUtils.getMaxSizeString(
+                        EntityUtils.toString(
+                                ((HttpEntityEnclosingRequestBase) request).getEntity()));
+            }
+            return null;
+        } catch (Exception e) {
+            Logger.error(e, "Failed to extract body from request");
+            return null;
+        }
     }
 }

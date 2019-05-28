@@ -39,7 +39,7 @@
                     <phase>package</phase>
                     <configuration>
                         <target>
-                            <copy file="target/${project.artifactId}-${project.version}.jar" tofile="../src/main/resources/agent.jar"/>
+                            <copy file="target/${project.artifactId}-${project.version}.jar" tofile="../src/main/resources/lumigo-agent.jar"/>
                         </target>
                     </configuration>
                     <goals>

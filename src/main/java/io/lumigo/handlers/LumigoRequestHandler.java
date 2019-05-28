@@ -14,13 +14,23 @@ import org.pmw.tinylog.Logger;
 public abstract class LumigoRequestHandler<INPUT, OUTPUT> implements RequestHandler<INPUT, OUTPUT> {
 
     @Setter(AccessLevel.MODULE)
-    private EnvUtil envUtil = new EnvUtil();
+    private EnvUtil envUtil;
 
     @Setter(AccessLevel.MODULE)
-    private Reporter reporter = new Reporter();
+    private Reporter reporter;
 
     @Setter(AccessLevel.MODULE)
-    private SpansContainer spansContainer = SpansContainer.getInstance();
+    private SpansContainer spansContainer;
+
+    public LumigoRequestHandler() {
+        try {
+            this.envUtil = new EnvUtil();
+            this.reporter = new Reporter();
+            this.spansContainer = SpansContainer.getInstance();
+        } catch (RuntimeException ex) {
+            Logger.error(ex, "Failed to init LumigoRequestHandler");
+        }
+    }
 
     @Override
     public OUTPUT handleRequest(INPUT input, Context context) {

@@ -1,5 +1,6 @@
 package io.lumigo.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,8 +9,8 @@ import lombok.Data;
 @Builder(toBuilder = true)
 @Data(staticConstructor = "of")
 public class HttpSpan {
-    private long started;
-    private long ended;
+    private Long started;
+    private Long ended;
     private String id;
     private String type;
     private String transactionId;
@@ -23,7 +24,24 @@ public class HttpSpan {
     @Builder(toBuilder = true)
     @Data(staticConstructor = "of")
     public static class Info {
+        private Tracer tracer;
+        private TraceId traceId;
         private HttpInfo httpInfo;
+    }
+
+    @AllArgsConstructor
+    @Builder(toBuilder = true)
+    @Data(staticConstructor = "of")
+    public static class TraceId {
+        @JsonProperty("Root")
+        private String root;
+    }
+
+    @AllArgsConstructor
+    @Builder(toBuilder = true)
+    @Data(staticConstructor = "of")
+    public static class Tracer {
+        private String version;
     }
 
     @AllArgsConstructor
@@ -41,5 +59,8 @@ public class HttpSpan {
     public static class HttpData {
         private String headers;
         private String body;
+        private String uri;
+        private Integer statusCode;
+        private String method;
     }
 }

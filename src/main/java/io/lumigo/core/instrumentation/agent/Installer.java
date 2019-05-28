@@ -16,7 +16,7 @@ public class Installer {
                 try {
                     VirtualMachine vm = VirtualMachine.attach(vmd.id());
                     try {
-                        vm.loadAgent("/var/task/agent.jar");
+                        vm.loadAgent("/var/task/lumigo-agent.jar");
                     } finally {
                         vm.detach();
                     }

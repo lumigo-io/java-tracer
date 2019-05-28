@@ -17,13 +17,23 @@ import org.pmw.tinylog.Logger;
 public abstract class LumigoRequestStreamHandler implements RequestStreamHandler {
 
     @Setter(AccessLevel.MODULE)
-    private EnvUtil envUtil = new EnvUtil();
+    private EnvUtil envUtil;
 
     @Setter(AccessLevel.MODULE)
-    private Reporter reporter = new Reporter();
+    private Reporter reporter;
 
     @Setter(AccessLevel.MODULE)
-    private SpansContainer spansContainer = SpansContainer.getInstance();
+    private SpansContainer spansContainer;
+
+    public LumigoRequestStreamHandler() {
+        try {
+            this.envUtil = new EnvUtil();
+            this.reporter = new Reporter();
+            this.spansContainer = SpansContainer.getInstance();
+        } catch (RuntimeException ex) {
+            Logger.error(ex, "Failed to init LumigoRequestStreamHandler");
+        }
+    }
 
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)

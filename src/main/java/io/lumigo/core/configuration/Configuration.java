@@ -104,4 +104,8 @@ public class Configuration {
                 ? inlineConf.getKillSwitch()
                 : envUtil.getBooleanEnv(LUMIGO_KILL_SWITCH, false);
     }
+
+    public boolean isLumigoHost(String host) {
+        return host.contains(getLumigoEdge().replace(EDGE_PREFIX, "").replace(EDGE_SUFFIX, ""));
+    }
 }
