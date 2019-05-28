@@ -48,6 +48,15 @@ public class ApacheHttpInstrumentation implements LumigoInstrumentationApi {
         public static final Cache<Integer, Long> startTimeMap =
                 CacheBuilder.newBuilder().concurrencyLevel(1).maximumSize(1000).build();
 
+        @Advice.OnMethodEnter
+        public static void methodEnter(@Advice.Argument(0) final HttpUriRequest request) {
+            try {
+                startTimeMap.put(request.hashCode(), System.currentTimeMillis());
+            } catch (Exception e) {
+                Logger.error(e);
+            }
+        }
+
         @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
         public static void methodExit(
                 @Advice.Argument(0) HttpUriRequest request, @Advice.Return final Object result) {

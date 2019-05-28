@@ -193,7 +193,7 @@ public class SpansContainer {
         httpSpans.add(
                 HttpSpan.builder()
                         .id(UUID.randomUUID().toString())
-                        .started(System.currentTimeMillis())
+                        .started(startTime)
                         .ended(System.currentTimeMillis())
                         .transactionId(baseSpan.getTransactionId())
                         .account(baseSpan.getAccount())
