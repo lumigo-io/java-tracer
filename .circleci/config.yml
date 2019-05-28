@@ -19,7 +19,12 @@ commands:
     description: "Install Scala and Kotlin"
     steps:
       - run: sudo apt-get install scala
-      - run: sudo apt-get install sbt
+      - run:
+          command: |
+            curl -L -o sbt.deb http://dl.bintray.com/sbt/debian/sbt-0.13.15.deb
+            sudo dpkg -i sbt.deb
+            sudo apt-get update
+            sudo apt-get install sbt
 
 
   install_node:
