@@ -18,10 +18,8 @@ commands:
   install_java_compatabilities:
     decription: "Install Scala and Kotlin"
     steps:
-      - run:
-          command: |
-            sudo apt-get install scala
-            sudo apt-get install sbt
+      - run: sudo apt-get install scala
+      - run: sudo apt-get install sbt
 
 
   install_node:
