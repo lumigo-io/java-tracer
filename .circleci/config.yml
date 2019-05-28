@@ -16,7 +16,7 @@ commands:
             sudo apt install maven
 
   install_java_compatabilities:
-    secription: "Install Scala and Kotlin"
+    decription: "Install Scala and Kotlin"
     steps:
       - run:
           command: |
