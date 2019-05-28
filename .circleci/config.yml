@@ -15,6 +15,15 @@ commands:
             sudo update-alternatives --config java
             sudo apt install maven
 
+  install_java_compatabilities:
+    secription: "Install Scala and Kotlin"
+    steps:
+      - run:
+          command: |
+            sudo apt-get install scala
+            sudo apt-get install sbt
+
+
   install_node:
     description: "Install node 10"
     steps:
@@ -104,6 +113,7 @@ jobs:
     <<: *defaults
     steps:
       - install_java
+      - install_java_compatabilities
       - install_node
       - checkout_utils
       - checkout_code
@@ -113,7 +123,7 @@ jobs:
       - run: sudo npm install -g recursive-install
       - run: cd ../integration-tests && ./scripts/prepare_env.sh
       - run: cd ../integration-tests && ./scripts/deploy.sh
-      - run: cd ../integration-tests && npm run test
+      - run: cd ../integration-tests && export testJava=true && npm run test
 
   deploy:
     <<: *defaults
