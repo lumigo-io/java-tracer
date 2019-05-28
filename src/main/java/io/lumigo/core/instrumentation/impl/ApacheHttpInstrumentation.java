@@ -51,6 +51,10 @@ public class ApacheHttpInstrumentation implements LumigoInstrumentationApi {
         @Advice.OnMethodEnter
         public static void methodEnter(@Advice.Argument(0) final HttpUriRequest request) {
             try {
+                if (Configuration.getInstance().isLumigoHost(request.getURI().getHost())) {
+                    Logger.info("Skip, internal lumigo reporter");
+                    return;
+                }
                 startTimeMap.put(request.hashCode(), System.currentTimeMillis());
             } catch (Exception e) {
                 Logger.error(e);
