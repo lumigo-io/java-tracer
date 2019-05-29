@@ -2,12 +2,13 @@ package io.lumigo.core.instrumentation.impl;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import io.lumigo.core.SpansContainer;
 import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.instrumentation.LumigoInstrumentationApi;
 import io.lumigo.core.instrumentation.agent.Loader;
+import io.lumigo.core.utils.LRUCache;
+import lombok.AccessLevel;
+import lombok.Setter;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -43,10 +44,12 @@ public class ApacheHttpInstrumentation implements LumigoInstrumentationApi {
 
     public static class AmazonHttpClientAdvice {
 
-        public static final Cache<Integer, Boolean> handled =
-                CacheBuilder.newBuilder().concurrencyLevel(1).maximumSize(1000).build();
-        public static final Cache<Integer, Long> startTimeMap =
-                CacheBuilder.newBuilder().concurrencyLevel(1).maximumSize(1000).build();
+        @Setter(AccessLevel.PACKAGE)
+        private static SpansContainer spansContainer = SpansContainer.getInstance();
+
+        public static final LRUCache<Integer, Boolean> handled = new LRUCache<>(100);
+
+        public static final LRUCache<Integer, Long> startTimeMap = new LRUCache<>(100);
 
         @Advice.OnMethodEnter
         public static void methodEnter(@Advice.Argument(0) final HttpUriRequest request) {
@@ -55,6 +58,8 @@ public class ApacheHttpInstrumentation implements LumigoInstrumentationApi {
                     Logger.info("Skip, internal lumigo reporter");
                     return;
                 }
+                String patchedRoot = spansContainer.getPatchedRoot();
+                request.setHeader("X-Amzn-Trace-Id", patchedRoot);
                 startTimeMap.put(request.hashCode(), System.currentTimeMillis());
             } catch (Exception e) {
                 Logger.error(e);
@@ -69,17 +74,16 @@ public class ApacheHttpInstrumentation implements LumigoInstrumentationApi {
                     Logger.info("Skip, internal lumigo reporter");
                     return;
                 }
-                if (handled.getIfPresent(request.hashCode()) == null) {
+                if (handled.get(request.hashCode()) == null) {
                     Logger.info(
                             "Handling request {} from host {}",
                             request.hashCode(),
                             request.getURI().getHost());
                     if (result instanceof HttpResponse) {
-                        SpansContainer.getInstance()
-                                .addHttpSpan(
-                                        startTimeMap.getIfPresent(request.hashCode()),
-                                        request,
-                                        (HttpResponse) result);
+                        spansContainer.addHttpSpan(
+                                startTimeMap.get(request.hashCode()),
+                                request,
+                                (HttpResponse) result);
                         handled.put(request.hashCode(), true);
                     }
                 } else {

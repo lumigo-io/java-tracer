@@ -26,4 +26,20 @@ class StringUtilsTest {
         String res = StringUtils.getMaxSizeString(new String(charArray));
         assertEquals(1024, res.length());
     }
+
+    @Test
+    void test_randomStringAndNumbers_check_size() {
+        assertEquals(5, StringUtils.randomStringAndNumbers(5).length());
+    }
+
+    @Test
+    void test_randomStringAndNumbers_check_only_contain_letters_and_numbers() {
+        assertTrue(StringUtils.randomStringAndNumbers(50).matches("[a-z0-9]*"));
+    }
+
+    @Test
+    void test_randomStringAndNumbers_check_random() {
+        assertNotEquals(
+                StringUtils.randomStringAndNumbers(50), StringUtils.randomStringAndNumbers(50));
+    }
 }

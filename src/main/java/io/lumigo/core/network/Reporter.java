@@ -8,11 +8,13 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import lombok.AccessLevel;
 import lombok.Setter;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 import org.pmw.tinylog.Logger;
 
 public class Reporter {
@@ -22,8 +24,6 @@ public class Reporter {
 
     public Reporter() {
         RequestConfig.Builder requestBuilder = RequestConfig.custom();
-        requestBuilder.setConnectTimeout(
-                Long.valueOf(Configuration.getInstance().getLumigoTimeout().toMillis()).intValue());
         requestBuilder.setConnectionRequestTimeout(
                 Long.valueOf(Configuration.getInstance().getLumigoTimeout().toMillis()).intValue());
         client = HttpClientBuilder.create().setDefaultRequestConfig(requestBuilder.build()).build();
@@ -43,7 +43,8 @@ public class Reporter {
             request.setHeader("Accept", "application/json");
             request.setHeader("Content-Type", "application/json; charset=utf-8");
             request.setEntity(new StringEntity(spansAsString));
-            client.execute(request);
+            HttpResponse response = client.execute(request);
+            EntityUtils.consume(response.getEntity());
             long duration = System.nanoTime() - time;
             Logger.info(
                     "Took: {} milliseconds to send {} Spans to URL: {}",

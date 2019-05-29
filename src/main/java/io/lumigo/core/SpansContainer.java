@@ -1,6 +1,7 @@
 package io.lumigo.core;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.util.IOUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.network.Reporter;
@@ -9,15 +10,14 @@ import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.core.utils.StringUtils;
 import io.lumigo.models.HttpSpan;
 import io.lumigo.models.Span;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
+import java.nio.charset.Charset;
 import java.util.*;
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.util.EntityUtils;
 import org.pmw.tinylog.Logger;
 
 public class SpansContainer {
@@ -42,6 +42,8 @@ public class SpansContainer {
         return ourInstance;
     }
 
+    private String awsTracerId;
+
     public void clear() {
         baseSpan = null;
         startFunctionSpan = null;
@@ -57,7 +59,7 @@ public class SpansContainer {
             throws JsonProcessingException {
         this.clear();
         this.reporter = reporter;
-        String awsTracerId = env.get(AMZN_TRACE_ID);
+        awsTracerId = env.get(AMZN_TRACE_ID);
         this.baseSpan =
                 Span.builder()
                         .token(Configuration.getInstance().getLumigoToken())
@@ -223,38 +225,55 @@ public class SpansContainer {
                                                         .request(
                                                                 HttpSpan.HttpData.builder()
                                                                         .headers(
-                                                                                StringUtils
-                                                                                        .getMaxSizeString(
-                                                                                                JsonUtils
-                                                                                                        .getObjectAsJsonString(
-                                                                                                                convertHeadersToMap(
-                                                                                                                        request
-                                                                                                                                .getAllHeaders()))))
+                                                                                Configuration
+                                                                                                .getInstance()
+                                                                                                .isLumigoVerboseMode()
+                                                                                        ? StringUtils
+                                                                                                .getMaxSizeString(
+                                                                                                        JsonUtils
+                                                                                                                .getObjectAsJsonString(
+                                                                                                                        convertHeadersToMap(
+                                                                                                                                request
+                                                                                                                                        .getAllHeaders())))
+                                                                                        : null)
                                                                         .uri(
                                                                                 request.getURI()
                                                                                         .toString())
                                                                         .method(request.getMethod())
                                                                         .body(
-                                                                                extractBodyFromRequest(
-                                                                                        request))
+                                                                                Configuration
+                                                                                                .getInstance()
+                                                                                                .isLumigoVerboseMode()
+                                                                                        ? extractBodyFromRequest(
+                                                                                                request)
+                                                                                        : null)
                                                                         .build())
                                                         .response(
                                                                 HttpSpan.HttpData.builder()
                                                                         .headers(
-                                                                                StringUtils
-                                                                                        .getMaxSizeString(
-                                                                                                JsonUtils
-                                                                                                        .getObjectAsJsonString(
-                                                                                                                convertHeadersToMap(
-                                                                                                                        response
-                                                                                                                                .getAllHeaders()))))
+                                                                                Configuration
+                                                                                                .getInstance()
+                                                                                                .isLumigoVerboseMode()
+                                                                                        ? StringUtils
+                                                                                                .getMaxSizeString(
+                                                                                                        JsonUtils
+                                                                                                                .getObjectAsJsonString(
+                                                                                                                        convertHeadersToMap(
+                                                                                                                                response
+                                                                                                                                        .getAllHeaders())))
+                                                                                        : null)
                                                                         .body(
-                                                                                StringUtils
-                                                                                        .getMaxSizeString(
-                                                                                                EntityUtils
-                                                                                                        .toString(
-                                                                                                                response
-                                                                                                                        .getEntity())))
+                                                                                Configuration
+                                                                                                .getInstance()
+                                                                                                .isLumigoVerboseMode()
+                                                                                        ? extractStringFromInputStream(
+                                                                                                response
+                                                                                                                        .getEntity()
+                                                                                                                != null
+                                                                                                        ? response.getEntity()
+                                                                                                                .getContent()
+                                                                                                        : null)
+                                                                                        : null)
                                                                         .statusCode(
                                                                                 response.getStatusLine()
                                                                                         .getStatusCode())
@@ -264,7 +283,7 @@ public class SpansContainer {
                         .build());
     }
 
-    private Map<String, String> convertHeadersToMap(Header[] headers) {
+    protected Map<String, String> convertHeadersToMap(Header[] headers) {
         Map<String, String> headersMap = new HashMap<>();
         if (headers != null) {
             for (Header header : headers) {
@@ -274,17 +293,45 @@ public class SpansContainer {
         return headersMap;
     }
 
-    private static String extractBodyFromRequest(HttpUriRequest request) {
+    protected static String extractBodyFromRequest(HttpUriRequest request) {
         try {
             if (request instanceof HttpEntityEnclosingRequestBase) {
-                return StringUtils.getMaxSizeString(
-                        EntityUtils.toString(
-                                ((HttpEntityEnclosingRequestBase) request).getEntity()));
+                HttpEntity entity = ((HttpEntityEnclosingRequestBase) request).getEntity();
+                if (entity != null && entity.getContent() != null) {
+                    return extractStringFromInputStream(entity.getContent());
+                }
             }
             return null;
         } catch (Exception e) {
             Logger.error(e, "Failed to extract body from request");
             return null;
         }
+    }
+
+    protected static String extractStringFromInputStream(InputStream inputStream) {
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+            if (inputStream != null && inputStream.markSupported()) {
+                Logger.info("Stream reset supported, response body will be extracted");
+                IOUtils.copy(inputStream, byteArrayOutputStream);
+                inputStream.reset();
+                return StringUtils.getMaxSizeString(
+                        new String(byteArrayOutputStream.toByteArray(), Charset.defaultCharset()));
+            } else {
+                Logger.info("Stream reset is not supported, response body will not be extracted");
+                return null;
+            }
+        } catch (Throwable e) {
+            Logger.error(e, "Failed to extract body from request");
+            return null;
+        }
+    }
+
+    public String getPatchedRoot() {
+        return String.format(
+                "Root=%s-0000%s-%s%s",
+                AwsUtils.extractAwsTraceRoot(awsTracerId),
+                StringUtils.randomStringAndNumbers(4),
+                AwsUtils.extractAwsTraceTransactionId(awsTracerId),
+                AwsUtils.extractAwsTraceSuffix(awsTracerId));
     }
 }
