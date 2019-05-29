@@ -237,8 +237,12 @@ public class SpansContainer {
                                                                                                                                         .getAllHeaders())))
                                                                                         : null)
                                                                         .uri(
-                                                                                request.getURI()
-                                                                                        .toString())
+                                                                                Configuration
+                                                                                                .getInstance()
+                                                                                                .isLumigoVerboseMode()
+                                                                                        ? request.getURI()
+                                                                                                .toString()
+                                                                                        : null)
                                                                         .method(request.getMethod())
                                                                         .body(
                                                                                 Configuration
