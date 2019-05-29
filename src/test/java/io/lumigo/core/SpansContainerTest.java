@@ -104,6 +104,7 @@ class SpansContainerTest {
                 JsonUtils.getObjectAsJsonString(actualSpan),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("token", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
@@ -157,6 +158,7 @@ class SpansContainerTest {
                 JsonUtils.getObjectAsJsonString(actualSpan),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null),
                         new Customization("token", (o1, o2) -> o2 != null),
@@ -207,6 +209,7 @@ class SpansContainerTest {
                 JsonUtils.getObjectAsJsonString(actualSpan),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null),
                         new Customization("token", (o1, o2) -> o2 != null),
@@ -257,6 +260,7 @@ class SpansContainerTest {
                 JsonUtils.getObjectAsJsonString(actualSpan),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null),
                         new Customization("token", (o1, o2) -> o2 != null),
@@ -317,6 +321,7 @@ class SpansContainerTest {
                 JsonUtils.getObjectAsJsonString(actualSpan),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("id", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));

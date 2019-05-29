@@ -4,9 +4,11 @@ import io.lumigo.core.utils.EnvUtil;
 import io.lumigo.handlers.LumigoConfiguration;
 import java.time.Duration;
 import java.util.Locale;
+import java.util.Properties;
 import lombok.Setter;
 import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Level;
+import org.pmw.tinylog.Logger;
 import org.pmw.tinylog.writers.ConsoleWriter;
 
 public class Configuration {
@@ -24,6 +26,7 @@ public class Configuration {
 
     private static Configuration instance;
     private LumigoConfiguration inlineConf;
+    private String tracerVersion;
 
     @Setter private EnvUtil envUtil = new EnvUtil();
 
@@ -74,7 +77,17 @@ public class Configuration {
     }
 
     public String getLumigoTracerVersion() {
-        return "1.0";
+        try {
+            Properties properties = new Properties();
+            if (tracerVersion == null) {
+                properties.load(
+                        getClass().getClassLoader().getResourceAsStream("lumigo-version.txt"));
+                tracerVersion = properties.getProperty("version");
+            }
+        } catch (Throwable e) {
+            Logger.error(e, "Failed to load tracer version");
+        }
+        return tracerVersion;
     }
 
     public Duration getLumigoTimeout() {
