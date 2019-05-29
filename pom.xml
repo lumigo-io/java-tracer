@@ -6,7 +6,7 @@
 
     <groupId>io.lumigo</groupId>
     <artifactId>java-tracer</artifactId>
-    <version>1.0.10</version>
+    <version>1.0.9</version>
     <packaging>jar</packaging>
 
     <name>Lumigo java tracer</name>
@@ -303,12 +303,6 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.3</version>
-                <configuration>
-                    <excludes>
-                        <exclude>**/Installer.*</exclude>
-                        <exclude>**/Loader.*</exclude>
-                    </excludes>
-                </configuration>
                 <executions>
                     <execution>
                         <goals>
