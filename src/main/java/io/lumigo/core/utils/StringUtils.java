@@ -1,6 +1,5 @@
 package io.lumigo.core.utils;
 
-import com.amazonaws.util.IOUtils;
 import io.lumigo.core.configuration.Configuration;
 import java.io.*;
 import java.nio.charset.Charset;
