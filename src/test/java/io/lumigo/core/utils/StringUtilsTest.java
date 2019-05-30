@@ -49,10 +49,18 @@ class StringUtilsTest {
     }
 
     @Test
-    void extractStringForStream() throws IOException {
+    void extractStringForStream_long() throws IOException {
         InputStream inputStream =
                 new ByteArrayInputStream("123456789".getBytes(Charset.forName("UTF-8")));
         assertEquals("12345", StringUtils.extractStringForStream(inputStream, 5));
+        assertEquals("123456789", IOUtils.toString(inputStream, Charset.forName("UTF-8")));
+    }
+
+    @Test
+    void extractStringForStream_short() throws IOException {
+        InputStream inputStream =
+                new ByteArrayInputStream("123456789".getBytes(Charset.forName("UTF-8")));
+        assertEquals("123456789", StringUtils.extractStringForStream(inputStream, 100));
         assertEquals("123456789", IOUtils.toString(inputStream, Charset.forName("UTF-8")));
     }
 }

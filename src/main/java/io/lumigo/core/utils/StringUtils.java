@@ -1,5 +1,6 @@
 package io.lumigo.core.utils;
 
+import com.amazonaws.util.IOUtils;
 import io.lumigo.core.configuration.Configuration;
 import java.io.*;
 import java.nio.charset.Charset;
@@ -33,10 +34,12 @@ public class StringUtils {
             try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
                 Logger.info("Stream reset supported, convert to string");
                 byte[] buffer = new byte[size];
-                inputStream.read(buffer);
-                byteArrayOutputStream.write(buffer);
+                int read = inputStream.read(buffer);
+                Logger.debug("Read {} bytes from input stream", read);
+                byteArrayOutputStream.write(buffer, 0, read);
                 String result =
-                        new String(byteArrayOutputStream.toByteArray(), Charset.defaultCharset());
+                        new String(byteArrayOutputStream.toByteArray(), Charset.defaultCharset())
+                                .trim();
                 inputStream.reset();
                 return result;
             } catch (Throwable e) {
