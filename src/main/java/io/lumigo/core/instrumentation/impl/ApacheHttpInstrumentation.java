@@ -7,8 +7,6 @@ import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.instrumentation.LumigoInstrumentationApi;
 import io.lumigo.core.instrumentation.agent.Loader;
 import io.lumigo.core.utils.LRUCache;
-import lombok.AccessLevel;
-import lombok.Setter;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -44,8 +42,7 @@ public class ApacheHttpInstrumentation implements LumigoInstrumentationApi {
 
     public static class AmazonHttpClientAdvice {
 
-        @Setter(AccessLevel.PACKAGE)
-        private static SpansContainer spansContainer = SpansContainer.getInstance();
+        public static final SpansContainer spansContainer = SpansContainer.getInstance();
 
         public static final LRUCache<Integer, Boolean> handled = new LRUCache<>(100);
 

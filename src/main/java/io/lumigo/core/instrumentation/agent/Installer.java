@@ -7,8 +7,12 @@ import java.util.List;
 import org.pmw.tinylog.Logger;
 
 public class Installer {
+    private static boolean firstStart = true;
+
     public static synchronized void install() {
-        if (Configuration.getInstance().isAwsEnvironment()) {
+
+        if (Configuration.getInstance().isAwsEnvironment() && firstStart) {
+            firstStart = false;
             Logger.info("Agent installation start");
             List<VirtualMachineDescriptor> vms = VirtualMachine.list();
 
