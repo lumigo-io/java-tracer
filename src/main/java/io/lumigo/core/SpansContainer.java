@@ -1,7 +1,6 @@
 package io.lumigo.core;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.util.IOUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.network.Reporter;
@@ -11,7 +10,6 @@ import io.lumigo.core.utils.StringUtils;
 import io.lumigo.models.HttpSpan;
 import io.lumigo.models.Span;
 import java.io.*;
-import java.nio.charset.Charset;
 import java.util.*;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -225,17 +223,9 @@ public class SpansContainer {
                                                         .request(
                                                                 HttpSpan.HttpData.builder()
                                                                         .headers(
-                                                                                Configuration
-                                                                                                .getInstance()
-                                                                                                .isLumigoVerboseMode()
-                                                                                        ? StringUtils
-                                                                                                .getMaxSizeString(
-                                                                                                        JsonUtils
-                                                                                                                .getObjectAsJsonString(
-                                                                                                                        convertHeadersToMap(
-                                                                                                                                request
-                                                                                                                                        .getAllHeaders())))
-                                                                                        : null)
+                                                                                extractHeaders(
+                                                                                        request
+                                                                                                .getAllHeaders()))
                                                                         .uri(
                                                                                 Configuration
                                                                                                 .getInstance()
@@ -245,39 +235,18 @@ public class SpansContainer {
                                                                                         : null)
                                                                         .method(request.getMethod())
                                                                         .body(
-                                                                                Configuration
-                                                                                                .getInstance()
-                                                                                                .isLumigoVerboseMode()
-                                                                                        ? extractBodyFromRequest(
-                                                                                                request)
-                                                                                        : null)
+                                                                                extractBodyFromRequest(
+                                                                                        request))
                                                                         .build())
                                                         .response(
                                                                 HttpSpan.HttpData.builder()
                                                                         .headers(
-                                                                                Configuration
-                                                                                                .getInstance()
-                                                                                                .isLumigoVerboseMode()
-                                                                                        ? StringUtils
-                                                                                                .getMaxSizeString(
-                                                                                                        JsonUtils
-                                                                                                                .getObjectAsJsonString(
-                                                                                                                        convertHeadersToMap(
-                                                                                                                                response
-                                                                                                                                        .getAllHeaders())))
-                                                                                        : null)
+                                                                                extractHeaders(
+                                                                                        response
+                                                                                                .getAllHeaders()))
                                                                         .body(
-                                                                                Configuration
-                                                                                                .getInstance()
-                                                                                                .isLumigoVerboseMode()
-                                                                                        ? extractStringFromInputStream(
-                                                                                                response
-                                                                                                                        .getEntity()
-                                                                                                                != null
-                                                                                                        ? response.getEntity()
-                                                                                                                .getContent()
-                                                                                                        : null)
-                                                                                        : null)
+                                                                                extractBodyFromResponse(
+                                                                                        response))
                                                                         .statusCode(
                                                                                 response.getStatusLine()
                                                                                         .getStatusCode())
@@ -287,7 +256,14 @@ public class SpansContainer {
                         .build());
     }
 
-    protected Map<String, String> convertHeadersToMap(Header[] headers) {
+    private static String extractHeaders(Header[] headers) throws JsonProcessingException {
+        return Configuration.getInstance().isLumigoVerboseMode()
+                ? StringUtils.getMaxSizeString(
+                        JsonUtils.getObjectAsJsonString(convertHeadersToMap(headers)))
+                : null;
+    }
+
+    protected static Map<String, String> convertHeadersToMap(Header[] headers) {
         Map<String, String> headersMap = new HashMap<>();
         if (headers != null) {
             for (Header header : headers) {
@@ -299,10 +275,11 @@ public class SpansContainer {
 
     protected static String extractBodyFromRequest(HttpUriRequest request) {
         try {
-            if (request instanceof HttpEntityEnclosingRequestBase) {
+            if (Configuration.getInstance().isLumigoVerboseMode()
+                    && request instanceof HttpEntityEnclosingRequestBase) {
                 HttpEntity entity = ((HttpEntityEnclosingRequestBase) request).getEntity();
                 if (entity != null && entity.getContent() != null) {
-                    return extractStringFromInputStream(entity.getContent());
+                    return StringUtils.extractStringForStream(entity.getContent(), 1024);
                 }
             }
             return null;
@@ -312,22 +289,12 @@ public class SpansContainer {
         }
     }
 
-    protected static String extractStringFromInputStream(InputStream inputStream) {
-        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
-            if (inputStream != null && inputStream.markSupported()) {
-                Logger.info("Stream reset supported, response body will be extracted");
-                IOUtils.copy(inputStream, byteArrayOutputStream);
-                inputStream.reset();
-                return StringUtils.getMaxSizeString(
-                        new String(byteArrayOutputStream.toByteArray(), Charset.defaultCharset()));
-            } else {
-                Logger.info("Stream reset is not supported, response body will not be extracted");
-                return null;
-            }
-        } catch (Throwable e) {
-            Logger.error(e, "Failed to extract body from request");
-            return null;
-        }
+    protected static String extractBodyFromResponse(HttpResponse response) throws IOException {
+        return Configuration.getInstance().isLumigoVerboseMode()
+                ? StringUtils.extractStringForStream(
+                        response.getEntity() != null ? response.getEntity().getContent() : null,
+                        1024)
+                : null;
     }
 
     public String getPatchedRoot() {

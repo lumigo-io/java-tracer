@@ -2,7 +2,12 @@ package io.lumigo.core.utils;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Arrays;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 
 class StringUtilsTest {
@@ -41,5 +46,13 @@ class StringUtilsTest {
     void test_randomStringAndNumbers_check_random() {
         assertNotEquals(
                 StringUtils.randomStringAndNumbers(50), StringUtils.randomStringAndNumbers(50));
+    }
+
+    @Test
+    void extractStringForStream() throws IOException {
+        InputStream inputStream =
+                new ByteArrayInputStream("123456789".getBytes(Charset.forName("UTF-8")));
+        assertEquals("12345", StringUtils.extractStringForStream(inputStream, 5));
+        assertEquals("123456789", IOUtils.toString(inputStream, Charset.forName("UTF-8")));
     }
 }

@@ -10,8 +10,8 @@ public class Agent {
 
     public static void agentmain(String agentArgs, Instrumentation inst) {
         try {
-            URL[] news = {new File("/var/task/").toURI().toURL()};
-            URLClassLoader newClassLoader = new URLClassLoader(news, null);
+            URL[] urls = {new File("/var/task/").toURI().toURL()};
+            URLClassLoader newClassLoader = new URLClassLoader(urls, null);
             Thread.currentThread().setContextClassLoader(newClassLoader);
             final Class<?> loader =
                     newClassLoader.loadClass("io.lumigo.core.instrumentation.agent.Loader");

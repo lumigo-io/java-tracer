@@ -96,7 +96,7 @@ class ApacheHttpInstrumentationTest {
                 ApacheHttpInstrumentation.AmazonHttpClientAdvice.handled.get(request.hashCode()));
     }
 
-    @Disabled
+    @Disabled("Needs static mocking")
     @Test
     public void handling_exit_response_create_new_span() throws Exception {
         when(request.getURI()).thenReturn(URI.create("https://not.lumigo.host/api/spans"));
