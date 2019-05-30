@@ -33,8 +33,8 @@ public class StringUtils {
             try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
                 Logger.info("Stream reset supported, convert to string");
                 byte[] buffer = new byte[size];
-                int len = inputStream.read(buffer);
-                byteArrayOutputStream.write(buffer, 0, len);
+                inputStream.read(buffer);
+                byteArrayOutputStream.write(buffer);
                 String result =
                         new String(byteArrayOutputStream.toByteArray(), Charset.defaultCharset());
                 inputStream.reset();
