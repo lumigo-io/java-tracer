@@ -4,6 +4,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import io.lumigo.core.SpansContainer;
 import io.lumigo.core.configuration.Configuration;
+import io.lumigo.core.instrumentation.agent.Installer;
 import io.lumigo.core.network.Reporter;
 import io.lumigo.core.utils.EnvUtil;
 import lombok.AccessLevel;
@@ -13,13 +14,23 @@ import org.pmw.tinylog.Logger;
 public abstract class LumigoRequestHandler<INPUT, OUTPUT> implements RequestHandler<INPUT, OUTPUT> {
 
     @Setter(AccessLevel.MODULE)
-    private EnvUtil envUtil = new EnvUtil();
+    private EnvUtil envUtil;
 
     @Setter(AccessLevel.MODULE)
-    private Reporter reporter = new Reporter();
+    private Reporter reporter;
 
     @Setter(AccessLevel.MODULE)
-    private SpansContainer spansContainer = SpansContainer.getInstance();
+    private SpansContainer spansContainer;
+
+    public LumigoRequestHandler() {
+        try {
+            this.envUtil = new EnvUtil();
+            this.reporter = new Reporter();
+            this.spansContainer = SpansContainer.getInstance();
+        } catch (RuntimeException ex) {
+            Logger.error(ex, "Failed to init LumigoRequestHandler");
+        }
+    }
 
     @Override
     public OUTPUT handleRequest(INPUT input, Context context) {
@@ -29,6 +40,7 @@ public abstract class LumigoRequestHandler<INPUT, OUTPUT> implements RequestHand
         try {
             Logger.debug("Start {} Lumigo tracer", LumigoRequestHandler.class.getName());
             try {
+                Installer.install();
                 spansContainer.init(envUtil.getEnv(), reporter, context, input);
                 spansContainer.start();
             } catch (Throwable e) {

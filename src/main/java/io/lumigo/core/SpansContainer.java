@@ -7,13 +7,15 @@ import io.lumigo.core.network.Reporter;
 import io.lumigo.core.utils.AwsUtils;
 import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.core.utils.StringUtils;
+import io.lumigo.models.HttpSpan;
 import io.lumigo.models.Span;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.pmw.tinylog.Logger;
 
 public class SpansContainer {
@@ -29,14 +31,16 @@ public class SpansContainer {
     private Span startFunctionSpan;
     private Long rttDuration;
     private Span endFunctionSpan;
-    private List<Span> httpSpans = new LinkedList<>();
     private Reporter reporter;
+    private List<HttpSpan> httpSpans = new LinkedList<>();
 
     private static final SpansContainer ourInstance = new SpansContainer();
 
     public static SpansContainer getInstance() {
         return ourInstance;
     }
+
+    private String awsTracerId;
 
     public void clear() {
         baseSpan = null;
@@ -53,7 +57,7 @@ public class SpansContainer {
             throws JsonProcessingException {
         this.clear();
         this.reporter = reporter;
-        String awsTracerId = env.get(AMZN_TRACE_ID);
+        awsTracerId = env.get(AMZN_TRACE_ID);
         this.baseSpan =
                 Span.builder()
                         .token(Configuration.getInstance().getLumigoToken())
@@ -162,8 +166,8 @@ public class SpansContainer {
         return startFunctionSpan;
     }
 
-    public List<Span> getAllCollectedSpans() {
-        List<Span> spans = new LinkedList<>();
+    public List<Object> getAllCollectedSpans() {
+        List<Object> spans = new LinkedList<>();
         spans.addAll(httpSpans);
         spans.add(endFunctionSpan);
         return spans;
@@ -173,7 +177,7 @@ public class SpansContainer {
         return endFunctionSpan;
     }
 
-    public List<Span> getHttpSpans() {
+    public List<HttpSpan> getHttpSpans() {
         return httpSpans;
     }
 
@@ -182,5 +186,123 @@ public class SpansContainer {
         PrintWriter pw = new PrintWriter(sw, true);
         throwable.printStackTrace(pw);
         return sw.getBuffer().toString();
+    }
+
+    public void addHttpSpan(Long startTime, HttpUriRequest request, HttpResponse response)
+            throws Exception {
+        httpSpans.add(
+                HttpSpan.builder()
+                        .id(UUID.randomUUID().toString())
+                        .started(startTime)
+                        .ended(System.currentTimeMillis())
+                        .transactionId(baseSpan.getTransactionId())
+                        .account(baseSpan.getAccount())
+                        .region(baseSpan.getRegion())
+                        .token(baseSpan.getToken())
+                        .type(HTTP_SPAN_TYPE)
+                        .parentId(baseSpan.getRequestId())
+                        .info(
+                                HttpSpan.Info.builder()
+                                        .tracer(
+                                                HttpSpan.Tracer.builder()
+                                                        .version(
+                                                                baseSpan.getInfo()
+                                                                        .getTracer()
+                                                                        .getVersion())
+                                                        .build())
+                                        .traceId(
+                                                HttpSpan.TraceId.builder()
+                                                        .root(
+                                                                baseSpan.getInfo()
+                                                                        .getTraceId()
+                                                                        .getRoot())
+                                                        .build())
+                                        .httpInfo(
+                                                HttpSpan.HttpInfo.builder()
+                                                        .host(request.getURI().getHost())
+                                                        .request(
+                                                                HttpSpan.HttpData.builder()
+                                                                        .headers(
+                                                                                extractHeaders(
+                                                                                        request
+                                                                                                .getAllHeaders()))
+                                                                        .uri(
+                                                                                Configuration
+                                                                                                .getInstance()
+                                                                                                .isLumigoVerboseMode()
+                                                                                        ? request.getURI()
+                                                                                                .toString()
+                                                                                        : null)
+                                                                        .method(request.getMethod())
+                                                                        .body(
+                                                                                extractBodyFromRequest(
+                                                                                        request))
+                                                                        .build())
+                                                        .response(
+                                                                HttpSpan.HttpData.builder()
+                                                                        .headers(
+                                                                                extractHeaders(
+                                                                                        response
+                                                                                                .getAllHeaders()))
+                                                                        .body(
+                                                                                extractBodyFromResponse(
+                                                                                        response))
+                                                                        .statusCode(
+                                                                                response.getStatusLine()
+                                                                                        .getStatusCode())
+                                                                        .build())
+                                                        .build())
+                                        .build())
+                        .build());
+    }
+
+    private static String extractHeaders(Header[] headers) throws JsonProcessingException {
+        return Configuration.getInstance().isLumigoVerboseMode()
+                ? StringUtils.getMaxSizeString(
+                        JsonUtils.getObjectAsJsonString(convertHeadersToMap(headers)))
+                : null;
+    }
+
+    protected static Map<String, String> convertHeadersToMap(Header[] headers) {
+        Map<String, String> headersMap = new HashMap<>();
+        if (headers != null) {
+            for (Header header : headers) {
+                headersMap.put(header.getName(), header.getValue());
+            }
+        }
+        return headersMap;
+    }
+
+    protected static String extractBodyFromRequest(HttpUriRequest request) {
+        try {
+            if (Configuration.getInstance().isLumigoVerboseMode()
+                    && request instanceof HttpEntityEnclosingRequestBase) {
+                HttpEntity entity = ((HttpEntityEnclosingRequestBase) request).getEntity();
+                if (entity != null && entity.getContent() != null) {
+                    return StringUtils.extractStringForStream(entity.getContent(), 1024);
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            Logger.error(e, "Failed to extract body from request");
+            return null;
+        }
+    }
+
+    protected static String extractBodyFromResponse(HttpResponse response) throws IOException {
+        return Configuration.getInstance().isLumigoVerboseMode()
+                ? StringUtils.extractStringForStream(
+                        response.getEntity() != null ? response.getEntity().getContent() : null,
+                        1024)
+                : null;
+    }
+
+    public String getPatchedRoot() {
+        return String.format(
+                "Root=%s-0000%s-%s%s",
+                AwsUtils.extractAwsTraceRoot(awsTracerId),
+                StringUtils.randomStringAndNumbers(4),
+                AwsUtils.extractAwsTraceTransactionId(awsTracerId),
+                AwsUtils.extractAwsTraceSuffix(awsTracerId));
     }
 }

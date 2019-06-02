@@ -181,6 +181,7 @@ class LumigoRequestHandlerTest {
                 JsonUtils.getObjectAsJsonString(argumentCaptorStartSpan.getAllValues().get(0)),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
         Span endSpan = getEndSpan("Response", null);
@@ -191,6 +192,7 @@ class LumigoRequestHandlerTest {
                         argumentCaptorAllSpans.getAllValues().get(0).get(0)),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
     }
@@ -218,6 +220,7 @@ class LumigoRequestHandlerTest {
                 JsonUtils.getObjectAsJsonString(argumentCaptorStartSpan.getAllValues().get(0)),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
         JSONAssert.assertEquals(
@@ -227,6 +230,7 @@ class LumigoRequestHandlerTest {
                         argumentCaptorAllSpans.getAllValues().get(0).get(0)),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("error.stacktrace", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
@@ -260,6 +264,7 @@ class LumigoRequestHandlerTest {
                 JsonUtils.getObjectAsJsonString(argumentCaptorStartSpan.getAllValues().get(0)),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
         JSONAssert.assertEquals(
@@ -275,6 +280,7 @@ class LumigoRequestHandlerTest {
                         argumentCaptorAllSpans.getAllValues().get(0).get(0)),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("error.stacktrace", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
@@ -370,6 +376,7 @@ class LumigoRequestHandlerTest {
                 JsonUtils.getObjectAsJsonString(argumentCaptorStartSpan.getAllValues().get(0)),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
         JSONAssert.assertEquals(
@@ -383,6 +390,7 @@ class LumigoRequestHandlerTest {
                         argumentCaptorAllSpans.getAllValues().get(0).get(0)),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
     }
@@ -410,6 +418,7 @@ class LumigoRequestHandlerTest {
                 JsonUtils.getObjectAsJsonString(argumentCaptorStartSpan.getAllValues().get(0)),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
         JSONAssert.assertEquals(
@@ -423,6 +432,7 @@ class LumigoRequestHandlerTest {
                         argumentCaptorAllSpans.getAllValues().get(0).get(0)),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("error.stacktrace", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
@@ -455,6 +465,7 @@ class LumigoRequestHandlerTest {
                 JsonUtils.getObjectAsJsonString(argumentCaptorStartSpan.getAllValues().get(0)),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
         JSONAssert.assertEquals(
@@ -471,6 +482,7 @@ class LumigoRequestHandlerTest {
                         argumentCaptorAllSpans.getAllValues().get(0).get(0)),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("error.stacktrace", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
