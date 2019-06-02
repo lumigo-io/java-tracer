@@ -34,22 +34,27 @@ public class StringUtils {
                 Logger.info("Stream reset supported, convert to string");
                 byte[] buffer = new byte[size];
                 int read = inputStream.read(buffer);
-                Logger.debug("Read {} bytes from input stream", read);
-                byteArrayOutputStream.write(buffer, 0, read);
-                String result =
-                        new String(byteArrayOutputStream.toByteArray(), Charset.defaultCharset())
-                                .trim();
-                inputStream.reset();
-                return result;
+                if (read > 0) {
+                    Logger.debug("Read {} bytes from input stream", read);
+                    byteArrayOutputStream.write(buffer, 0, size);
+                    String result =
+                            new String(
+                                            byteArrayOutputStream.toByteArray(),
+                                            Charset.defaultCharset())
+                                    .trim();
+                    inputStream.reset();
+                    return result;
+                } else {
+                    Logger.info("No bytes can be read from stream");
+                }
+
             } catch (Throwable e) {
                 Logger.error(e, "Failed to extract string from stream");
-                return null;
-            } finally {
 
             }
         } else {
-            Logger.info("Stream reset is null");
-            return null;
+            Logger.info("Stream markSupported is false or stream is null");
         }
+        return null;
     }
 }

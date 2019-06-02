@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.stream.Stream;
+
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 
@@ -62,5 +64,11 @@ class StringUtilsTest {
                 new ByteArrayInputStream("123456789".getBytes(Charset.forName("UTF-8")));
         assertEquals("123456789", StringUtils.extractStringForStream(inputStream, 100));
         assertEquals("123456789", IOUtils.toString(inputStream, Charset.forName("UTF-8")));
+    }
+
+    @Test
+    void extractStringForStream_empty_stream() throws IOException {
+        InputStream empty = new ByteArrayInputStream(new byte[0]);
+        assertNull(StringUtils.extractStringForStream(empty, 100));
     }
 }
