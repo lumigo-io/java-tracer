@@ -18,10 +18,7 @@ public class Loader {
                         .ignore(
                                 not(
                                         nameStartsWith("com.amazonaws.http.apache.client.impl")
-                                                .and(
-                                                        not(
-                                                                nameStartsWith(
-                                                                        "org.apache.http.impl.client")))))
+                                                .and(not(nameStartsWith("org.apache.http")))))
                         .type(instrumentation.getTypeMatcher())
                         .transform(instrumentation.getTransformer());
         builder.installOn(inst);

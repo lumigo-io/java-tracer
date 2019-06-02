@@ -21,6 +21,7 @@ public class Configuration {
     public static final String LUMIGO_VERBOSE = "LUMIGO_VERBOSE";
     public static final String REPORTER_TIMEOUT = "LUMIGO_REPORTER_TIMEOUT";
     public static final String LUMIGO_KILL_SWITCH = "LUMIGO_SWITCH_OFF";
+    public static final String LUMIGO_INSTRUMENTATION = "LUMIGO_INSTRUMENTATION";
 
     private static Configuration instance;
     private LumigoConfiguration inlineConf;
@@ -107,5 +108,9 @@ public class Configuration {
 
     public boolean isLumigoHost(String host) {
         return host.contains(getLumigoEdge().replace(EDGE_PREFIX, "").replace(EDGE_SUFFIX, ""));
+    }
+
+    public boolean isInstrumentationEnabled() {
+        return envUtil.getBooleanEnv(LUMIGO_INSTRUMENTATION, true);
     }
 }
