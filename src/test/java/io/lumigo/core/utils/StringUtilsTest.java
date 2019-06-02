@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.stream.Stream;
-
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 

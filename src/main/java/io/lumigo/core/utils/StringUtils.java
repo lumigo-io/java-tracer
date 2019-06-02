@@ -50,7 +50,6 @@ public class StringUtils {
 
             } catch (Throwable e) {
                 Logger.error(e, "Failed to extract string from stream");
-
             }
         } else {
             Logger.info("Stream markSupported is false or stream is null");
