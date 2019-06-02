@@ -5,6 +5,15 @@
 
 # Building With Lumigo
 ## Maven
+Add repository:
+```xml
+<repositories>
+    <repository>
+        <id>nuiton</id>
+        <url>http://maven.nuiton.org/release/</url>
+    </repository>
+</repositories>
+```
 Include lumigo java tracer dependency, for [Maven](https://maven.apache.org) projects, use:
 ```xml
 <dependency>
