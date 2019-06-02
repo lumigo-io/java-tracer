@@ -74,7 +74,7 @@ public class Configuration {
     }
 
     public String getLumigoTracerVersion() {
-        return "1.0";
+        return "1.0.9";
     }
 
     public Duration getLumigoTimeout() {
@@ -103,5 +103,9 @@ public class Configuration {
         return inlineConf.getKillSwitch() != null
                 ? inlineConf.getKillSwitch()
                 : envUtil.getBooleanEnv(LUMIGO_KILL_SWITCH, false);
+    }
+
+    public boolean isLumigoHost(String host) {
+        return host.contains(getLumigoEdge().replace(EDGE_PREFIX, "").replace(EDGE_SUFFIX, ""));
     }
 }

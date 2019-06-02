@@ -10,9 +10,9 @@ import io.lumigo.models.Span;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import okhttp3.Call;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -25,16 +25,16 @@ class ReporterTest {
     Reporter reporter = new Reporter();
 
     @Mock EnvUtil envUtil;
-    @Mock OkHttpClient client;
-    @Mock Call call;
+    @Mock HttpClient client;
+    @Mock HttpResponse response;
     private Map<String, String> env = new HashMap<>();
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
         MockitoAnnotations.initMocks(this);
         createMockedEnv();
         Configuration.getInstance().setEnvUtil(envUtil);
-        when(client.newCall(any(Request.class))).thenReturn(call);
+        when(client.execute(any(HttpPost.class))).thenReturn(response);
         reporter.setClient(client);
     }
 
@@ -52,7 +52,7 @@ class ReporterTest {
     void reportSpans() throws IOException {
         reporter.reportSpans(Span.builder().build());
 
-        ArgumentCaptor<Request> argumentCaptorRequest = ArgumentCaptor.forClass(Request.class);
-        verify(client, Mockito.times(1)).newCall(argumentCaptorRequest.capture());
+        ArgumentCaptor<HttpPost> argumentCaptorRequest = ArgumentCaptor.forClass(HttpPost.class);
+        verify(client, Mockito.times(1)).execute(argumentCaptorRequest.capture());
     }
 }

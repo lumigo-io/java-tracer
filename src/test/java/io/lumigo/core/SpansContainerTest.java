@@ -1,15 +1,28 @@
 package io.lumigo.core;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.util.StringInputStream;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.lumigo.core.network.Reporter;
 import io.lumigo.core.utils.JsonUtils;
+import io.lumigo.models.HttpSpan;
 import io.lumigo.models.Span;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,6 +39,9 @@ class SpansContainerTest {
 
     @Mock private Context context;
     @Mock Reporter reporter;
+    @Mock HttpResponse httpResponse;
+    @Mock StatusLine statusLine;
+    @Mock HttpUriRequest httpRequest;
 
     @BeforeEach
     void setUp() {
@@ -39,7 +55,6 @@ class SpansContainerTest {
     void clear() throws JsonProcessingException {
         spansContainer.init(createMockedEnv(), reporter, context, null);
         spansContainer.start();
-
         spansContainer.clear();
 
         assertNull(spansContainer.getStartFunctionSpan());
@@ -89,6 +104,7 @@ class SpansContainerTest {
                 JsonUtils.getObjectAsJsonString(actualSpan),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("token", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
@@ -142,6 +158,7 @@ class SpansContainerTest {
                 JsonUtils.getObjectAsJsonString(actualSpan),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null),
                         new Customization("token", (o1, o2) -> o2 != null),
@@ -192,6 +209,7 @@ class SpansContainerTest {
                 JsonUtils.getObjectAsJsonString(actualSpan),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null),
                         new Customization("token", (o1, o2) -> o2 != null),
@@ -242,10 +260,83 @@ class SpansContainerTest {
                 JsonUtils.getObjectAsJsonString(actualSpan),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null),
                         new Customization("token", (o1, o2) -> o2 != null),
                         new Customization("error.stacktrace", (o1, o2) -> o2 != null)));
+    }
+
+    @DisplayName("Http span creation")
+    @Test
+    void add_http_span() throws Exception {
+        spansContainer.init(createMockedEnv(), reporter, context, null);
+        when(httpRequest.getURI()).thenReturn(URI.create("https://google.com"));
+        when(httpResponse.getStatusLine()).thenReturn(statusLine);
+        when(statusLine.getStatusCode()).thenReturn(200);
+
+        long startTime = System.currentTimeMillis();
+        spansContainer.addHttpSpan(startTime, httpRequest, httpResponse);
+
+        HttpSpan actualSpan = spansContainer.getHttpSpans().get(0);
+        String expectedSpan =
+                "{\n"
+                        + "   \"started\":1559127760071,\n"
+                        + "   \"ended\":1559127760085,\n"
+                        + "   \"id\":\"cc9ceb9c-dad2-4762-8f0c-147408bdc063\",\n"
+                        + "   \"type\":\"http\",\n"
+                        + "   \"transactionId\":\"3\",\n"
+                        + "   \"account\":\"1111\",\n"
+                        + "   \"region\":\"us-west-2\",\n"
+                        + "   \"token\":null,\n"
+                        + "   \"info\":{\n"
+                        + "      \"tracer\":{\n"
+                        + "         \"version\":\"1.0\"\n"
+                        + "      },\n"
+                        + "      \"traceId\":{\n"
+                        + "         \"Root\":\"1-2-3\"\n"
+                        + "      },\n"
+                        + "      \"httpInfo\":{\n"
+                        + "         \"host\":\"google.com\",\n"
+                        + "         \"request\":{\n"
+                        + "            \"headers\":\"{}\",\n"
+                        + "            \"body\":null,\n"
+                        + "            \"uri\":\"https://google.com\",\n"
+                        + "            \"statusCode\":null,\n"
+                        + "            \"method\":null\n"
+                        + "         },\n"
+                        + "         \"response\":{\n"
+                        + "            \"headers\":\"{}\",\n"
+                        + "            \"body\":null,\n"
+                        + "            \"uri\":null,\n"
+                        + "            \"statusCode\":200,\n"
+                        + "            \"method\":null\n"
+                        + "         }\n"
+                        + "      }\n"
+                        + "   },\n"
+                        + "   \"parentId\":\"3n2783hf7823hdui32\"\n"
+                        + "}";
+        JSONAssert.assertEquals(
+                expectedSpan,
+                JsonUtils.getObjectAsJsonString(actualSpan),
+                new CustomComparator(
+                        JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
+                        new Customization("id", (o1, o2) -> o2 != null),
+                        new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("ended", (o1, o2) -> o2 != null)));
+    }
+
+    @DisplayName("Extract body from request")
+    @Test
+    void test_extract_body_from_request() {
+        assertEquals("response", SpansContainer.extractBodyFromRequest(new HttpRequestMockCls()));
+    }
+
+    @DisplayName("Extract body from un reset request, should be null")
+    @Test
+    void test_extract_Body_From_Request() {
+        assertNull(SpansContainer.extractBodyFromRequest(new HttpRequestMockUnResetStream()));
     }
 
     private Map<String, String> createMockedEnv() {
@@ -267,5 +358,113 @@ class SpansContainerTest {
         when(context.getLogGroupName()).thenReturn("/aws/lambda/mocked_function_name");
         when(context.getLogStreamName())
                 .thenReturn("2019/05/12/[$LATEST]7f67fc1238a941749d8126be19f0cdc6");
+    }
+
+    private static class HttpRequestMockUnResetStream extends HttpRequestMockCls {
+        @Override
+        public HttpEntity getEntity() {
+            return new HttpEntity() {
+                @Override
+                public boolean isRepeatable() {
+                    return false;
+                }
+
+                @Override
+                public boolean isChunked() {
+                    return false;
+                }
+
+                @Override
+                public long getContentLength() {
+                    return 0;
+                }
+
+                @Override
+                public Header getContentType() {
+                    return null;
+                }
+
+                @Override
+                public Header getContentEncoding() {
+                    return null;
+                }
+
+                @Override
+                public InputStream getContent() throws IOException, UnsupportedOperationException {
+                    return new StringInputStream("response") {
+                        @Override
+                        public boolean markSupported() {
+                            return false;
+                        }
+                    };
+                }
+
+                @Override
+                public void writeTo(OutputStream outputStream) throws IOException {}
+
+                @Override
+                public boolean isStreaming() {
+                    return false;
+                }
+
+                @Override
+                public void consumeContent() throws IOException {}
+            };
+        }
+    }
+
+    private static class HttpRequestMockCls extends HttpEntityEnclosingRequestBase
+            implements HttpUriRequest {
+
+        @Override
+        public String getMethod() {
+            return "GET";
+        }
+
+        @Override
+        public HttpEntity getEntity() {
+            return new HttpEntity() {
+                @Override
+                public boolean isRepeatable() {
+                    return false;
+                }
+
+                @Override
+                public boolean isChunked() {
+                    return false;
+                }
+
+                @Override
+                public long getContentLength() {
+                    return 0;
+                }
+
+                @Override
+                public Header getContentType() {
+                    return null;
+                }
+
+                @Override
+                public Header getContentEncoding() {
+                    return null;
+                }
+
+                @Override
+                public InputStream getContent() throws IOException, UnsupportedOperationException {
+                    return new StringInputStream("response");
+                }
+
+                @Override
+                public void writeTo(OutputStream outputStream) throws IOException {}
+
+                @Override
+                public boolean isStreaming() {
+                    return false;
+                }
+
+                @Override
+                public void consumeContent() throws IOException {}
+            };
+        }
     }
 }
