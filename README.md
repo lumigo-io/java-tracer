@@ -7,6 +7,15 @@
 ## Maven
 Include lumigo java tracer dependency, for [Maven](https://maven.apache.org) projects, use:
 ```xml
+<repositories>
+    <repository>
+        <id>nuiton</id>
+        <url>http://maven.nuiton.org/release/</url>
+    </repository>
+</repositories>
+```
+
+```xml
 <dependency>
   <groupId>io.lumigo</groupId>
   <artifactId>java-tracer</artifactId>
