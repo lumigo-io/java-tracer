@@ -15,6 +15,19 @@ commands:
             sudo update-alternatives --config java
             sudo apt install maven
 
+  install_java_compatabilities:
+    description: "Install Scala and Kotlin"
+    steps:
+      - run: sudo apt-get install scala
+      - run:
+          command: |
+            cd ..
+            curl -L -o sbt.deb http://dl.bintray.com/sbt/debian/sbt-0.13.15.deb
+            sudo dpkg -i sbt.deb
+            sudo apt-get update
+            sudo apt-get install sbt
+
+
   install_node:
     description: "Install node 10"
     steps:
@@ -104,6 +117,7 @@ jobs:
     <<: *defaults
     steps:
       - install_java
+      - install_java_compatabilities
       - install_node
       - checkout_utils
       - checkout_code
@@ -112,8 +126,8 @@ jobs:
       - run: cd ../integration-tests && npm i
       - run: sudo npm install -g recursive-install
       - run: cd ../integration-tests && ./scripts/prepare_env.sh
-      - run: cd ../integration-tests && ./scripts/deploy.sh
-      - run: cd ../integration-tests && npm run test
+      - run: cd ../integration-tests && ./scripts/deploy.sh --spec java
+      - run: cd ../integration-tests && export testJava=true && npm run test
 
   deploy:
     <<: *defaults
