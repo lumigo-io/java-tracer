@@ -35,6 +35,7 @@ echo "Import gpg key"
 export GPG_TTY=$(tty)
 echo -e "$GPG_KEY" | gpg --import --passphrase "$GPG_PASSPHRASE" --pinentry-mode loopback
 echo "Uploading lumigo java tracer to maven central repository"
+mvn -f agent/pom.xml clean package
 mvn -Dmaven.test.skip=true -Dfindbugs.skip=true clean deploy
 mvn nexus-staging:release
 

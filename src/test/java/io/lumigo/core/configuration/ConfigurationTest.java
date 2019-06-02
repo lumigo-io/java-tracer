@@ -110,4 +110,34 @@ class ConfigurationTest {
 
         assertTrue(Configuration.getInstance().isLumigoVerboseMode());
     }
+
+    @Test
+    void timeout_from_env() {
+        Configuration.getInstance().setEnvUtil(envUtil);
+        when(envUtil.getEnv(Configuration.REPORTER_TIMEOUT)).thenReturn("5000");
+        assertEquals(5000, Configuration.getInstance().getLumigoTimeout().toMillis());
+
+        assertTrue(Configuration.getInstance().isLumigoVerboseMode());
+    }
+
+    @Test
+    void timeout_default() {
+        Configuration.getInstance().setEnvUtil(envUtil);
+        assertEquals(3000, Configuration.getInstance().getLumigoTimeout().toMillis());
+
+        assertTrue(Configuration.getInstance().isLumigoVerboseMode());
+    }
+
+    @Test
+    void kill_switch_on() {
+        Configuration.getInstance().setEnvUtil(envUtil);
+        when(envUtil.getEnv(Configuration.LUMIGO_KILL_SWITCH)).thenReturn("true");
+        assertTrue(Configuration.getInstance().isKillingSwitchActivated());
+    }
+
+    @Test
+    void kill_switch_default_off() {
+        Configuration.getInstance().setEnvUtil(envUtil);
+        assertFalse(Configuration.getInstance().isKillingSwitchActivated());
+    }
 }

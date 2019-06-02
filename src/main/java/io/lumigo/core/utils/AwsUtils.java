@@ -119,7 +119,7 @@ public class AwsUtils {
             } else if (event instanceof CognitoEvent) {
                 triggeredBy.setTriggeredBy("cognito");
             } else {
-                Logger.error(
+                Logger.info(
                         "Failed to found relevant triggered by found for event {} ",
                         event.getClass().getName());
                 return null;
