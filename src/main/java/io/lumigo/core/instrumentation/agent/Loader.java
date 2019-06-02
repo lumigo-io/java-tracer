@@ -17,8 +17,8 @@ public class Loader {
                         .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
                         .ignore(
                                 not(
-                                        nameStartsWith("com.amazonaws.http.apache.client.impl")
-                                                .and(not(nameStartsWith("org.apache.http")))))
+                                        nameStartsWith("com.amazonaws.http.apache.client.impl"))
+                                                .and(not(nameStartsWith("org.apache.http.impl.client"))))
                         .type(instrumentation.getTypeMatcher())
                         .transform(instrumentation.getTransformer());
         builder.installOn(inst);

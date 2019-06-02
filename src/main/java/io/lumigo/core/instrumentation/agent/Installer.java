@@ -10,7 +10,6 @@ public class Installer {
     private static boolean firstStart = true;
 
     public static synchronized void install() {
-
         if (Configuration.getInstance().isAwsEnvironment()
                 && Configuration.getInstance().isInstrumentationEnabled()
                 && firstStart) {
@@ -31,7 +30,11 @@ public class Installer {
                 }
             }
         } else {
-            Logger.info("Agent installation is skipped because of local running");
+            Logger.info(
+                    "Agent installation is skipped, isAwsEnvironment: {}, isInstrumentationEnabled: {}, isFirstStart: {}",
+                    Configuration.getInstance().isAwsEnvironment(),
+                    Configuration.getInstance().isInstrumentationEnabled(),
+                    firstStart);
         }
     }
 }
