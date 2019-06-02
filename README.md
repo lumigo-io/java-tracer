@@ -5,7 +5,7 @@
 
 # Building With Lumigo
 ## Maven
-Add repository:
+Include lumigo java tracer dependency, for [Maven](https://maven.apache.org) projects, use:
 ```xml
 <repositories>
     <repository>
@@ -14,7 +14,7 @@ Add repository:
     </repository>
 </repositories>
 ```
-Include lumigo java tracer dependency, for [Maven](https://maven.apache.org) projects, use:
+
 ```xml
 <dependency>
   <groupId>io.lumigo</groupId>
