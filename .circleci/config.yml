@@ -126,7 +126,7 @@ jobs:
       - run: cd ../integration-tests && npm i
       - run: sudo npm install -g recursive-install
       - run: cd ../integration-tests && ./scripts/prepare_env.sh
-      - run: cd ../integration-tests && ./scripts/deploy.sh
+      - run: cd ../integration-tests && ./scripts/deploy.sh --spec java
       - run: cd ../integration-tests && export testJava=true && npm run test
 
   deploy:
