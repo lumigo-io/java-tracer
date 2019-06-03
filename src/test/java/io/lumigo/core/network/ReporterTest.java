@@ -1,7 +1,7 @@
 package io.lumigo.core.network;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 import io.lumigo.core.configuration.Configuration;
@@ -10,14 +10,9 @@ import io.lumigo.models.Span;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 class ReporterTest {
@@ -25,21 +20,17 @@ class ReporterTest {
     Reporter reporter = new Reporter();
 
     @Mock EnvUtil envUtil;
-    @Mock HttpClient client;
-    @Mock HttpResponse response;
     private Map<String, String> env = new HashMap<>();
 
     @BeforeEach
-    void setUp() throws IOException {
+    void setUp() {
         MockitoAnnotations.initMocks(this);
         createMockedEnv();
         Configuration.getInstance().setEnvUtil(envUtil);
-        when(client.execute(any(HttpPost.class))).thenReturn(response);
-        reporter.setClient(client);
     }
 
     private void createMockedEnv() {
-        addEnvMock("LAMBDA_RUNTIME_DIR", "/");
+        addEnvMock(Configuration.TRACER_HOST_KEY, "google.com");
         when(envUtil.getEnv()).thenReturn(env);
     }
 
@@ -50,9 +41,15 @@ class ReporterTest {
 
     @Test
     void reportSpans() throws IOException {
-        reporter.reportSpans(Span.builder().build());
+        addEnvMock("LAMBDA_RUNTIME_DIR", "/");
+        long l = reporter.reportSpans(Span.builder().build());
+        assertTrue(l > 0);
+    }
 
-        ArgumentCaptor<HttpPost> argumentCaptorRequest = ArgumentCaptor.forClass(HttpPost.class);
-        verify(client, Mockito.times(1)).execute(argumentCaptorRequest.capture());
+    @Test
+    void reportSpans_not_aws_run() throws IOException {
+        env.remove("LAMBDA_RUNTIME_DIR");
+        long l = reporter.reportSpans(Span.builder().build());
+        assertEquals(0, l);
     }
 }

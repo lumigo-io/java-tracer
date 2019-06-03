@@ -6,27 +6,18 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import lombok.AccessLevel;
-import lombok.Setter;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
+import okhttp3.*;
 import org.pmw.tinylog.Logger;
 
 public class Reporter {
 
-    @Setter(AccessLevel.PACKAGE)
-    private HttpClient client;
+    private OkHttpClient client;
 
     public Reporter() {
-        RequestConfig.Builder requestBuilder = RequestConfig.custom();
-        requestBuilder.setConnectionRequestTimeout(
-                Long.valueOf(Configuration.getInstance().getLumigoTimeout().toMillis()).intValue());
-        client = HttpClientBuilder.create().setDefaultRequestConfig(requestBuilder.build()).build();
+        client =
+                new OkHttpClient.Builder()
+                        .callTimeout(Configuration.getInstance().getLumigoTimeout())
+                        .build();
     }
 
     public long reportSpans(Object span) throws IOException {
@@ -39,12 +30,19 @@ public class Reporter {
         Logger.debug("Reporting the spans: {}", spansAsString);
 
         if (Configuration.getInstance().isAwsEnvironment()) {
-            HttpPost request = new HttpPost(Configuration.getInstance().getLumigoEdge());
-            request.setHeader("Accept", "application/json");
-            request.setHeader("Content-Type", "application/json; charset=utf-8");
-            request.setEntity(new StringEntity(spansAsString));
-            HttpResponse response = client.execute(request);
-            EntityUtils.consume(response.getEntity());
+            RequestBody body =
+                    RequestBody.create(
+                            MediaType.get("application/json; charset=utf-8"), spansAsString);
+            Request request =
+                    new Request.Builder()
+                            .header("Accept", "application/json")
+                            .url(Configuration.getInstance().getLumigoEdge())
+                            .post(body)
+                            .build();
+            Response response = client.newCall(request).execute();
+            if (response.body() != null) {
+                response.body().close();
+            }
             long duration = System.nanoTime() - time;
             Logger.info(
                     "Took: {} milliseconds to send {} Spans to URL: {}",
