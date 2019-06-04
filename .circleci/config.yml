@@ -24,12 +24,11 @@ commands:
             sudo apt-get install unzip
             sudo mkdir /opt/gradle
             sudo unzip -d /opt/gradle ~/gradle-5.4.1-bin.zip
-            export PATH=$PATH:/opt/gradle/gradle-5.4.1/bin
-            touch /etc/profile.d/gradle.sh
-            echo "export GRADLE_HOME=/opt/gradle/gradle-5.4.1" >> file
-            echo "PATH=${GRADLE_HOME}/bin:${PATH}" >> file
+            sudo touch /etc/profile.d/gradle.sh
+            sudo echo "export GRADLE_HOME=/opt/gradle/gradle-5.4.1" >> /etc/profile.d/gradle.sh
+            sudo echo "PATH=${GRADLE_HOME}/bin:${PATH}" >> /etc/profile.d/gradle.sh
             sudo chmod +x /etc/profile.d/gradle.sh
-            source /etc/profile.d/gradle.sh
+            sudo source /etc/profile.d/gradle.sh
             gradle -v
 
   install_java_compatabilities:
