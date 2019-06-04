@@ -26,7 +26,7 @@ commands:
             sudo unzip -d /opt/gradle ~/gradle-5.4.1-bin.zip
             rm ~/gradle-5.4.1-bin.zip
             export PATH=$PATH:/opt/gradle/gradle-5.4.1/bin
-            gradle -v
+      - run: gradle -v
 
   install_java_compatabilities:
     description: "Install Scala and Kotlin"
