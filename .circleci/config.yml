@@ -15,6 +15,20 @@ commands:
             sudo update-alternatives --config java
             sudo apt install maven
 
+  install_gradle:
+    description: "Install gradle"
+      steps:
+        - run:
+            command: |
+              wget -O ~/gradle-5.4.1-bin.zip https://services.gradle.org/distributions/gradle-5.4.1-bin.zip
+              sudo apt-get install unzip
+              sudo mkdir /opt/gradle
+              sudo unzip -d /opt/gradle ~/gradle-5.4.1-bin.zip
+              rm ~/gradle-5.4.1-bin.zip
+              echo "export PATH=\$PATH:/opt/gradle/gradle-4.2.1/bin" >> ~/.bashrc
+              source ~/.bashrc
+              gradle -v
+
   install_java_compatabilities:
     description: "Install Scala and Kotlin"
     steps:
@@ -118,6 +132,7 @@ jobs:
     steps:
       - install_java
       - install_java_compatabilities
+      - install_gradle
       - install_node
       - checkout_utils
       - checkout_code

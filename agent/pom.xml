@@ -14,7 +14,7 @@
     <artifactId>lumigo-agent</artifactId>
     <version>1.0.13</version>
 
-    <name>Lumigo java tracer</name>
+    <name>Lumigo java tracer agent</name>
     <description>The Lumigo java tracer for serverless functions</description>
     <url>https://lumigo.io/</url>
 
