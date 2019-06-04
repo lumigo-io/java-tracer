@@ -25,8 +25,7 @@ commands:
             sudo mkdir /opt/gradle
             sudo unzip -d /opt/gradle ~/gradle-5.4.1-bin.zip
             rm ~/gradle-5.4.1-bin.zip
-            echo "export PATH=\$PATH:/opt/gradle/gradle-5.4.1/bin" >> ~/.bashrc
-            source ~/.bashrc
+            export PATH=$PATH:/opt/gradle/gradle-5.4.1/bin
             gradle -v
 
   install_java_compatabilities:
