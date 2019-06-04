@@ -21,6 +21,12 @@ Include lumigo java tracer dependency, for [Maven](https://maven.apache.org) pro
   <artifactId>java-tracer</artifactId>
   <version>{version}</version>
 </dependency>
+
+<dependency>
+  <groupId>io.lumigo</groupId>
+  <artifactId>lumigo-agent</artifactId>
+  <version>{version}</version>
+</dependency>
 ```
 Find the latest version here (the format of the version will be n.n.n):
 
