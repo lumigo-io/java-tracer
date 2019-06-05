@@ -2,6 +2,7 @@ package io.lumigo.core.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.pmw.tinylog.Logger;
 
 public class JsonUtils {
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -9,12 +10,16 @@ public class JsonUtils {
     /**
      * @param o Any object
      * @return object json representation as string
-     * @throws JsonProcessingException the object can't be serialize to json
      */
-    public static String getObjectAsJsonString(Object o) throws JsonProcessingException {
+    public static String getObjectAsJsonString(Object o) {
         if (o == null || o instanceof String) {
             return (String) o;
         }
-        return mapper.writeValueAsString(o);
+        try {
+            return mapper.writeValueAsString(o);
+        } catch (JsonProcessingException e) {
+            Logger.error(e, "Failed converting to json class {}", o.getClass().getName());
+            return null;
+        }
     }
 }

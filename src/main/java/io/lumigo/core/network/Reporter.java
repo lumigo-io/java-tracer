@@ -5,7 +5,6 @@ import io.lumigo.core.utils.JsonUtils;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import okhttp3.*;
 import org.pmw.tinylog.Logger;
 
@@ -44,11 +43,6 @@ public class Reporter {
                 response.body().close();
             }
             long duration = System.nanoTime() - time;
-            Logger.info(
-                    "Took: {} milliseconds to send {} Spans to URL: {}",
-                    TimeUnit.NANOSECONDS.toMillis(duration),
-                    spans.size(),
-                    Configuration.getInstance().getLumigoEdge());
             return duration;
         }
         return 0;
