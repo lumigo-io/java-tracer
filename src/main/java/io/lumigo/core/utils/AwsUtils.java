@@ -2,7 +2,6 @@ package io.lumigo.core.utils;
 
 import com.amazonaws.services.lambda.runtime.events.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.lumigo.models.Span;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -128,7 +127,7 @@ public class AwsUtils {
             Logger.info("Found triggered by handler fo event {}", event.getClass().getName());
             return JsonUtils.getObjectAsJsonString(triggeredBy);
 
-        } catch (RuntimeException | JsonProcessingException e) {
+        } catch (RuntimeException e) {
             Logger.error(e, "Failed to extract triggerBy data");
             return TRIGGERED_BY_FALLBACK;
         }
