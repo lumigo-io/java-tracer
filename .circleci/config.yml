@@ -20,15 +20,9 @@ commands:
     steps:
       - run:
           command: |
-            wget -O ~/gradle-5.4.1-bin.zip https://services.gradle.org/distributions/gradle-5.4.1-bin.zip
-            sudo apt-get install unzip
-            sudo mkdir /opt/gradle
-            sudo unzip -d /opt/gradle ~/gradle-5.4.1-bin.zip
-            sudo touch /etc/profile.d/gradle.sh
-            sudo echo "export GRADLE_HOME=/opt/gradle/gradle-5.4.1" | sudo tee /etc/profile.d/gradle.sh
-            sudo echo "PATH=${GRADLE_HOME}/bin:${PATH}" | sudo tee /etc/profile.d/gradle.sh
-            sudo chmod +x /etc/profile.d/gradle.sh
-            sudo source /etc/profile.d/gradle.sh
+            curl -s "https://get.sdkman.io" | bash
+            source "/home/circleci/.sdkman/bin/sdkman-init.sh"
+            sdk install gradle 5.4.1
             gradle -v
 
   install_java_compatabilities:
