@@ -15,6 +15,16 @@ commands:
             sudo update-alternatives --config java
             sudo apt install maven
 
+  install_gradle:
+    description: "Install gradle"
+    steps:
+      - run:
+          command: |
+            curl -s "https://get.sdkman.io" | bash
+            source "/home/circleci/.sdkman/bin/sdkman-init.sh"
+            sdk install gradle 5.4.1
+            gradle -v
+
   install_java_compatabilities:
     description: "Install Scala and Kotlin"
     steps:
@@ -33,7 +43,7 @@ commands:
     steps:
       - run: curl -sL https://deb.nodesource.com/setup_10.x | sudo bash -
       - run: sudo apt install nodejs
-      - run: sudo npm install -g serverless@1.41.1
+      - run: sudo npm install -g serverless
 
 
   checkout_utils:
@@ -126,7 +136,7 @@ jobs:
       - run: cd ../integration-tests && npm i
       - run: sudo npm install -g recursive-install
       - run: cd ../integration-tests && ./scripts/prepare_env.sh
-      - run: cd ../integration-tests && ./scripts/deploy.sh --spec java
+      - run: curl -s "https://get.sdkman.io" | bash && source "/home/circleci/.sdkman/bin/sdkman-init.sh" && sdk install gradle 5.4.1 && cd ../integration-tests && ./scripts/deploy.sh --spec java
       - run: cd ../integration-tests && export testJava=true && npm run test
 
   deploy:
