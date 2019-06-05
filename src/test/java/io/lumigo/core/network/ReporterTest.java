@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -39,6 +40,7 @@ class ReporterTest {
         when(envUtil.getEnv(key)).thenReturn(value);
     }
 
+    @Disabled
     @Test
     void reportSpans() throws IOException {
         addEnvMock("LAMBDA_RUNTIME_DIR", "/");
