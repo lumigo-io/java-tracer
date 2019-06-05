@@ -16,7 +16,7 @@ public class Span {
     private String runtime;
     private String id;
     private String type;
-    private int memoryAllocated;
+    private String memoryAllocated;
     private String transactionId;
     private String requestId;
     private String account;

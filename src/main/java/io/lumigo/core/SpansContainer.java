@@ -66,7 +66,7 @@ public class SpansContainer {
                         .name(context.getFunctionName())
                         .runtime(env.get(AWS_EXECUTION_ENV))
                         .region(env.get(AWS_REGION))
-                        .memoryAllocated(context.getMemoryLimitInMB())
+                        .memoryAllocated(String.valueOf(context.getMemoryLimitInMB()))
                         .requestId(context.getAwsRequestId())
                         .account(AwsUtils.extractAwsAccountFromArn(context.getInvokedFunctionArn()))
                         .maxFinishTime(
