@@ -53,11 +53,11 @@ public class SpansContainer {
 
     private SpansContainer() {}
 
-    public void init(Map<String, String> env, Reporter reporter, Context context, Object event)
-            throws JsonProcessingException {
+    public void init(Map<String, String> env, Reporter reporter, Context context, Object event) {
         this.clear();
         this.reporter = reporter;
         awsTracerId = env.get(AMZN_TRACE_ID);
+        AwsUtils.TriggeredBy triggeredBy = AwsUtils.extractTriggeredByFromEvent(event);
         this.baseSpan =
                 Span.builder()
                         .token(Configuration.getInstance().getLumigoToken())
@@ -88,7 +88,21 @@ public class SpansContainer {
                                                                 AwsUtils.extractAwsTraceRoot(
                                                                         awsTracerId))
                                                         .build())
-                                        .triggeredBy(AwsUtils.extractTriggeredByFromEvent(event))
+                                        .triggeredBy(
+                                                triggeredBy != null
+                                                        ? triggeredBy.getTriggeredBy()
+                                                        : null)
+                                        .api(triggeredBy != null ? triggeredBy.getApi() : null)
+                                        .arn(triggeredBy != null ? triggeredBy.getArn() : null)
+                                        .httpMethod(
+                                                triggeredBy != null
+                                                        ? triggeredBy.getHttpMethod()
+                                                        : null)
+                                        .resource(
+                                                triggeredBy != null
+                                                        ? triggeredBy.getResource()
+                                                        : null)
+                                        .stage(triggeredBy != null ? triggeredBy.getStage() : null)
                                         .logGroupName(context.getLogGroupName())
                                         .logStreamName(context.getLogStreamName())
                                         .build())

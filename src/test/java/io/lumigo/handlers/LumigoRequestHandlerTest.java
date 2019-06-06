@@ -575,10 +575,8 @@ class LumigoRequestHandlerTest {
                         Span.Info.builder()
                                 .tracer(Span.Tracer.builder().version("1.0").build())
                                 .traceId(Span.TraceId.builder().root("1-2-3").build())
-                                .triggeredBy(
-                                        includeRiggeredBy
-                                                ? "{\"triggeredBy\":\"kinesis\",\"arn\":\"arn\"}"
-                                                : null)
+                                .triggeredBy(includeRiggeredBy ? "kinesis" : null)
+                                .arn(includeRiggeredBy ? "arn" : null)
                                 .logStreamName(
                                         "2019/05/12/[$LATEST]7f67fc1238a941749d8126be19f0cdc6")
                                 .logGroupName("/aws/lambda/mocked_function_name")
@@ -612,10 +610,8 @@ class LumigoRequestHandlerTest {
                         Span.Info.builder()
                                 .tracer(Span.Tracer.builder().version("1.0").build())
                                 .traceId(Span.TraceId.builder().root("1-2-3").build())
-                                .triggeredBy(
-                                        triggerBy
-                                                ? "{\"triggeredBy\":\"kinesis\",\"arn\":\"arn\"}"
-                                                : null)
+                                .triggeredBy(triggerBy ? "kinesis" : null)
+                                .arn(triggerBy ? "arn" : null)
                                 .logStreamName(
                                         "2019/05/12/[$LATEST]7f67fc1238a941749d8126be19f0cdc6")
                                 .logGroupName("/aws/lambda/mocked_function_name")
