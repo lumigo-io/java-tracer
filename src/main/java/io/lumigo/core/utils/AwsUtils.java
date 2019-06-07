@@ -30,9 +30,9 @@ public class AwsUtils {
      * @param event an AWS event
      * @return triggered by metadata
      */
-    public static String extractTriggeredByFromEvent(Object event) {
+    public static TriggeredBy extractTriggeredByFromEvent(Object event) {
+        TriggeredBy triggeredBy = new TriggeredBy();
         try {
-            TriggeredBy triggeredBy = new TriggeredBy();
             Logger.info(
                     "Trying to find triggered by to event from class {}",
                     event != null ? event.getClass().getName() : null);
@@ -121,15 +121,17 @@ public class AwsUtils {
                 Logger.info(
                         "Failed to found relevant triggered by found for event {} ",
                         event.getClass().getName());
-                return null;
+                triggeredBy.setTriggeredBy(TRIGGERED_BY_FALLBACK);
+                return triggeredBy;
             }
 
             Logger.info("Found triggered by handler fo event {}", event.getClass().getName());
-            return JsonUtils.getObjectAsJsonString(triggeredBy);
+            return triggeredBy;
 
         } catch (RuntimeException e) {
             Logger.error(e, "Failed to extract triggerBy data");
-            return TRIGGERED_BY_FALLBACK;
+            triggeredBy.setTriggeredBy(TRIGGERED_BY_FALLBACK);
+            return triggeredBy;
         }
     }
 
@@ -173,7 +175,7 @@ public class AwsUtils {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @NoArgsConstructor
     @Data
-    private static class TriggeredBy {
+    public static class TriggeredBy {
         private String triggeredBy;
         private String arn;
         private String httpMethod;

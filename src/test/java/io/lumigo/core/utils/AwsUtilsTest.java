@@ -77,7 +77,8 @@ class AwsUtilsTest {
     void test_extractTriggeredByFromEvent_s3() throws JSONException {
         JSONAssert.assertEquals(
                 "{\"triggeredBy\": \"s3\", \"arn\": \"s3-arn\"}",
-                AwsUtils.extractTriggeredByFromEvent(awsLambdaEventGenerator.s3Event()),
+                JsonUtils.getObjectAsJsonString(
+                        AwsUtils.extractTriggeredByFromEvent(awsLambdaEventGenerator.s3Event())),
                 true);
     }
 
@@ -85,7 +86,9 @@ class AwsUtilsTest {
     void test_extractTriggeredByFromEvent_dynamodb() throws JSONException {
         JSONAssert.assertEquals(
                 "{\"triggeredBy\": \"dynamodb\", \"arn\": \"dynamodb-arn\"}",
-                AwsUtils.extractTriggeredByFromEvent(awsLambdaEventGenerator.dynamodbEvent()),
+                JsonUtils.getObjectAsJsonString(
+                        AwsUtils.extractTriggeredByFromEvent(
+                                awsLambdaEventGenerator.dynamodbEvent())),
                 true);
     }
 
@@ -93,7 +96,9 @@ class AwsUtilsTest {
     void test_extractTriggeredByFromEvent_kinesisEvent() throws JSONException {
         JSONAssert.assertEquals(
                 "{\"triggeredBy\": \"kinesis\", \"arn\": \"kinesis-arn\"}",
-                AwsUtils.extractTriggeredByFromEvent(awsLambdaEventGenerator.kinesisEvent()),
+                JsonUtils.getObjectAsJsonString(
+                        AwsUtils.extractTriggeredByFromEvent(
+                                awsLambdaEventGenerator.kinesisEvent())),
                 true);
     }
 
@@ -101,8 +106,9 @@ class AwsUtilsTest {
     void test_extractTriggeredByFromEvent_kinesisFirehoseEvent() throws JSONException {
         JSONAssert.assertEquals(
                 "{\"triggeredBy\": \"kinesis\", \"arn\": \"kinesis-arn\"}",
-                AwsUtils.extractTriggeredByFromEvent(
-                        awsLambdaEventGenerator.kinesisFirehoseEvent()),
+                JsonUtils.getObjectAsJsonString(
+                        AwsUtils.extractTriggeredByFromEvent(
+                                awsLambdaEventGenerator.kinesisFirehoseEvent())),
                 true);
     }
 
@@ -111,8 +117,10 @@ class AwsUtilsTest {
             throws JSONException {
         JSONAssert.assertEquals(
                 "{\"triggeredBy\": \"kinesis\", \"arn\": \"kinesis-arn\"}",
-                AwsUtils.extractTriggeredByFromEvent(
-                        awsLambdaEventGenerator.kinesisAnalyticsFirehoseInputPreprocessingEvent()),
+                JsonUtils.getObjectAsJsonString(
+                        AwsUtils.extractTriggeredByFromEvent(
+                                awsLambdaEventGenerator
+                                        .kinesisAnalyticsFirehoseInputPreprocessingEvent())),
                 true);
     }
 
@@ -121,8 +129,10 @@ class AwsUtilsTest {
             throws JSONException {
         JSONAssert.assertEquals(
                 "{\"triggeredBy\": \"kinesis\", \"arn\": \"kinesis-arn\"}",
-                AwsUtils.extractTriggeredByFromEvent(
-                        awsLambdaEventGenerator.kinesisAnalyticsStreamsInputPreprocessingEvent()),
+                JsonUtils.getObjectAsJsonString(
+                        AwsUtils.extractTriggeredByFromEvent(
+                                awsLambdaEventGenerator
+                                        .kinesisAnalyticsStreamsInputPreprocessingEvent())),
                 true);
     }
 
@@ -130,7 +140,8 @@ class AwsUtilsTest {
     void test_extractTriggeredByFromEvent_sqsEvent() throws JSONException {
         JSONAssert.assertEquals(
                 "{\"triggeredBy\": \"sqs\", \"arn\": \"sqs-arn\"}",
-                AwsUtils.extractTriggeredByFromEvent(awsLambdaEventGenerator.sqsEvent()),
+                JsonUtils.getObjectAsJsonString(
+                        AwsUtils.extractTriggeredByFromEvent(awsLambdaEventGenerator.sqsEvent())),
                 true);
     }
 
@@ -138,7 +149,8 @@ class AwsUtilsTest {
     void test_extractTriggeredByFromEvent_snsEvent() throws JSONException {
         JSONAssert.assertEquals(
                 "{\"triggeredBy\": \"sns\", \"arn\": \"sns-arn\"}",
-                AwsUtils.extractTriggeredByFromEvent(awsLambdaEventGenerator.snsEvent()),
+                JsonUtils.getObjectAsJsonString(
+                        AwsUtils.extractTriggeredByFromEvent(awsLambdaEventGenerator.snsEvent())),
                 true);
     }
 
@@ -150,8 +162,9 @@ class AwsUtilsTest {
                         + " \"httpMethod\": \"method\","
                         + " \"stage\": \"stage\","
                         + " \"resource\": \"resource\"}",
-                AwsUtils.extractTriggeredByFromEvent(
-                        awsLambdaEventGenerator.apiGatewayProxyRequestEvent()),
+                JsonUtils.getObjectAsJsonString(
+                        AwsUtils.extractTriggeredByFromEvent(
+                                awsLambdaEventGenerator.apiGatewayProxyRequestEvent())),
                 true);
     }
 
@@ -159,7 +172,9 @@ class AwsUtilsTest {
     void test_extractTriggeredByFromEvent_cloudWatchLogsEvent() throws JSONException {
         JSONAssert.assertEquals(
                 "{\"triggeredBy\": \"cloudwatch\"}",
-                AwsUtils.extractTriggeredByFromEvent(awsLambdaEventGenerator.cloudWatchLogsEvent()),
+                JsonUtils.getObjectAsJsonString(
+                        AwsUtils.extractTriggeredByFromEvent(
+                                awsLambdaEventGenerator.cloudWatchLogsEvent())),
                 true);
     }
 
@@ -167,7 +182,9 @@ class AwsUtilsTest {
     void test_extractTriggeredByFromEvent_cloudFrontEvent() throws JSONException {
         JSONAssert.assertEquals(
                 "{\"triggeredBy\": \"cloudfront\"}",
-                AwsUtils.extractTriggeredByFromEvent(awsLambdaEventGenerator.cloudFrontEvent()),
+                JsonUtils.getObjectAsJsonString(
+                        AwsUtils.extractTriggeredByFromEvent(
+                                awsLambdaEventGenerator.cloudFrontEvent())),
                 true);
     }
 
@@ -175,7 +192,9 @@ class AwsUtilsTest {
     void test_extractTriggeredByFromEvent_cognitoEvent() throws JSONException {
         JSONAssert.assertEquals(
                 "{\"triggeredBy\": \"cognito\"}",
-                AwsUtils.extractTriggeredByFromEvent(awsLambdaEventGenerator.cognitoEvent()),
+                JsonUtils.getObjectAsJsonString(
+                        AwsUtils.extractTriggeredByFromEvent(
+                                awsLambdaEventGenerator.cognitoEvent())),
                 true);
     }
 
@@ -183,7 +202,9 @@ class AwsUtilsTest {
     void test_extractTriggeredByFromEvent_codeCommitEvent() throws JSONException {
         JSONAssert.assertEquals(
                 "{\"triggeredBy\": \"codecommit\"}",
-                AwsUtils.extractTriggeredByFromEvent(awsLambdaEventGenerator.codeCommitEvent()),
+                JsonUtils.getObjectAsJsonString(
+                        AwsUtils.extractTriggeredByFromEvent(
+                                awsLambdaEventGenerator.codeCommitEvent())),
                 true);
     }
 
@@ -191,7 +212,8 @@ class AwsUtilsTest {
     void test_extractTriggeredByFromEvent_lexEvent() throws JSONException {
         JSONAssert.assertEquals(
                 "{\"triggeredBy\": \"lex\"}",
-                AwsUtils.extractTriggeredByFromEvent(awsLambdaEventGenerator.lexEvent()),
+                JsonUtils.getObjectAsJsonString(
+                        AwsUtils.extractTriggeredByFromEvent(awsLambdaEventGenerator.lexEvent())),
                 true);
     }
 
@@ -199,7 +221,9 @@ class AwsUtilsTest {
     void test_extractTriggeredByFromEvent_scheduledEvent() throws JSONException {
         JSONAssert.assertEquals(
                 "{\"triggeredBy\": \"cloudwatch\", \"arn\": \"arn\"}",
-                AwsUtils.extractTriggeredByFromEvent(awsLambdaEventGenerator.scheduledEvent()),
+                JsonUtils.getObjectAsJsonString(
+                        AwsUtils.extractTriggeredByFromEvent(
+                                awsLambdaEventGenerator.scheduledEvent())),
                 true);
     }
 }

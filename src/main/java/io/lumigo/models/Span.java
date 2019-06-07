@@ -41,6 +41,11 @@ public class Span {
         private String logStreamName;
         private String logGroupName;
         private String triggeredBy;
+        private String arn;
+        private String httpMethod;
+        private String resource;
+        private String api;
+        private String stage;
     }
 
     @AllArgsConstructor
