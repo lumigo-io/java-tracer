@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.lumigo.core.SpansContainer;
@@ -20,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -95,6 +97,51 @@ class LumigoRequestHandlerTest {
                 throws IOException {}
     }
 
+    static class HandlerExecutor implements RequestHandler<KinesisEvent, String> {
+
+        @Override
+        public String handleRequest(KinesisEvent kinesisEvent, Context context) {
+            Supplier<String> supplier = () -> "Response";
+            return LumigoRequestExecutor.execute(kinesisEvent, context, supplier);
+        }
+    }
+
+    static class HandlerExecutorWithException implements RequestHandler<KinesisEvent, String> {
+        @Override
+        public String handleRequest(KinesisEvent kinesisEvent, Context context) {
+            Supplier<String> supplier =
+                    () -> {
+                        throw new UnsupportedOperationException();
+                    };
+            return LumigoRequestExecutor.execute(kinesisEvent, context, supplier);
+        }
+    }
+
+    static class HandlerExecutorStaticInit implements RequestHandler<KinesisEvent, String> {
+
+        static {
+            LumigoConfiguration.builder().token("123456789").verbose(false).build().init();
+        }
+
+        @Override
+        public String handleRequest(KinesisEvent kinesisEvent, Context context) {
+            Supplier<String> supplier =
+                    () -> {
+                        System.out.println(kinesisEvent);
+                        return "Response";
+                    };
+            return LumigoRequestExecutor.execute(kinesisEvent, context, supplier);
+        }
+    }
+
+    static class HandlerExecutorVoid implements RequestHandler<KinesisEvent, Void> {
+
+        @Override
+        public Void handleRequest(KinesisEvent kinesisEvent, Context context) {
+            Supplier<Void> supplier = () -> null;
+            return LumigoRequestExecutor.execute(kinesisEvent, context, supplier);
+        }
+    }
     /**
      * *************************************
      *
@@ -111,6 +158,7 @@ class LumigoRequestHandlerTest {
 
     @BeforeEach
     void setUp() {
+        LumigoRequestExecutor.init();
         MockitoAnnotations.initMocks(this);
         mockContext();
         createMockedEnv();
@@ -627,5 +675,214 @@ class LumigoRequestHandlerTest {
                                         .build()
                                 : null)
                 .build();
+    }
+
+    /**
+     * *************************************
+     *
+     * <p>LumigoRequestExecutor tests
+     *
+     * <p>************************************
+     */
+    @DisplayName("Create a handler with a response, Lumigo tracer send relevant spans")
+    @Test
+    public void LumigoRequestExecutor_with_response_happy_flow() throws Exception {
+        HandlerExecutor handler = new HandlerExecutor();
+        LumigoRequestExecutor.getInstance().setEnvUtil(envUtil);
+        LumigoRequestExecutor.getInstance().setReporter(reporter);
+        Configuration.getInstance().setEnvUtil(envUtil);
+        when(reporter.reportSpans((Span) any())).thenReturn(999L);
+
+        String response = handler.handleRequest(kinesisEvent, context);
+
+        ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture());
+
+        assertEquals("Response", response);
+        JSONAssert.assertEquals(
+                JsonUtils.getObjectAsJsonString(getStartSpan(true)),
+                JsonUtils.getObjectAsJsonString(argumentCaptorStartSpan.getAllValues().get(0)),
+                new CustomComparator(
+                        JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
+                        new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("ended", (o1, o2) -> o2 != null)));
+        Span endSpan = getEndSpan("Response", null);
+        endSpan.setReporter_rtt(999L);
+        JSONAssert.assertEquals(
+                JsonUtils.getObjectAsJsonString(endSpan),
+                JsonUtils.getObjectAsJsonString(
+                        argumentCaptorAllSpans.getAllValues().get(0).get(0)),
+                new CustomComparator(
+                        JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
+                        new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("ended", (o1, o2) -> o2 != null)));
+    }
+
+    @DisplayName(
+            "Create a handler that throw exception response, Lumigo tracer send relevant spans")
+    @Test
+    public void LumigoRequestExecutor_with_exception_happy_flow() throws Exception {
+        HandlerExecutorWithException handler = new HandlerExecutorWithException();
+        LumigoRequestExecutor.getInstance().setEnvUtil(envUtil);
+        LumigoRequestExecutor.getInstance().setReporter(reporter);
+        Configuration.getInstance().setEnvUtil(envUtil);
+
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> handler.handleRequest(kinesisEvent, context));
+
+        ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture());
+
+        JSONAssert.assertEquals(
+                JsonUtils.getObjectAsJsonString(getStartSpan(true)),
+                JsonUtils.getObjectAsJsonString(argumentCaptorStartSpan.getAllValues().get(0)),
+                new CustomComparator(
+                        JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
+                        new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("ended", (o1, o2) -> o2 != null)));
+        JSONAssert.assertEquals(
+                JsonUtils.getObjectAsJsonString(
+                        getEndSpan(null, new UnsupportedOperationException())),
+                JsonUtils.getObjectAsJsonString(
+                        argumentCaptorAllSpans.getAllValues().get(0).get(0)),
+                new CustomComparator(
+                        JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
+                        new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("error.stacktrace", (o1, o2) -> o2 != null),
+                        new Customization("ended", (o1, o2) -> o2 != null)));
+    }
+
+    @DisplayName(
+            "Create a handler that return a response, Lumigo tracer is configuration is inline and tracer send relevant spans")
+    @Test
+    public void LumigoRequestExecutor_with_inline_configuration_return_reponse_happy_flow()
+            throws Exception {
+        HandlerExecutorStaticInit handler = new HandlerExecutorStaticInit();
+        LumigoRequestExecutor.getInstance().setEnvUtil(envUtil);
+        LumigoRequestExecutor.getInstance().setReporter(reporter);
+        Configuration.getInstance().setEnvUtil(envUtil);
+
+        handler.handleRequest(kinesisEvent, context);
+
+        ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture());
+
+        JSONAssert.assertEquals(
+                JsonUtils.getObjectAsJsonString(
+                        getStartSpan(true)
+                                .toBuilder()
+                                .token("123456789")
+                                .envs(null)
+                                .event(null)
+                                .build()),
+                JsonUtils.getObjectAsJsonString(argumentCaptorStartSpan.getAllValues().get(0)),
+                new CustomComparator(
+                        JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
+                        new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("ended", (o1, o2) -> o2 != null)));
+        JSONAssert.assertEquals(
+                JsonUtils.getObjectAsJsonString(
+                        getEndSpan(null, null)
+                                .toBuilder()
+                                .token("123456789")
+                                .envs(null)
+                                .event(null)
+                                .return_value(null)
+                                .build()),
+                JsonUtils.getObjectAsJsonString(
+                        argumentCaptorAllSpans.getAllValues().get(0).get(0)),
+                new CustomComparator(
+                        JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
+                        new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("error.stacktrace", (o1, o2) -> o2 != null),
+                        new Customization("ended", (o1, o2) -> o2 != null)));
+    }
+
+    @DisplayName(
+            "Create a handler that return a response, Lumigo tracer have exception but customer handler finish successfully")
+    @Test
+    public void LumigoRequestExecutor_internal_exception() throws Exception {
+        HandlerExecutor handler = new HandlerExecutor();
+        SpansContainer spansContainerMock = Mockito.mock(SpansContainer.class);
+        doThrow(new RuntimeException()).when(spansContainerMock).start();
+        doThrow(new RuntimeException()).when(spansContainerMock).getStartFunctionSpan();
+        doThrow(new RuntimeException()).when(spansContainerMock).end(any());
+        doThrow(new RuntimeException()).when(spansContainerMock).getAllCollectedSpans();
+        LumigoRequestExecutor.getInstance().setReporter(reporter);
+        LumigoRequestExecutor.getInstance().setSpansContainer(spansContainerMock);
+        Configuration.getInstance().setEnvUtil(envUtil);
+
+        String response = handler.handleRequest(kinesisEvent, context);
+
+        ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture());
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture());
+        assertEquals("Response", response);
+    }
+
+    @DisplayName(
+            "Create a handler that throw exception, Lumigo tracer have exception but customer handler finish successfully")
+    @Test
+    public void LumigoRequestExecutor_internal_exception_with_lambda_exception() throws Exception {
+        HandlerExecutorWithException handler = new HandlerExecutorWithException();
+        SpansContainer spansContainerMock = Mockito.mock(SpansContainer.class);
+        doThrow(new RuntimeException()).when(spansContainerMock).start();
+        doThrow(new RuntimeException()).when(spansContainerMock).getStartFunctionSpan();
+        doThrow(new RuntimeException()).when(spansContainerMock).endWithException(any());
+        doThrow(new RuntimeException()).when(spansContainerMock).getAllCollectedSpans();
+        LumigoRequestExecutor.getInstance().setReporter(reporter);
+        LumigoRequestExecutor.getInstance().setSpansContainer(spansContainerMock);
+        Configuration.getInstance().setEnvUtil(envUtil);
+
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> handler.handleRequest(kinesisEvent, context));
+
+        ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture());
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture());
+    }
+
+    @DisplayName("Check the kill switch (RequestHandler)")
+    @Test
+    public void LumigoRequestExecutor_with_kill_switch() {
+        HandlerExecutor handler = new HandlerExecutor();
+        SpansContainer spansContainerMock = Mockito.mock(SpansContainer.class);
+        when(envUtil.getEnv("LUMIGO_SWITCH_OFF")).thenReturn("true");
+        LumigoRequestExecutor.getInstance().setSpansContainer(spansContainerMock);
+        Configuration.getInstance().setEnvUtil(envUtil);
+
+        handler.handleRequest(kinesisEvent, context);
+
+        verify(spansContainerMock, Mockito.times(0)).start();
+    }
+
+    @DisplayName("Check with return void")
+    @Test
+    public void LumigoRequestExecutor_with_return_value_void() {
+        HandlerExecutorVoid handler = new HandlerExecutorVoid();
+        SpansContainer spansContainerMock = Mockito.mock(SpansContainer.class);
+        when(envUtil.getEnv("LUMIGO_SWITCH_OFF")).thenReturn("true");
+        LumigoRequestExecutor.getInstance().setSpansContainer(spansContainerMock);
+        Configuration.getInstance().setEnvUtil(envUtil);
+
+        assertNull(handler.handleRequest(kinesisEvent, context));
+
+        verify(spansContainerMock, Mockito.times(0)).start();
     }
 }
