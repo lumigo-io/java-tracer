@@ -133,6 +133,15 @@ class LumigoRequestHandlerTest {
             return LumigoRequestExecutor.execute(kinesisEvent, context, supplier);
         }
     }
+
+    static class HandlerExecutorVoid implements RequestHandler<KinesisEvent, Void> {
+
+        @Override
+        public Void handleRequest(KinesisEvent kinesisEvent, Context context) {
+            Supplier<Void> supplier = () -> null;
+            return LumigoRequestExecutor.execute(kinesisEvent, context, supplier);
+        }
+    }
     /**
      * *************************************
      *
@@ -859,6 +868,21 @@ class LumigoRequestHandlerTest {
         Configuration.getInstance().setEnvUtil(envUtil);
 
         handler.handleRequest(kinesisEvent, context);
+
+        verify(spansContainerMock, Mockito.times(0)).start();
+    }
+
+
+    @DisplayName("Check with return void")
+    @Test
+    public void LumigoRequestExecutor_with_return_value_void() {
+        HandlerExecutorVoid handler = new HandlerExecutorVoid();
+        SpansContainer spansContainerMock = Mockito.mock(SpansContainer.class);
+        when(envUtil.getEnv("LUMIGO_SWITCH_OFF")).thenReturn("true");
+        LumigoRequestExecutor.getInstance().setSpansContainer(spansContainerMock);
+        Configuration.getInstance().setEnvUtil(envUtil);
+
+        assertNull(handler.handleRequest(kinesisEvent, context));
 
         verify(spansContainerMock, Mockito.times(0)).start();
     }

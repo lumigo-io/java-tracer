@@ -44,10 +44,10 @@ public class LumigoRequestExecutor {
 
     public static <OUTPUT, INPUT> OUTPUT execute(
             INPUT input, Context context, Supplier<OUTPUT> handler) {
-        return getInstance()._execute(input, context, handler);
+        return getInstance().executeInternal(input, context, handler);
     }
 
-    private <OUTPUT, INPUT> OUTPUT _execute(
+    private <OUTPUT, INPUT> OUTPUT executeInternal(
             INPUT input, Context context, Supplier<OUTPUT> handler) {
         if (Configuration.getInstance().isKillingSwitchActivated()) {
             return handler.get();
