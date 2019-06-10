@@ -872,7 +872,6 @@ class LumigoRequestHandlerTest {
         verify(spansContainerMock, Mockito.times(0)).start();
     }
 
-
     @DisplayName("Check with return void")
     @Test
     public void LumigoRequestExecutor_with_return_value_void() {
