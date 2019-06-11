@@ -13,7 +13,7 @@ public class LumigoConfiguration {
     private String token;
     private Boolean verbose;
     private Boolean killSwitch;
-    private Boolean lazyLoading;
+    @Builder.Default private Boolean lazyLoading = true;
 
     public void init() {
         Configuration.getInstance().init(this);

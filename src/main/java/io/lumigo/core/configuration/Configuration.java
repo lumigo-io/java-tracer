@@ -36,8 +36,7 @@ public class Configuration {
         } else {
             getInstance().inlineConf = lumigoConfiguration;
         }
-        if (getInstance().inlineConf.getLazyLoading() != null
-                && getInstance().inlineConf.getLazyLoading() == false) {
+        if (!getInstance().inlineConf.getLazyLoading()) {
             Logger.info("Lazy load was set as false, install agent now");
             Installer.install();
         }
