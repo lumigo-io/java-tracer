@@ -120,7 +120,12 @@ class LumigoRequestHandlerTest {
     static class HandlerExecutorStaticInit implements RequestHandler<KinesisEvent, String> {
 
         static {
-            LumigoConfiguration.builder().token("123456789").verbose(false).build().init();
+            LumigoConfiguration.builder()
+                    .token("123456789")
+                    .verbose(false)
+                    .lazyLoading(false)
+                    .build()
+                    .init();
         }
 
         @Override
@@ -762,7 +767,7 @@ class LumigoRequestHandlerTest {
     }
 
     @DisplayName(
-            "Create a handler that return a response, Lumigo tracer is configuration is inline and tracer send relevant spans")
+            "Create a handler that return a response, Lumigo tracer is configuration is inline with non lazy initialization, check tracer send relevant spans")
     @Test
     public void LumigoRequestExecutor_with_inline_configuration_return_reponse_happy_flow()
             throws Exception {

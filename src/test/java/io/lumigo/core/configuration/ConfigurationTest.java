@@ -140,4 +140,14 @@ class ConfigurationTest {
         Configuration.getInstance().setEnvUtil(envUtil);
         assertFalse(Configuration.getInstance().isKillingSwitchActivated());
     }
+
+    @Test
+    void version() {
+        assertNotNull(Configuration.getInstance().getLumigoTracerVersion());
+    }
+
+    @Test
+    void maxSpanFieldSize() {
+        assertEquals(1024, Configuration.getInstance().maxSpanFieldSize());
+    }
 }
