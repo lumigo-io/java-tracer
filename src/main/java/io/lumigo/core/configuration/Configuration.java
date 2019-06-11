@@ -1,5 +1,6 @@
 package io.lumigo.core.configuration;
 
+import io.lumigo.core.instrumentation.agent.Installer;
 import io.lumigo.core.utils.EnvUtil;
 import io.lumigo.handlers.LumigoConfiguration;
 import java.time.Duration;
@@ -7,6 +8,7 @@ import java.util.Locale;
 import lombok.Setter;
 import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Level;
+import org.pmw.tinylog.Logger;
 import org.pmw.tinylog.writers.ConsoleWriter;
 
 public class Configuration {
@@ -33,6 +35,11 @@ public class Configuration {
             getInstance().inlineConf = LumigoConfiguration.builder().build();
         } else {
             getInstance().inlineConf = lumigoConfiguration;
+        }
+        if (getInstance().inlineConf.getLazyLoading() != null
+                && getInstance().inlineConf.getLazyLoading() == false) {
+            Logger.info("Lazy load was set as false, install agent now");
+            Installer.install();
         }
     }
 
