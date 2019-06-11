@@ -31,16 +31,32 @@ Include lumigo java tracer dependency, for [Maven](https://maven.apache.org) pro
 Find the latest version here (the format of the version will be n.n.n):
 
 # Wrapping your Lambda
-* Wrap your lambda function by extending one of the next classes `LumigoRequestHandler` or `LumigoRequestStreamHandler`
+* Wrap your lambda function by implementing a supplier which contains your code
 ```java
-class MyFunction extends LumigoRequestHandler<Map<String,String>, Map<String,String>> {
-
+class MyFunction implements RequestHandler<INPUT, OUTPUT> {
+                                         
         @Override
-        public String doHandleRequest(Map<String,String> input, Context context) {
-            //Your Lambda code
-            Map<String,String> res = new HashMap<>();
-            res.put("Response", "success");
-            return res;
+        public OUTPUT handleRequest(INPUT event, Context context) {
+            Supplier<OUTPUT> supplier = () -> {
+                 //Your lambda code
+                 //return <result of type OUTPUT>;
+            };
+            return LumigoRequestExecutor.execute(event, context, supplier);
+        }
+    }
+```
+* For handler return void use:
+
+```java
+class MyFunction implements RequestHandler<INPUT, Void> {
+                                         
+        @Override
+        public Void handleRequest(INPUT event, Context context) {
+            Supplier<Void> supplier = () -> {
+                 //Your lambda code
+                 return null;
+            };
+            return LumigoRequestExecutor.execute(event, context, supplier);
         }
     }
 ```
@@ -53,18 +69,19 @@ There are 2 way to pass configuration properties
 
 ### Static code initiation
 ```java
-class MyFunction extends LumigoRequestHandler<Map<String,String>, Map<String,String>> {
+class MyFunction implements RequestHandler<String, String> {
 
         static{
             LumigoConfiguration.builder().token("xxx").build().init();
         }
 
         @Override
-        public String doHandleRequest(Map<String,String> input, Context context) {
-            //Your Lambda code
-            Map<String,String> res = new HashMap<>();
-            res.put("Response", "success");
-            return res;
+        public String handleRequest(String event, Context context) {
+            Supplier<String> supplier = () -> {
+                //Your lambda code
+                return "";
+            };
+            return LumigoRequestExecutor.execute(event, context, supplier);
         }
     }
 ```
