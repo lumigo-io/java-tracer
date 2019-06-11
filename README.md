@@ -39,7 +39,7 @@ class MyFunction implements RequestHandler<INPUT, OUTPUT> {
         public OUTPUT handleRequest(INPUT event, Context context) {
             Supplier<OUTPUT> supplier = () -> {
                  //Your lambda code
-                 return "";
+                 //return <result of type OUTPUT>;
             };
             return LumigoRequestExecutor.execute(event, context, supplier);
         }
