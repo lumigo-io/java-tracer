@@ -10,6 +10,18 @@ import org.pmw.tinylog.Logger;
 
 public class Reporter {
 
+    public static final Callback callBack =
+            new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    Logger.error(e, "Failed to send spans");
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) {
+                    response.body().close();
+                }
+            };
     private OkHttpClient client;
 
     public Reporter() {
@@ -19,11 +31,11 @@ public class Reporter {
                         .build();
     }
 
-    public long reportSpans(Object span) throws IOException {
+    public long reportSpans(Object span) {
         return reportSpans(Collections.singletonList(span));
     }
 
-    public long reportSpans(List<Object> spans) throws IOException {
+    public long reportSpans(List<Object> spans) {
         long time = System.nanoTime();
         String spansAsString = JsonUtils.getObjectAsJsonString(spans);
         Logger.debug("Reporting the spans: {}", spansAsString);
@@ -38,10 +50,7 @@ public class Reporter {
                             .url(Configuration.getInstance().getLumigoEdge())
                             .post(body)
                             .build();
-            Response response = client.newCall(request).execute();
-            if (response.body() != null) {
-                response.body().close();
-            }
+            client.newCall(request).enqueue(callBack);
             long duration = System.nanoTime() - time;
             return duration;
         }
