@@ -76,6 +76,7 @@ public class AwsUtils {
                         && ((SNSEvent) event).getRecords().size() > 0) {
                     triggeredBy.setArn(
                             ((SNSEvent) event).getRecords().get(0).getSNS().getTopicArn());
+                    triggeredBy.setMessageId(((SNSEvent) event).getRecords().get(0).getSNS().getMessageId());
                 }
             } else if (event instanceof SQSEvent) {
                 triggeredBy.setTriggeredBy("sqs");
@@ -182,6 +183,7 @@ public class AwsUtils {
         private String resource;
         private String api;
         private String stage;
+        private String messageId;
     }
 
     public static synchronized Span.READINESS getFunctionReadiness() {
