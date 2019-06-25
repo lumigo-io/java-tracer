@@ -10,11 +10,16 @@ import io.lumigo.core.utils.EnvUtil;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import lombok.AccessLevel;
 import lombok.Setter;
 import org.pmw.tinylog.Logger;
 
 public abstract class LumigoRequestStreamHandler implements RequestStreamHandler {
+
+    protected ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Setter(AccessLevel.MODULE)
     private EnvUtil envUtil;
@@ -45,9 +50,11 @@ public abstract class LumigoRequestStreamHandler implements RequestStreamHandler
         try {
             Logger.debug("Start {} Lumigo tracer", LumigoRequestStreamHandler.class.getName());
             try {
-                Installer.install();
                 spansContainer.init(envUtil.getEnv(), reporter, context, null);
+                Future<?> submit = executorService.submit(() -> Installer.install());
                 spansContainer.start();
+                submit.get();
+                Logger.debug("Finish sending start message and instrumentation");
             } catch (Throwable ex) {
                 Logger.error(ex, "Failed to init span container");
             }
