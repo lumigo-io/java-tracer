@@ -9,7 +9,7 @@ import org.pmw.tinylog.Logger;
 
 public class Loader {
     public static void instrument(java.lang.instrument.Instrumentation inst) {
-        Logger.info("Start Instrumentation");
+        Logger.debug("Start Instrumentation");
         ApacheHttpInstrumentation instrumentation = new ApacheHttpInstrumentation();
         AgentBuilder builder =
                 new AgentBuilder.Default()
@@ -17,10 +17,10 @@ public class Loader {
                         .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
                         .ignore(
                                 not(nameStartsWith("com.amazonaws.http.apache.client.impl"))
-                                        .and(not(nameStartsWith("org.apache.http.impl.client"))))
+                                        .or(not(nameStartsWith("org.apache.http.impl.client"))))
                         .type(instrumentation.getTypeMatcher())
                         .transform(instrumentation.getTransformer());
         builder.installOn(inst);
-        Logger.info("Finish Instrumentation");
+        Logger.debug("Finish Instrumentation");
     }
 }

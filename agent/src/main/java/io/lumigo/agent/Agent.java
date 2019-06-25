@@ -18,7 +18,6 @@ public class Agent {
 
     public static void agentmain(String agentArgs, Instrumentation inst) {
         try {
-            System.out.println("Got agentArgs: " + agentArgs);
             URL[] urls;
             if ("lib".equalsIgnoreCase(agentArgs)) {
                 urls = getUrls();

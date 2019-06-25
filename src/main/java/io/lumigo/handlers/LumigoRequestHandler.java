@@ -7,11 +7,16 @@ import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.instrumentation.agent.Installer;
 import io.lumigo.core.network.Reporter;
 import io.lumigo.core.utils.EnvUtil;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import lombok.AccessLevel;
 import lombok.Setter;
 import org.pmw.tinylog.Logger;
 
 public abstract class LumigoRequestHandler<INPUT, OUTPUT> implements RequestHandler<INPUT, OUTPUT> {
+
+    protected ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Setter(AccessLevel.MODULE)
     private EnvUtil envUtil;
@@ -40,9 +45,11 @@ public abstract class LumigoRequestHandler<INPUT, OUTPUT> implements RequestHand
         try {
             Logger.debug("Start {} Lumigo tracer", LumigoRequestHandler.class.getName());
             try {
-                Installer.install();
                 spansContainer.init(envUtil.getEnv(), reporter, context, input);
+                Future<?> submit = executorService.submit(() -> Installer.install());
                 spansContainer.start();
+                submit.get();
+                Logger.debug("Finish sending start message and instrumentation");
             } catch (Throwable e) {
                 Logger.error(e, "Failed to init span container");
             }
