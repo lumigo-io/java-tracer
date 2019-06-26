@@ -116,6 +116,10 @@ public class Configuration {
         return host.contains(getLumigoEdge().replace(EDGE_PREFIX, "").replace(EDGE_SUFFIX, ""));
     }
 
+    public boolean isAwsHost(String host) {
+        return host.endsWith("amazonaws.com");
+    }
+
     public boolean isInstrumentationEnabled() {
         return envUtil.getBooleanEnv(LUMIGO_INSTRUMENTATION, true);
     }

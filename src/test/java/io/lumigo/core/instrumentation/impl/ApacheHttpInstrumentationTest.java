@@ -33,11 +33,10 @@ class ApacheHttpInstrumentationTest {
     public void handling_enter_valid_request() {
         when(request.getURI()).thenReturn(URI.create("https://not.lumigo.host/api/spans"));
 
-        ApacheHttpInstrumentation.AmazonHttpClientAdvice.methodEnter(request);
+        ApacheHttpInstrumentation.ApacheHttpAdvice.methodEnter(request);
 
         assertNotNull(
-                ApacheHttpInstrumentation.AmazonHttpClientAdvice.startTimeMap.get(
-                        request.hashCode()));
+                ApacheHttpInstrumentation.ApacheHttpAdvice.startTimeMap.get(request.hashCode()));
         verify(request, times(1)).setHeader(eq("X-Amzn-Trace-Id"), any());
     }
 
@@ -45,11 +44,9 @@ class ApacheHttpInstrumentationTest {
     public void handling_enter_lumigo_internal_request() {
         when(request.getURI()).thenReturn(URI.create("https://lumigo.io/api/spans"));
 
-        ApacheHttpInstrumentation.AmazonHttpClientAdvice.methodEnter(request);
+        ApacheHttpInstrumentation.ApacheHttpAdvice.methodEnter(request);
 
-        assertNull(
-                ApacheHttpInstrumentation.AmazonHttpClientAdvice.startTimeMap.get(
-                        request.hashCode()));
+        assertNull(ApacheHttpInstrumentation.ApacheHttpAdvice.startTimeMap.get(request.hashCode()));
         verify(request, times(0)).setHeader(eq("X-Amzn-Trace-Id"), any());
     }
 
@@ -57,11 +54,9 @@ class ApacheHttpInstrumentationTest {
     public void handling_enter_exception() {
         when(request.getURI()).thenThrow(new RuntimeException());
 
-        ApacheHttpInstrumentation.AmazonHttpClientAdvice.methodEnter(request);
+        ApacheHttpInstrumentation.ApacheHttpAdvice.methodEnter(request);
 
-        assertNull(
-                ApacheHttpInstrumentation.AmazonHttpClientAdvice.startTimeMap.get(
-                        request.hashCode()));
+        assertNull(ApacheHttpInstrumentation.ApacheHttpAdvice.startTimeMap.get(request.hashCode()));
         verify(request, times(0)).setHeader(eq("X-Amzn-Trace-Id"), any());
     }
 
@@ -69,31 +64,28 @@ class ApacheHttpInstrumentationTest {
     public void handling_exit_response_lumigo_internal_request() {
         when(request.getURI()).thenReturn(URI.create("https://lumigo.io/api/spans"));
 
-        ApacheHttpInstrumentation.AmazonHttpClientAdvice.methodExit(request, response);
+        ApacheHttpInstrumentation.ApacheHttpAdvice.methodExit(request, response);
 
-        assertNull(
-                ApacheHttpInstrumentation.AmazonHttpClientAdvice.handled.get(request.hashCode()));
+        assertNull(ApacheHttpInstrumentation.ApacheHttpAdvice.handled.get(request.hashCode()));
     }
 
     @Test
     public void handling_exit_response_unknown_exception() {
         when(request.getURI()).thenThrow(new RuntimeException());
 
-        ApacheHttpInstrumentation.AmazonHttpClientAdvice.methodExit(request, response);
+        ApacheHttpInstrumentation.ApacheHttpAdvice.methodExit(request, response);
 
-        assertNull(
-                ApacheHttpInstrumentation.AmazonHttpClientAdvice.handled.get(request.hashCode()));
+        assertNull(ApacheHttpInstrumentation.ApacheHttpAdvice.handled.get(request.hashCode()));
     }
 
     @Test
     public void handling_exit_response_already_handled() {
         when(request.getURI()).thenReturn(URI.create("https://not.lumigo.host/api/spans"));
-        ApacheHttpInstrumentation.AmazonHttpClientAdvice.handled.put(request.hashCode(), true);
+        ApacheHttpInstrumentation.ApacheHttpAdvice.handled.put(request.hashCode(), true);
 
-        ApacheHttpInstrumentation.AmazonHttpClientAdvice.methodExit(request, response);
+        ApacheHttpInstrumentation.ApacheHttpAdvice.methodExit(request, response);
 
-        assertNotNull(
-                ApacheHttpInstrumentation.AmazonHttpClientAdvice.handled.get(request.hashCode()));
+        assertNotNull(ApacheHttpInstrumentation.ApacheHttpAdvice.handled.get(request.hashCode()));
     }
 
     @Disabled("Needs static mocking")
@@ -101,11 +93,10 @@ class ApacheHttpInstrumentationTest {
     public void handling_exit_response_create_new_span() throws Exception {
         when(request.getURI()).thenReturn(URI.create("https://not.lumigo.host/api/spans"));
 
-        ApacheHttpInstrumentation.AmazonHttpClientAdvice.methodExit(request, response);
+        ApacheHttpInstrumentation.ApacheHttpAdvice.methodExit(request, response);
 
         assertEquals(1, SpansContainer.getInstance().getHttpSpans().size());
-        assertNotNull(
-                ApacheHttpInstrumentation.AmazonHttpClientAdvice.handled.get(request.hashCode()));
+        assertNotNull(ApacheHttpInstrumentation.ApacheHttpAdvice.handled.get(request.hashCode()));
     }
 
     @Test
