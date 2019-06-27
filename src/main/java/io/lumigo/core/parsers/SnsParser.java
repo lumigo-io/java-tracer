@@ -2,8 +2,7 @@ package io.lumigo.core.parsers;
 
 import com.amazonaws.Request;
 import com.amazonaws.Response;
-import com.fasterxml.jackson.databind.JsonNode;
-import io.lumigo.core.utils.JsonUtils;
+import com.amazonaws.services.sns.model.PublishResult;
 import io.lumigo.models.HttpSpan;
 import java.util.List;
 import org.pmw.tinylog.Logger;
@@ -19,8 +18,12 @@ public class SnsParser implements IAwsParser {
 
     private String extractMessageId(Object response) {
         try {
-            JsonNode node = JsonUtils.convertStringToJson(response.toString());
-            return node.get("messageId").asText();
+            if (response instanceof PublishResult) {
+                return ((PublishResult) response).getMessageId();
+            } else {
+                Logger.debug("Failed to extract messageId for SNS response");
+                return null;
+            }
         } catch (Exception e) {
             Logger.error(e, "Failed to extract messageId for SNS response");
             return null;

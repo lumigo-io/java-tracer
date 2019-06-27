@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 import com.amazonaws.Request;
 import com.amazonaws.Response;
 import com.amazonaws.http.HttpResponse;
+import com.amazonaws.services.sns.model.PublishResult;
 import io.lumigo.models.HttpSpan;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,18 +23,18 @@ class SnsParserTest {
     SnsParser SnsParser = new SnsParser();
     @Mock Request request;
     @Mock HttpResponse httpResponse;
-    Response response =
-            new Response(
-                    "{\"sdkResponseMetadata\":{\"requestId\":\"57a7fbab-b6f3-5eb1-acbf-ae25733d6563\"},\"sdkHttpMetadata\":{\"httpHeaders\":{\"Content-Length\":\"294\",\"Content-Type\":\"text/xml\",\"Date\":\"Thu, 27 Jun 2019 13:24:29 GMT\",\"x-amzn-RequestId\":\"57a7fbab-b6f3-5eb1-acbf-ae25733d6563\"},\"httpStatusCode\":200},\"messageId\":\"fee47356-6f6a-58c8-96dc-26d8aaa4631a\"}",
-                    httpResponse);
+    @Mock PublishResult snsResult;
+    Response response;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
+        response = new Response(snsResult, httpResponse);
     }
 
     @Test
     void test_parse_sns_with_full_details() {
+        when(snsResult.getMessageId()).thenReturn("fee47356-6f6a-58c8-96dc-26d8aaa4631a");
         Map<String, List<String>> parameters = new HashMap<>();
         parameters.put("TopicArn", Arrays.asList("topic"));
         when(request.getParameters()).thenReturn(parameters);
@@ -50,6 +51,18 @@ class SnsParserTest {
         when(request.getParameters()).thenReturn(new HashMap<>());
 
         SnsParser.parse(span, request, new Response(null, httpResponse));
+
+        assertNull(span.getInfo().getResourceName());
+        assertNull(span.getInfo().getTargetArn());
+        assertNull(span.getInfo().getMessageId());
+    }
+
+    @Test
+    void test_parse_sns_with_exception() {
+        when(snsResult.getMessageId()).thenThrow(new RuntimeException());
+        when(request.getParameters()).thenReturn(new HashMap<>());
+
+        SnsParser.parse(span, request, response);
 
         assertNull(span.getInfo().getResourceName());
         assertNull(span.getInfo().getTargetArn());
