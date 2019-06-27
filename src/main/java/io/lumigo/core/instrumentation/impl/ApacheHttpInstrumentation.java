@@ -59,8 +59,6 @@ public class ApacheHttpInstrumentation implements LumigoInstrumentationApi {
                     Logger.debug("Skip, aws api");
                     return;
                 }
-                String patchedRoot = spansContainer.getPatchedRoot();
-                request.setHeader("X-Amzn-Trace-Id", patchedRoot);
                 startTimeMap.put(request.hashCode(), System.currentTimeMillis());
             } catch (Exception e) {
                 Logger.error(e);
