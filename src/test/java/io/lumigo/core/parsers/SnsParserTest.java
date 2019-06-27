@@ -24,13 +24,7 @@ class SnsParserTest {
     @Mock HttpResponse httpResponse;
     Response response =
             new Response(
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>"
-                            + "<PublishResponse xmlns=\"https://sns.amazonaws.com/doc/2010-03-31/\">"
-                            + "<PublishResult>"
-                            + "<MessageId>567910cd-659e-55d4-8ccb-5aaf14679dc0</MessageId>"
-                            + "</PublishResult><ResponseMetadata><RequestId>d74b8436-ae13-5ab4-a9ff-ce54dfea72a0</RequestId>"
-                            + "</ResponseMetadata>"
-                            + "</PublishResponse>",
+                    "{\"sdkResponseMetadata\":{\"requestId\":\"57a7fbab-b6f3-5eb1-acbf-ae25733d6563\"},\"sdkHttpMetadata\":{\"httpHeaders\":{\"Content-Length\":\"294\",\"Content-Type\":\"text/xml\",\"Date\":\"Thu, 27 Jun 2019 13:24:29 GMT\",\"x-amzn-RequestId\":\"57a7fbab-b6f3-5eb1-acbf-ae25733d6563\"},\"httpStatusCode\":200},\"messageId\":\"fee47356-6f6a-58c8-96dc-26d8aaa4631a\"}",
                     httpResponse);
 
     @BeforeEach
@@ -48,7 +42,7 @@ class SnsParserTest {
 
         assertEquals("topic", span.getInfo().getResourceName());
         assertEquals("topic", span.getInfo().getTargetArn());
-        assertEquals("567910cd-659e-55d4-8ccb-5aaf14679dc0", span.getInfo().getMessageId());
+        assertEquals("fee47356-6f6a-58c8-96dc-26d8aaa4631a", span.getInfo().getMessageId());
     }
 
     @Test
