@@ -106,6 +106,7 @@ public class SpansContainer {
                                                         ? triggeredBy.getResource()
                                                         : null)
                                         .stage(triggeredBy != null ? triggeredBy.getStage() : null)
+                                        .messageId(triggeredBy != null ? triggeredBy.getMessageId() : null)
                                         .logGroupName(context.getLogGroupName())
                                         .logStreamName(context.getLogStreamName())
                                         .build())
