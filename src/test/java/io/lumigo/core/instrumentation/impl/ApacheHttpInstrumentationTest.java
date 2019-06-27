@@ -37,7 +37,6 @@ class ApacheHttpInstrumentationTest {
 
         assertNotNull(
                 ApacheHttpInstrumentation.ApacheHttpAdvice.startTimeMap.get(request.hashCode()));
-        verify(request, times(1)).setHeader(eq("X-Amzn-Trace-Id"), any());
     }
 
     @Test
@@ -47,7 +46,6 @@ class ApacheHttpInstrumentationTest {
         ApacheHttpInstrumentation.ApacheHttpAdvice.methodEnter(request);
 
         assertNull(ApacheHttpInstrumentation.ApacheHttpAdvice.startTimeMap.get(request.hashCode()));
-        verify(request, times(0)).setHeader(eq("X-Amzn-Trace-Id"), any());
     }
 
     @Test
@@ -57,7 +55,6 @@ class ApacheHttpInstrumentationTest {
         ApacheHttpInstrumentation.ApacheHttpAdvice.methodEnter(request);
 
         assertNull(ApacheHttpInstrumentation.ApacheHttpAdvice.startTimeMap.get(request.hashCode()));
-        verify(request, times(0)).setHeader(eq("X-Amzn-Trace-Id"), any());
     }
 
     @Test
