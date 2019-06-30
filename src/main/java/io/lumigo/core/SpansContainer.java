@@ -344,20 +344,21 @@ public class SpansContainer {
     }
 
     protected static String extractBodyFromRequest(Request<?> request) {
-        if (request.getContent() != null) {
-            return StringUtils.extractStringForStream(request.getContent(), MAX_STRING_SIZE);
-        }
-        return null;
+        return extractBodyFromRequest(request.getContent());
     }
 
     protected static String extractBodyFromRequest(HttpUriRequest request) throws Exception {
         if (request instanceof HttpEntityEnclosingRequestBase) {
             HttpEntity entity = ((HttpEntityEnclosingRequestBase) request).getEntity();
-            if (entity != null && entity.getContent() != null) {
-                return StringUtils.extractStringForStream(entity.getContent(), MAX_STRING_SIZE);
+            if (entity != null) {
+                return extractBodyFromRequest(entity.getContent());
             }
         }
         return null;
+    }
+
+    protected static String extractBodyFromRequest(InputStream stream) {
+        return StringUtils.extractStringForStream(stream, MAX_STRING_SIZE);
     }
 
     protected static String extractBodyFromResponse(HttpResponse response) throws IOException {
