@@ -86,7 +86,7 @@ class AmazonHttpClientInstrumentationTest {
 
         AmazonHttpClientInstrumentation.AmazonHttpClientAdvice.methodExit(request, response);
 
-        assertNotNull(
+        assertNull(
                 AmazonHttpClientInstrumentation.AmazonHttpClientAdvice.handled.get(
                         request.hashCode()));
     }

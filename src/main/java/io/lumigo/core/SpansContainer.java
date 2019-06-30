@@ -245,18 +245,17 @@ public class SpansContainer {
                                 .request(
                                         HttpSpan.HttpData.builder()
                                                 .headers(
-                                                        validateVerbose(
+                                                        callIfVerbose(
                                                                 () ->
                                                                         extractHeaders(
-                                                                                convertHeadersToMap(
-                                                                                        request
-                                                                                                .getAllHeaders()))))
+                                                                                request
+                                                                                        .getAllHeaders())))
                                                 .uri(
-                                                        validateVerbose(
+                                                        callIfVerbose(
                                                                 () -> request.getURI().toString()))
                                                 .method(request.getMethod())
                                                 .body(
-                                                        validateVerbose(
+                                                        callIfVerbose(
                                                                 () ->
                                                                         extractBodyFromRequest(
                                                                                 request)))
@@ -264,14 +263,13 @@ public class SpansContainer {
                                 .response(
                                         HttpSpan.HttpData.builder()
                                                 .headers(
-                                                        validateVerbose(
+                                                        callIfVerbose(
                                                                 () ->
                                                                         extractHeaders(
-                                                                                convertHeadersToMap(
-                                                                                        response
-                                                                                                .getAllHeaders()))))
+                                                                                response
+                                                                                        .getAllHeaders())))
                                                 .body(
-                                                        validateVerbose(
+                                                        callIfVerbose(
                                                                 () ->
                                                                         extractBodyFromResponse(
                                                                                 response)))
@@ -291,19 +289,19 @@ public class SpansContainer {
                                 .request(
                                         HttpSpan.HttpData.builder()
                                                 .headers(
-                                                        validateVerbose(
+                                                        callIfVerbose(
                                                                 () ->
                                                                         extractHeaders(
                                                                                 request
                                                                                         .getHeaders())))
                                                 .uri(
-                                                        validateVerbose(
+                                                        callIfVerbose(
                                                                 () ->
                                                                         request.getEndpoint()
                                                                                 .toString()))
                                                 .method(request.getHttpMethod().name())
                                                 .body(
-                                                        validateVerbose(
+                                                        callIfVerbose(
                                                                 () ->
                                                                         extractBodyFromRequest(
                                                                                 request)))
@@ -311,13 +309,13 @@ public class SpansContainer {
                                 .response(
                                         HttpSpan.HttpData.builder()
                                                 .headers(
-                                                        validateVerbose(
+                                                        callIfVerbose(
                                                                 () ->
                                                                         extractHeaders(
                                                                                 response.getHttpResponse()
                                                                                         .getHeaders())))
                                                 .body(
-                                                        validateVerbose(
+                                                        callIfVerbose(
                                                                 () ->
                                                                         extractBodyFromResponse(
                                                                                 response)))
@@ -333,21 +331,21 @@ public class SpansContainer {
         return StringUtils.getMaxSizeString(JsonUtils.getObjectAsJsonString(headers));
     }
 
-    private static Map<String, String> convertHeadersToMap(Header[] headers) {
+    private static String extractHeaders(Header[] headers) {
         Map<String, String> headersMap = new HashMap<>();
         if (headers != null) {
             for (Header header : headers) {
                 headersMap.put(header.getName(), header.getValue());
             }
         }
-        return headersMap;
+        return extractHeaders(headersMap);
     }
 
     protected static String extractBodyFromRequest(Request<?> request) {
         return extractBodyFromRequest(request.getContent());
     }
 
-    protected static String extractBodyFromRequest(HttpUriRequest request) throws Exception {
+    private static String extractBodyFromRequest(HttpUriRequest request) throws Exception {
         if (request instanceof HttpEntityEnclosingRequestBase) {
             HttpEntity entity = ((HttpEntityEnclosingRequestBase) request).getEntity();
             if (entity != null) {
@@ -383,7 +381,7 @@ public class SpansContainer {
                 AwsUtils.extractAwsTraceSuffix(awsTracerId));
     }
 
-    protected static <T> T validateVerbose(Callable<T> method) {
+    protected static <T> T callIfVerbose(Callable<T> method) {
         if (!Configuration.getInstance().isLumigoVerboseMode()) {
             return null;
         }

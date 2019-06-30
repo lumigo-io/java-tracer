@@ -417,7 +417,7 @@ class SpansContainerTest {
     @Test
     void test_validate_verbose_exception() {
         assertNull(
-                SpansContainer.validateVerbose(
+                SpansContainer.callIfVerbose(
                         () -> {
                             throw new RuntimeException();
                         }));

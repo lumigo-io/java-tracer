@@ -11,8 +11,9 @@ import org.pmw.tinylog.Logger;
 public class Loader {
     public static void instrument(java.lang.instrument.Instrumentation inst) {
         Logger.debug("Start Instrumentation");
-        ApacheHttpInstrumentation instrumentation = new ApacheHttpInstrumentation();
-        AmazonHttpClientInstrumentation instrumentation1 = new AmazonHttpClientInstrumentation();
+        ApacheHttpInstrumentation apacheHttpInstrumentation = new ApacheHttpInstrumentation();
+        AmazonHttpClientInstrumentation amazonHttpClientInstrumentation =
+                new AmazonHttpClientInstrumentation();
         AgentBuilder builder =
                 new AgentBuilder.Default()
                         .disableClassFormatChanges()
@@ -20,10 +21,10 @@ public class Loader {
                         .ignore(
                                 not(nameStartsWith("com.amazonaws.http.AmazonHttpClient"))
                                         .and(not(nameStartsWith("org.apache.http.impl.client"))))
-                        .type(instrumentation.getTypeMatcher())
-                        .transform(instrumentation.getTransformer())
-                        .type(instrumentation1.getTypeMatcher())
-                        .transform(instrumentation1.getTransformer());
+                        .type(apacheHttpInstrumentation.getTypeMatcher())
+                        .transform(apacheHttpInstrumentation.getTransformer())
+                        .type(amazonHttpClientInstrumentation.getTypeMatcher())
+                        .transform(amazonHttpClientInstrumentation.getTransformer());
 
         builder.installOn(inst);
         Logger.debug("Finish Instrumentation");
