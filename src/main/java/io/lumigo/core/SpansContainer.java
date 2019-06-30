@@ -13,6 +13,7 @@ import io.lumigo.models.HttpSpan;
 import io.lumigo.models.Span;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.Callable;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -235,8 +236,7 @@ public class SpansContainer {
                 .build();
     }
 
-    public void addHttpSpan(Long startTime, HttpUriRequest request, HttpResponse response)
-            throws Exception {
+    public void addHttpSpan(Long startTime, HttpUriRequest request, HttpResponse response) {
         HttpSpan httpSpan = createBaseHttpSpan(startTime);
         httpSpan.getInfo()
                 .setHttpInfo(
@@ -244,19 +244,37 @@ public class SpansContainer {
                                 .host(request.getURI().getHost())
                                 .request(
                                         HttpSpan.HttpData.builder()
-                                                .headers(extractHeaders(request.getAllHeaders()))
+                                                .headers(
+                                                        validateVerbose(
+                                                                () ->
+                                                                        extractHeaders(
+                                                                                convertHeadersToMap(
+                                                                                        request
+                                                                                                .getAllHeaders()))))
                                                 .uri(
-                                                        Configuration.getInstance()
-                                                                        .isLumigoVerboseMode()
-                                                                ? request.getURI().toString()
-                                                                : null)
+                                                        validateVerbose(
+                                                                () -> request.getURI().toString()))
                                                 .method(request.getMethod())
-                                                .body(extractBodyFromRequest(request))
+                                                .body(
+                                                        validateVerbose(
+                                                                () ->
+                                                                        extractBodyFromRequest(
+                                                                                request)))
                                                 .build())
                                 .response(
                                         HttpSpan.HttpData.builder()
-                                                .headers(extractHeaders(response.getAllHeaders()))
-                                                .body(extractBodyFromResponse(response))
+                                                .headers(
+                                                        validateVerbose(
+                                                                () ->
+                                                                        extractHeaders(
+                                                                                convertHeadersToMap(
+                                                                                        response
+                                                                                                .getAllHeaders()))))
+                                                .body(
+                                                        validateVerbose(
+                                                                () ->
+                                                                        extractBodyFromResponse(
+                                                                                response)))
                                                 .statusCode(
                                                         response.getStatusLine().getStatusCode())
                                                 .build())
@@ -272,22 +290,37 @@ public class SpansContainer {
                                 .host(request.getEndpoint().getHost())
                                 .request(
                                         HttpSpan.HttpData.builder()
-                                                .headers(extractHeaders(request.getHeaders()))
+                                                .headers(
+                                                        validateVerbose(
+                                                                () ->
+                                                                        extractHeaders(
+                                                                                request
+                                                                                        .getHeaders())))
                                                 .uri(
-                                                        Configuration.getInstance()
-                                                                        .isLumigoVerboseMode()
-                                                                ? request.getEndpoint().toString()
-                                                                : null)
+                                                        validateVerbose(
+                                                                () ->
+                                                                        request.getEndpoint()
+                                                                                .toString()))
                                                 .method(request.getHttpMethod().name())
-                                                .body(extractBodyFromRequest(request))
+                                                .body(
+                                                        validateVerbose(
+                                                                () ->
+                                                                        extractBodyFromRequest(
+                                                                                request)))
                                                 .build())
                                 .response(
                                         HttpSpan.HttpData.builder()
                                                 .headers(
-                                                        extractHeaders(
-                                                                response.getHttpResponse()
-                                                                        .getHeaders()))
-                                                .body(extractBodyFromResponse(response))
+                                                        validateVerbose(
+                                                                () ->
+                                                                        extractHeaders(
+                                                                                response.getHttpResponse()
+                                                                                        .getHeaders())))
+                                                .body(
+                                                        validateVerbose(
+                                                                () ->
+                                                                        extractBodyFromResponse(
+                                                                                response)))
                                                 .statusCode(
                                                         response.getHttpResponse().getStatusCode())
                                                 .build())
@@ -296,20 +329,11 @@ public class SpansContainer {
         httpSpans.add(httpSpan);
     }
 
-    private static String extractHeaders(Header[] headers) {
-        return Configuration.getInstance().isLumigoVerboseMode()
-                ? StringUtils.getMaxSizeString(
-                        JsonUtils.getObjectAsJsonString(convertHeadersToMap(headers)))
-                : null;
-    }
-
     private static String extractHeaders(Map<String, String> headers) {
-        return Configuration.getInstance().isLumigoVerboseMode()
-                ? StringUtils.getMaxSizeString(JsonUtils.getObjectAsJsonString(headers))
-                : null;
+        return StringUtils.getMaxSizeString(JsonUtils.getObjectAsJsonString(headers));
     }
 
-    protected static Map<String, String> convertHeadersToMap(Header[] headers) {
+    private static Map<String, String> convertHeadersToMap(Header[] headers) {
         Map<String, String> headersMap = new HashMap<>();
         if (headers != null) {
             for (Header header : headers) {
@@ -320,51 +344,33 @@ public class SpansContainer {
     }
 
     protected static String extractBodyFromRequest(Request<?> request) {
-        try {
-            if (Configuration.getInstance().isLumigoVerboseMode()) {
-                if (request.getContent() != null) {
-                    return StringUtils.extractStringForStream(
-                            request.getContent(), MAX_STRING_SIZE);
-                }
-            }
-            return null;
-        } catch (Exception e) {
-            Logger.error(e, "Failed to extract body from request");
-            return null;
+        if (request.getContent() != null) {
+            return StringUtils.extractStringForStream(request.getContent(), MAX_STRING_SIZE);
         }
+        return null;
     }
 
-    protected static String extractBodyFromRequest(HttpUriRequest request) {
-        try {
-            if (Configuration.getInstance().isLumigoVerboseMode()
-                    && request instanceof HttpEntityEnclosingRequestBase) {
-                HttpEntity entity = ((HttpEntityEnclosingRequestBase) request).getEntity();
-                if (entity != null && entity.getContent() != null) {
-                    return StringUtils.extractStringForStream(entity.getContent(), MAX_STRING_SIZE);
-                }
+    protected static String extractBodyFromRequest(HttpUriRequest request) throws Exception {
+        if (request instanceof HttpEntityEnclosingRequestBase) {
+            HttpEntity entity = ((HttpEntityEnclosingRequestBase) request).getEntity();
+            if (entity != null && entity.getContent() != null) {
+                return StringUtils.extractStringForStream(entity.getContent(), MAX_STRING_SIZE);
             }
-            return null;
-        } catch (Exception e) {
-            Logger.error(e, "Failed to extract body from request");
-            return null;
         }
+        return null;
     }
 
     protected static String extractBodyFromResponse(HttpResponse response) throws IOException {
-        return Configuration.getInstance().isLumigoVerboseMode()
-                ? StringUtils.extractStringForStream(
-                        response.getEntity() != null ? response.getEntity().getContent() : null,
-                        MAX_STRING_SIZE)
-                : null;
+        return StringUtils.extractStringForStream(
+                response.getEntity() != null ? response.getEntity().getContent() : null,
+                MAX_STRING_SIZE);
     }
 
     protected static String extractBodyFromResponse(Response response) {
-        return Configuration.getInstance().isLumigoVerboseMode()
-                ? StringUtils.getMaxSizeString(
-                        response.getAwsResponse() != null
-                                ? JsonUtils.getObjectAsJsonString(response.getAwsResponse())
-                                : null)
-                : null;
+        return StringUtils.getMaxSizeString(
+                response.getAwsResponse() != null
+                        ? JsonUtils.getObjectAsJsonString(response.getAwsResponse())
+                        : null);
     }
 
     public String getPatchedRoot() {
@@ -374,5 +380,17 @@ public class SpansContainer {
                 StringUtils.randomStringAndNumbers(4),
                 AwsUtils.extractAwsTraceTransactionId(awsTracerId),
                 AwsUtils.extractAwsTraceSuffix(awsTracerId));
+    }
+
+    protected static <T> T validateVerbose(Callable<T> method) {
+        if (!Configuration.getInstance().isLumigoVerboseMode()) {
+            return null;
+        }
+        try {
+            return method.call();
+        } catch (Exception e) {
+            Logger.error(e, "Failed to call method");
+            return null;
+        }
     }
 }

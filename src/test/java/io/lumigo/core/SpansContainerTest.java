@@ -395,14 +395,14 @@ class SpansContainerTest {
 
     @DisplayName("Extract body from request")
     @Test
-    void test_extract_body_from_request() {
+    void test_extract_body_from_request() throws Exception {
         assertEquals(
                 "awsResponse", SpansContainer.extractBodyFromRequest(new HttpRequestMockCls()));
     }
 
     @DisplayName("Extract body from un reset request, should be null")
     @Test
-    void test_extract_Body_From_Request() {
+    void test_extract_Body_From_Request() throws Exception {
         assertNull(SpansContainer.extractBodyFromRequest(new HttpRequestMockUnResetStream()));
     }
 
@@ -411,6 +411,16 @@ class SpansContainerTest {
     void test_extract_body_from_aws_request() throws UnsupportedEncodingException {
         when(awsRequest.getContent()).thenReturn(new StringInputStream("awsResponse"));
         assertEquals("awsResponse", SpansContainer.extractBodyFromRequest(awsRequest));
+    }
+
+    @DisplayName("Validate verbose with exception return null")
+    @Test
+    void test_validate_verbose_exception() {
+        assertNull(
+                SpansContainer.validateVerbose(
+                        () -> {
+                            throw new RuntimeException();
+                        }));
     }
 
     private Map<String, String> createMockedEnv() {

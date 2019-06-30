@@ -7,7 +7,7 @@ import io.lumigo.models.HttpSpan;
 import java.util.List;
 import org.pmw.tinylog.Logger;
 
-public class SnsParser implements IAwsParser {
+public class SnsParser implements AwsParser {
     @Override
     public void parse(HttpSpan span, Request request, Response response) {
         String topicArn = getParameter(request, "TopicArn");

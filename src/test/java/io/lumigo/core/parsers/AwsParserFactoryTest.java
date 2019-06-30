@@ -13,7 +13,7 @@ class AwsParserFactoryTest {
 
     @Test
     public void test_check_null_value() {
-        assertEquals(DefaultParser.class, AwsParserFactory.getParser("Not supported").getClass());
+        assertEquals(DefaultParser.class, AwsParserFactory.getParser(null).getClass());
     }
 
     @Test
