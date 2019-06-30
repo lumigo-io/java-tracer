@@ -345,7 +345,7 @@ public class SpansContainer {
         return extractBodyFromRequest(request.getContent());
     }
 
-    private static String extractBodyFromRequest(HttpUriRequest request) throws Exception {
+    protected static String extractBodyFromRequest(HttpUriRequest request) throws Exception {
         if (request instanceof HttpEntityEnclosingRequestBase) {
             HttpEntity entity = ((HttpEntityEnclosingRequestBase) request).getEntity();
             if (entity != null) {
