@@ -27,6 +27,9 @@ public class HttpSpan {
         private Tracer tracer;
         private TraceId traceId;
         private HttpInfo httpInfo;
+        private String messageId;
+        private String resourceName;
+        private String targetArn;
     }
 
     @AllArgsConstructor

@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
 
+import com.amazonaws.Request;
+import com.amazonaws.Response;
+import com.amazonaws.http.HttpMethodName;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.util.StringInputStream;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,6 +17,7 @@ import io.lumigo.models.Span;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,6 +46,8 @@ class SpansContainerTest {
     @Mock HttpResponse httpResponse;
     @Mock StatusLine statusLine;
     @Mock HttpUriRequest httpRequest;
+    @Mock Request awsRequest;
+    @Mock com.amazonaws.http.HttpResponse awsHttpResponse;
 
     @BeforeEach
     void setUp() {
@@ -327,16 +333,94 @@ class SpansContainerTest {
                         new Customization("ended", (o1, o2) -> o2 != null)));
     }
 
+    @DisplayName("AWS Http span creation")
+    @Test
+    void add_aws_http_span() throws Exception {
+        spansContainer.init(createMockedEnv(), reporter, context, null);
+        when(awsRequest.getEndpoint()).thenReturn(URI.create("https://sns.amazonaws.com"));
+        when(awsRequest.getHttpMethod()).thenReturn(HttpMethodName.GET);
+        when(awsHttpResponse.getStatusCode()).thenReturn(200);
+        Response awsResponse = new Response("awsResponse", awsHttpResponse);
+        long startTime = System.currentTimeMillis();
+        spansContainer.addHttpSpan(startTime, awsRequest, awsResponse);
+
+        HttpSpan actualSpan = spansContainer.getHttpSpans().get(0);
+        String expectedSpan =
+                "{\n"
+                        + "   \"started\":1559127760071,\n"
+                        + "   \"ended\":1559127760085,\n"
+                        + "   \"id\":\"cc9ceb9c-dad2-4762-8f0c-147408bdc063\",\n"
+                        + "   \"type\":\"http\",\n"
+                        + "   \"transactionId\":\"3\",\n"
+                        + "   \"account\":\"1111\",\n"
+                        + "   \"region\":\"us-west-2\",\n"
+                        + "   \"token\":null,\n"
+                        + "   \"info\":{\n"
+                        + "      \"tracer\":{\n"
+                        + "         \"version\":\"1.0\"\n"
+                        + "      },\n"
+                        + "      \"traceId\":{\n"
+                        + "         \"Root\":\"1-2-3\"\n"
+                        + "      },\n"
+                        + "      \"httpInfo\":{\n"
+                        + "         \"host\":\"sns.amazonaws.com\",\n"
+                        + "         \"request\":{\n"
+                        + "            \"headers\":\"{}\",\n"
+                        + "            \"body\":null,\n"
+                        + "            \"uri\":\"https://sns.amazonaws.com\",\n"
+                        + "            \"statusCode\":null,\n"
+                        + "            \"method\":GET\n"
+                        + "         },\n"
+                        + "         \"response\":{\n"
+                        + "            \"headers\":\"{}\",\n"
+                        + "            \"body\":\"awsResponse\",\n"
+                        + "            \"uri\":null,\n"
+                        + "            \"statusCode\":200,\n"
+                        + "            \"method\":null\n"
+                        + "         }\n"
+                        + "      }\n"
+                        + "   },\n"
+                        + "   \"parentId\":\"3n2783hf7823hdui32\"\n"
+                        + "}";
+        JSONAssert.assertEquals(
+                expectedSpan,
+                JsonUtils.getObjectAsJsonString(actualSpan),
+                new CustomComparator(
+                        JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
+                        new Customization("id", (o1, o2) -> o2 != null),
+                        new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("ended", (o1, o2) -> o2 != null)));
+    }
+
     @DisplayName("Extract body from request")
     @Test
-    void test_extract_body_from_request() {
-        assertEquals("response", SpansContainer.extractBodyFromRequest(new HttpRequestMockCls()));
+    void test_extract_body_from_request() throws Exception {
+        assertEquals(
+                "awsResponse", SpansContainer.extractBodyFromRequest(new HttpRequestMockCls()));
     }
 
     @DisplayName("Extract body from un reset request, should be null")
     @Test
-    void test_extract_Body_From_Request() {
+    void test_extract_Body_From_Request() throws Exception {
         assertNull(SpansContainer.extractBodyFromRequest(new HttpRequestMockUnResetStream()));
+    }
+
+    @DisplayName("Extract body from request aws")
+    @Test
+    void test_extract_body_from_aws_request() throws UnsupportedEncodingException {
+        when(awsRequest.getContent()).thenReturn(new StringInputStream("awsResponse"));
+        assertEquals("awsResponse", SpansContainer.extractBodyFromRequest(awsRequest));
+    }
+
+    @DisplayName("Validate verbose with exception return null")
+    @Test
+    void test_validate_verbose_exception() {
+        assertNull(
+                SpansContainer.callIfVerbose(
+                        () -> {
+                            throw new RuntimeException();
+                        }));
     }
 
     private Map<String, String> createMockedEnv() {
@@ -391,7 +475,7 @@ class SpansContainerTest {
 
                 @Override
                 public InputStream getContent() throws IOException, UnsupportedOperationException {
-                    return new StringInputStream("response") {
+                    return new StringInputStream("awsResponse") {
                         @Override
                         public boolean markSupported() {
                             return false;
@@ -451,7 +535,7 @@ class SpansContainerTest {
 
                 @Override
                 public InputStream getContent() throws IOException, UnsupportedOperationException {
-                    return new StringInputStream("response");
+                    return new StringInputStream("awsResponse");
                 }
 
                 @Override

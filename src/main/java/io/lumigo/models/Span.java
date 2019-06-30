@@ -46,6 +46,7 @@ public class Span {
         private String resource;
         private String api;
         private String stage;
+        private String messageId;
     }
 
     @AllArgsConstructor

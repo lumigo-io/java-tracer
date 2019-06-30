@@ -1,9 +1,11 @@
 package io.lumigo.core;
 
+import com.amazonaws.Request;
+import com.amazonaws.Response;
 import com.amazonaws.services.lambda.runtime.Context;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.network.Reporter;
+import io.lumigo.core.parsers.AwsParserFactory;
 import io.lumigo.core.utils.AwsUtils;
 import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.core.utils.StringUtils;
@@ -11,6 +13,7 @@ import io.lumigo.models.HttpSpan;
 import io.lumigo.models.Span;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.Callable;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -20,6 +23,7 @@ import org.pmw.tinylog.Logger;
 
 public class SpansContainer {
 
+    private static final int MAX_STRING_SIZE = Configuration.getInstance().maxSpanFieldSize();
     private static final int MAX_LAMBDA_TIME = 15 * 60 * 1000;
     private static final String AWS_EXECUTION_ENV = "AWS_EXECUTION_ENV";
     private static final String AWS_REGION = "AWS_REGION";
@@ -103,6 +107,10 @@ public class SpansContainer {
                                                         ? triggeredBy.getResource()
                                                         : null)
                                         .stage(triggeredBy != null ? triggeredBy.getStage() : null)
+                                        .messageId(
+                                                triggeredBy != null
+                                                        ? triggeredBy.getMessageId()
+                                                        : null)
                                         .logGroupName(context.getLogGroupName())
                                         .logStreamName(context.getLogStreamName())
                                         .build())
@@ -202,113 +210,166 @@ public class SpansContainer {
         return sw.getBuffer().toString();
     }
 
-    public void addHttpSpan(Long startTime, HttpUriRequest request, HttpResponse response)
-            throws Exception {
-        httpSpans.add(
-                HttpSpan.builder()
-                        .id(UUID.randomUUID().toString())
-                        .started(startTime)
-                        .ended(System.currentTimeMillis())
-                        .transactionId(baseSpan.getTransactionId())
-                        .account(baseSpan.getAccount())
-                        .region(baseSpan.getRegion())
-                        .token(baseSpan.getToken())
-                        .type(HTTP_SPAN_TYPE)
-                        .parentId(baseSpan.getRequestId())
-                        .info(
-                                HttpSpan.Info.builder()
-                                        .tracer(
-                                                HttpSpan.Tracer.builder()
-                                                        .version(
-                                                                baseSpan.getInfo()
-                                                                        .getTracer()
-                                                                        .getVersion())
-                                                        .build())
-                                        .traceId(
-                                                HttpSpan.TraceId.builder()
-                                                        .root(
-                                                                baseSpan.getInfo()
-                                                                        .getTraceId()
-                                                                        .getRoot())
-                                                        .build())
-                                        .httpInfo(
-                                                HttpSpan.HttpInfo.builder()
-                                                        .host(request.getURI().getHost())
-                                                        .request(
-                                                                HttpSpan.HttpData.builder()
-                                                                        .headers(
-                                                                                extractHeaders(
-                                                                                        request
-                                                                                                .getAllHeaders()))
-                                                                        .uri(
-                                                                                Configuration
-                                                                                                .getInstance()
-                                                                                                .isLumigoVerboseMode()
-                                                                                        ? request.getURI()
-                                                                                                .toString()
-                                                                                        : null)
-                                                                        .method(request.getMethod())
-                                                                        .body(
-                                                                                extractBodyFromRequest(
-                                                                                        request))
-                                                                        .build())
-                                                        .response(
-                                                                HttpSpan.HttpData.builder()
-                                                                        .headers(
-                                                                                extractHeaders(
-                                                                                        response
-                                                                                                .getAllHeaders()))
-                                                                        .body(
-                                                                                extractBodyFromResponse(
-                                                                                        response))
-                                                                        .statusCode(
-                                                                                response.getStatusLine()
-                                                                                        .getStatusCode())
-                                                                        .build())
-                                                        .build())
-                                        .build())
-                        .build());
+    private HttpSpan createBaseHttpSpan(Long startTime) {
+        return HttpSpan.builder()
+                .id(UUID.randomUUID().toString())
+                .started(startTime)
+                .ended(System.currentTimeMillis())
+                .transactionId(baseSpan.getTransactionId())
+                .account(baseSpan.getAccount())
+                .region(baseSpan.getRegion())
+                .token(baseSpan.getToken())
+                .type(HTTP_SPAN_TYPE)
+                .parentId(baseSpan.getRequestId())
+                .info(
+                        HttpSpan.Info.builder()
+                                .tracer(
+                                        HttpSpan.Tracer.builder()
+                                                .version(
+                                                        baseSpan.getInfo().getTracer().getVersion())
+                                                .build())
+                                .traceId(
+                                        HttpSpan.TraceId.builder()
+                                                .root(baseSpan.getInfo().getTraceId().getRoot())
+                                                .build())
+                                .build())
+                .build();
     }
 
-    private static String extractHeaders(Header[] headers) throws JsonProcessingException {
-        return Configuration.getInstance().isLumigoVerboseMode()
-                ? StringUtils.getMaxSizeString(
-                        JsonUtils.getObjectAsJsonString(convertHeadersToMap(headers)))
-                : null;
+    public void addHttpSpan(Long startTime, HttpUriRequest request, HttpResponse response) {
+        HttpSpan httpSpan = createBaseHttpSpan(startTime);
+        httpSpan.getInfo()
+                .setHttpInfo(
+                        HttpSpan.HttpInfo.builder()
+                                .host(request.getURI().getHost())
+                                .request(
+                                        HttpSpan.HttpData.builder()
+                                                .headers(
+                                                        callIfVerbose(
+                                                                () ->
+                                                                        extractHeaders(
+                                                                                request
+                                                                                        .getAllHeaders())))
+                                                .uri(
+                                                        callIfVerbose(
+                                                                () -> request.getURI().toString()))
+                                                .method(request.getMethod())
+                                                .body(
+                                                        callIfVerbose(
+                                                                () ->
+                                                                        extractBodyFromRequest(
+                                                                                request)))
+                                                .build())
+                                .response(
+                                        HttpSpan.HttpData.builder()
+                                                .headers(
+                                                        callIfVerbose(
+                                                                () ->
+                                                                        extractHeaders(
+                                                                                response
+                                                                                        .getAllHeaders())))
+                                                .body(
+                                                        callIfVerbose(
+                                                                () ->
+                                                                        extractBodyFromResponse(
+                                                                                response)))
+                                                .statusCode(
+                                                        response.getStatusLine().getStatusCode())
+                                                .build())
+                                .build());
+        httpSpans.add(httpSpan);
     }
 
-    protected static Map<String, String> convertHeadersToMap(Header[] headers) {
+    public void addHttpSpan(Long startTime, Request<?> request, Response<?> response) {
+        HttpSpan httpSpan = createBaseHttpSpan(startTime);
+        httpSpan.getInfo()
+                .setHttpInfo(
+                        HttpSpan.HttpInfo.builder()
+                                .host(request.getEndpoint().getHost())
+                                .request(
+                                        HttpSpan.HttpData.builder()
+                                                .headers(
+                                                        callIfVerbose(
+                                                                () ->
+                                                                        extractHeaders(
+                                                                                request
+                                                                                        .getHeaders())))
+                                                .uri(
+                                                        callIfVerbose(
+                                                                () ->
+                                                                        request.getEndpoint()
+                                                                                .toString()))
+                                                .method(request.getHttpMethod().name())
+                                                .body(
+                                                        callIfVerbose(
+                                                                () ->
+                                                                        extractBodyFromRequest(
+                                                                                request)))
+                                                .build())
+                                .response(
+                                        HttpSpan.HttpData.builder()
+                                                .headers(
+                                                        callIfVerbose(
+                                                                () ->
+                                                                        extractHeaders(
+                                                                                response.getHttpResponse()
+                                                                                        .getHeaders())))
+                                                .body(
+                                                        callIfVerbose(
+                                                                () ->
+                                                                        extractBodyFromResponse(
+                                                                                response)))
+                                                .statusCode(
+                                                        response.getHttpResponse().getStatusCode())
+                                                .build())
+                                .build());
+        AwsParserFactory.getParser(request.getServiceName()).parse(httpSpan, request, response);
+        httpSpans.add(httpSpan);
+    }
+
+    private static String extractHeaders(Map<String, String> headers) {
+        return StringUtils.getMaxSizeString(JsonUtils.getObjectAsJsonString(headers));
+    }
+
+    private static String extractHeaders(Header[] headers) {
         Map<String, String> headersMap = new HashMap<>();
         if (headers != null) {
             for (Header header : headers) {
                 headersMap.put(header.getName(), header.getValue());
             }
         }
-        return headersMap;
+        return extractHeaders(headersMap);
     }
 
-    protected static String extractBodyFromRequest(HttpUriRequest request) {
-        try {
-            if (Configuration.getInstance().isLumigoVerboseMode()
-                    && request instanceof HttpEntityEnclosingRequestBase) {
-                HttpEntity entity = ((HttpEntityEnclosingRequestBase) request).getEntity();
-                if (entity != null && entity.getContent() != null) {
-                    return StringUtils.extractStringForStream(entity.getContent(), 1024);
-                }
+    protected static String extractBodyFromRequest(Request<?> request) {
+        return extractBodyFromRequest(request.getContent());
+    }
+
+    protected static String extractBodyFromRequest(HttpUriRequest request) throws Exception {
+        if (request instanceof HttpEntityEnclosingRequestBase) {
+            HttpEntity entity = ((HttpEntityEnclosingRequestBase) request).getEntity();
+            if (entity != null) {
+                return extractBodyFromRequest(entity.getContent());
             }
-            return null;
-        } catch (Exception e) {
-            Logger.error(e, "Failed to extract body from request");
-            return null;
         }
+        return null;
+    }
+
+    protected static String extractBodyFromRequest(InputStream stream) {
+        return StringUtils.extractStringForStream(stream, MAX_STRING_SIZE);
     }
 
     protected static String extractBodyFromResponse(HttpResponse response) throws IOException {
-        return Configuration.getInstance().isLumigoVerboseMode()
-                ? StringUtils.extractStringForStream(
-                        response.getEntity() != null ? response.getEntity().getContent() : null,
-                        1024)
-                : null;
+        return StringUtils.extractStringForStream(
+                response.getEntity() != null ? response.getEntity().getContent() : null,
+                MAX_STRING_SIZE);
+    }
+
+    protected static String extractBodyFromResponse(Response response) {
+        return StringUtils.getMaxSizeString(
+                response.getAwsResponse() != null
+                        ? JsonUtils.getObjectAsJsonString(response.getAwsResponse())
+                        : null);
     }
 
     public String getPatchedRoot() {
@@ -318,5 +379,17 @@ public class SpansContainer {
                 StringUtils.randomStringAndNumbers(4),
                 AwsUtils.extractAwsTraceTransactionId(awsTracerId),
                 AwsUtils.extractAwsTraceSuffix(awsTracerId));
+    }
+
+    protected static <T> T callIfVerbose(Callable<T> method) {
+        if (!Configuration.getInstance().isLumigoVerboseMode()) {
+            return null;
+        }
+        try {
+            return method.call();
+        } catch (Exception e) {
+            Logger.error(e, "Failed to call method");
+            return null;
+        }
     }
 }

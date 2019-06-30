@@ -37,26 +37,28 @@ public class ApacheHttpInstrumentation implements LumigoInstrumentationApi {
                                                                 0,
                                                                 named(
                                                                         "org.apache.http.client.methods.HttpUriRequest")))),
-                        AmazonHttpClientAdvice.class.getName());
+                        ApacheHttpAdvice.class.getName());
     }
 
-    public static class AmazonHttpClientAdvice {
+    public static class ApacheHttpAdvice {
 
         public static final SpansContainer spansContainer = SpansContainer.getInstance();
 
-        public static final LRUCache<Integer, Boolean> handled = new LRUCache<>(100);
+        public static final LRUCache<Integer, Boolean> handled = new LRUCache<>(1000);
 
-        public static final LRUCache<Integer, Long> startTimeMap = new LRUCache<>(100);
+        public static final LRUCache<Integer, Long> startTimeMap = new LRUCache<>(1000);
 
         @Advice.OnMethodEnter
         public static void methodEnter(@Advice.Argument(0) final HttpUriRequest request) {
             try {
                 if (Configuration.getInstance().isLumigoHost(request.getURI().getHost())) {
-                    Logger.info("Skip, internal lumigo reporter");
+                    Logger.debug("Skip, internal lumigo reporter");
                     return;
                 }
-                String patchedRoot = spansContainer.getPatchedRoot();
-                request.setHeader("X-Amzn-Trace-Id", patchedRoot);
+                if (Configuration.getInstance().isAwsHost(request.getURI().getHost())) {
+                    Logger.debug("Skip, aws api");
+                    return;
+                }
                 startTimeMap.put(request.hashCode(), System.currentTimeMillis());
             } catch (Exception e) {
                 Logger.error(e);
@@ -68,11 +70,15 @@ public class ApacheHttpInstrumentation implements LumigoInstrumentationApi {
                 @Advice.Argument(0) HttpUriRequest request, @Advice.Return final Object result) {
             try {
                 if (Configuration.getInstance().isLumigoHost(request.getURI().getHost())) {
-                    Logger.info("Skip, internal lumigo reporter");
+                    Logger.debug("Skip, internal lumigo reporter");
+                    return;
+                }
+                if (Configuration.getInstance().isAwsHost(request.getURI().getHost())) {
+                    Logger.debug("Skip, aws api");
                     return;
                 }
                 if (handled.get(request.hashCode()) == null) {
-                    Logger.info(
+                    Logger.debug(
                             "Handling request {} from host {}",
                             request.hashCode(),
                             request.getURI().getHost());

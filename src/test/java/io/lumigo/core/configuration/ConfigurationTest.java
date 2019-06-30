@@ -87,6 +87,16 @@ class ConfigurationTest {
     }
 
     @Test
+    void isAmazonHost_true() {
+        assertTrue(Configuration.getInstance().isAwsHost("https://sns.amazonaws.com"));
+    }
+
+    @Test
+    void isAmazonHost_false() {
+        assertFalse(Configuration.getInstance().isAwsHost("https://google.com"));
+    }
+
+    @Test
     void isLumigoVerboseMode_default_true() {
         Configuration.getInstance().setEnvUtil(envUtil);
         when(envUtil.getEnv(any())).thenReturn(null);
