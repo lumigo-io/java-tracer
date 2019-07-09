@@ -62,11 +62,12 @@ public class SpansContainer {
         this.reporter = reporter;
         awsTracerId = env.get(AMZN_TRACE_ID);
         AwsUtils.TriggeredBy triggeredBy = AwsUtils.extractTriggeredByFromEvent(event);
+        long startTime = System.currentTimeMillis();
         this.baseSpan =
                 Span.builder()
                         .token(Configuration.getInstance().getLumigoToken())
                         .id(context.getAwsRequestId())
-                        .started(System.currentTimeMillis())
+                        .started(startTime)
                         .name(context.getFunctionName())
                         .runtime(env.get(AWS_EXECUTION_ENV))
                         .region(env.get(AWS_REGION))
@@ -74,9 +75,10 @@ public class SpansContainer {
                         .requestId(context.getAwsRequestId())
                         .account(AwsUtils.extractAwsAccountFromArn(context.getInvokedFunctionArn()))
                         .maxFinishTime(
-                                (context.getRemainingTimeInMillis() > 0)
-                                        ? context.getRemainingTimeInMillis()
-                                        : MAX_LAMBDA_TIME)
+                                startTime
+                                        + ((context.getRemainingTimeInMillis() > 0)
+                                                ? context.getRemainingTimeInMillis()
+                                                : MAX_LAMBDA_TIME))
                         .transactionId(AwsUtils.extractAwsTraceTransactionId(awsTracerId))
                         .info(
                                 Span.Info.builder()

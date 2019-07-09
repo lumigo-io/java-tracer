@@ -105,6 +105,7 @@ class SpansContainerTest {
                         + "    \"triggeredBy\": null\n"
                         + "  }\n"
                         + "}";
+        long started = actualSpan.getStarted();
         JSONAssert.assertEquals(
                 expectedSpan,
                 JsonUtils.getObjectAsJsonString(actualSpan),
@@ -113,6 +114,9 @@ class SpansContainerTest {
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("token", (o1, o2) -> o2 != null),
+                        new Customization(
+                                "maxFinishTime",
+                                (o1, o2) -> started + 100 == Long.valueOf(o1.toString())),
                         new Customization("ended", (o1, o2) -> o2 != null)));
     }
 
@@ -159,16 +163,20 @@ class SpansContainerTest {
                         + "    \"triggeredBy\": null\n"
                         + "  }\n"
                         + "}";
+        long started = actualSpan.getStarted();
         JSONAssert.assertEquals(
                 expectedSpan,
                 JsonUtils.getObjectAsJsonString(actualSpan),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
-                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
-                        new Customization("started", (o1, o2) -> o2 != null),
-                        new Customization("ended", (o1, o2) -> o2 != null),
-                        new Customization("token", (o1, o2) -> o2 != null),
-                        new Customization("error.stacktrace", (o1, o2) -> o2 != null)));
+                        new Customization("info.tracer.version", (o1, o2) -> o1 != null),
+                        new Customization("started", (o1, o2) -> o1 != null),
+                        new Customization("ended", (o1, o2) -> o1 != null),
+                        new Customization("token", (o1, o2) -> o1 != null),
+                        new Customization(
+                                "maxFinishTime",
+                                (o1, o2) -> started + 100 == Long.valueOf(o1.toString())),
+                        new Customization("error.stacktrace", (o1, o2) -> o1 != null)));
     }
 
     @DisplayName("End span creation")
@@ -210,16 +218,20 @@ class SpansContainerTest {
                         + "    \"triggeredBy\": null\n"
                         + "  }\n"
                         + "}";
+        long started = actualSpan.getStarted();
         JSONAssert.assertEquals(
                 expectedSpan,
                 JsonUtils.getObjectAsJsonString(actualSpan),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
-                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
-                        new Customization("started", (o1, o2) -> o2 != null),
-                        new Customization("ended", (o1, o2) -> o2 != null),
-                        new Customization("token", (o1, o2) -> o2 != null),
-                        new Customization("error.stacktrace", (o1, o2) -> o2 != null)));
+                        new Customization("info.tracer.version", (o1, o2) -> o1 != null),
+                        new Customization("started", (o1, o2) -> o1 != null),
+                        new Customization("ended", (o1, o2) -> o1 != null),
+                        new Customization(
+                                "maxFinishTime",
+                                (o1, o2) -> started + 100 == Long.valueOf(o1.toString())),
+                        new Customization("token", (o1, o2) -> o1 != null),
+                        new Customization("error.stacktrace", (o1, o2) -> o1 != null)));
     }
 
     @DisplayName("End span creation with return value")
@@ -261,16 +273,20 @@ class SpansContainerTest {
                         + "    \"triggeredBy\": null\n"
                         + "  }\n"
                         + "}";
+        long started = actualSpan.getStarted();
         JSONAssert.assertEquals(
                 expectedSpan,
                 JsonUtils.getObjectAsJsonString(actualSpan),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
-                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
-                        new Customization("started", (o1, o2) -> o2 != null),
-                        new Customization("ended", (o1, o2) -> o2 != null),
-                        new Customization("token", (o1, o2) -> o2 != null),
-                        new Customization("error.stacktrace", (o1, o2) -> o2 != null)));
+                        new Customization("info.tracer.version", (o1, o2) -> o1 != null),
+                        new Customization("started", (o1, o2) -> o1 != null),
+                        new Customization("ended", (o1, o2) -> o1 != null),
+                        new Customization("token", (o1, o2) -> o1 != null),
+                        new Customization(
+                                "maxFinishTime",
+                                (o1, o2) -> started + 100 == Long.valueOf(o1.toString())),
+                        new Customization("error.stacktrace", (o1, o2) -> o1 != null)));
     }
 
     @DisplayName("Http span creation")
@@ -327,10 +343,10 @@ class SpansContainerTest {
                 JsonUtils.getObjectAsJsonString(actualSpan),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
-                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
-                        new Customization("id", (o1, o2) -> o2 != null),
-                        new Customization("started", (o1, o2) -> o2 != null),
-                        new Customization("ended", (o1, o2) -> o2 != null)));
+                        new Customization("info.tracer.version", (o1, o2) -> o1 != null),
+                        new Customization("id", (o1, o2) -> o1 != null),
+                        new Customization("started", (o1, o2) -> o1 != null),
+                        new Customization("ended", (o1, o2) -> o1 != null)));
     }
 
     @DisplayName("AWS Http span creation")
@@ -387,10 +403,10 @@ class SpansContainerTest {
                 JsonUtils.getObjectAsJsonString(actualSpan),
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
-                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
-                        new Customization("id", (o1, o2) -> o2 != null),
-                        new Customization("started", (o1, o2) -> o2 != null),
-                        new Customization("ended", (o1, o2) -> o2 != null)));
+                        new Customization("info.tracer.version", (o1, o2) -> o1 != null),
+                        new Customization("id", (o1, o2) -> o1 != null),
+                        new Customization("started", (o1, o2) -> o1 != null),
+                        new Customization("ended", (o1, o2) -> o1 != null)));
     }
 
     @DisplayName("Extract body from request")
