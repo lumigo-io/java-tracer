@@ -79,7 +79,6 @@ jobs:
   test:
     <<: *defaults
     steps:
-      - install_java
       - checkout_code
       - run: ./scripts/checks.sh
       - run: bash <(curl -s https://codecov.io/bash)
