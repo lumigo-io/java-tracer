@@ -2,50 +2,12 @@ version: 2.1
 defaults: &defaults
   working_directory: ~/java-tracer
   docker:
-    - image: circleci/python:3.7
+    - image: lumigo/ci:latest
+      auth:
+        username: lumigo
+        password: $DOCKERHUB_PASSWORD
 
 commands:
-  install_java:
-    description: "Install java 8 JDK & maven"
-    steps:
-      - run:
-          command: |
-            sudo apt-get update
-            sudo apt-get install openjdk-8-jdk
-            sudo update-alternatives --config java
-            sudo apt install maven
-
-  install_gradle:
-    description: "Install gradle"
-    steps:
-      - run:
-          command: |
-            curl -s "https://get.sdkman.io" | bash
-            source "/home/circleci/.sdkman/bin/sdkman-init.sh"
-            sdk install gradle 5.4.1
-            gradle -v
-
-  install_java_compatabilities:
-    description: "Install Scala and Kotlin"
-    steps:
-      - run: sudo apt-get install scala
-      - run:
-          command: |
-            cd ..
-            curl -L -o sbt.deb http://dl.bintray.com/sbt/debian/sbt-0.13.15.deb
-            sudo dpkg -i sbt.deb
-            sudo apt-get update
-            sudo apt-get install sbt
-
-
-  install_node:
-    description: "Install node 10"
-    steps:
-      - run: curl -sL https://deb.nodesource.com/setup_10.x | sudo bash -
-      - run: sudo apt install nodejs
-      - run: sudo npm install -g serverless
-
-
   checkout_utils:
     description: "Checkout various utilities"
     steps:
@@ -58,7 +20,6 @@ commands:
           command: |
             cd ..
             git clone git@github.com:lumigo-io/utils.git
-
 
   checkout_code:
     description: "Checkout code and install it"
@@ -126,12 +87,8 @@ jobs:
   integration-test:
     <<: *defaults
     steps:
-      - install_java
-      - install_java_compatabilities
-      - install_node
       - checkout_utils
       - checkout_code
-      - run: sudo pip install awscli
       - run: ./scripts/ci_deploy.sh
       - run: cd ../integration-tests && npm i
       - run: sudo npm install -g recursive-install
@@ -142,7 +99,6 @@ jobs:
   deploy:
     <<: *defaults
     steps:
-      - install_java
       - checkout_utils
       - checkout_code
       - run: mvn clean install
