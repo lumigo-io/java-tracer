@@ -236,6 +236,7 @@ class LumigoRequestHandlerTest {
                         JSONCompareMode.LENIENT,
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
         Span endSpan = getEndSpan("Response", null);
         endSpan.setReporter_rtt(999L);
@@ -247,6 +248,7 @@ class LumigoRequestHandlerTest {
                         JSONCompareMode.LENIENT,
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
     }
 
@@ -275,6 +277,7 @@ class LumigoRequestHandlerTest {
                         JSONCompareMode.LENIENT,
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
         JSONAssert.assertEquals(
                 JsonUtils.getObjectAsJsonString(
@@ -286,6 +289,7 @@ class LumigoRequestHandlerTest {
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("error.stacktrace", (o1, o2) -> o2 != null),
+                        new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
     }
 
@@ -319,6 +323,7 @@ class LumigoRequestHandlerTest {
                         JSONCompareMode.LENIENT,
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
         JSONAssert.assertEquals(
                 JsonUtils.getObjectAsJsonString(
@@ -335,6 +340,7 @@ class LumigoRequestHandlerTest {
                         JSONCompareMode.LENIENT,
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("error.stacktrace", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
     }
@@ -431,6 +437,7 @@ class LumigoRequestHandlerTest {
                         JSONCompareMode.LENIENT,
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
         JSONAssert.assertEquals(
                 JsonUtils.getObjectAsJsonString(
@@ -445,6 +452,7 @@ class LumigoRequestHandlerTest {
                         JSONCompareMode.LENIENT,
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
     }
 
@@ -473,6 +481,7 @@ class LumigoRequestHandlerTest {
                         JSONCompareMode.LENIENT,
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
         JSONAssert.assertEquals(
                 JsonUtils.getObjectAsJsonString(
@@ -488,6 +497,7 @@ class LumigoRequestHandlerTest {
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("error.stacktrace", (o1, o2) -> o2 != null),
+                        new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
     }
 
@@ -520,6 +530,7 @@ class LumigoRequestHandlerTest {
                         JSONCompareMode.LENIENT,
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
         JSONAssert.assertEquals(
                 JsonUtils.getObjectAsJsonString(
@@ -538,6 +549,7 @@ class LumigoRequestHandlerTest {
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("error.stacktrace", (o1, o2) -> o2 != null),
+                        new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
     }
 
@@ -713,6 +725,7 @@ class LumigoRequestHandlerTest {
                         JSONCompareMode.LENIENT,
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
         Span endSpan = getEndSpan("Response", null);
         endSpan.setReporter_rtt(999L);
@@ -724,6 +737,7 @@ class LumigoRequestHandlerTest {
                         JSONCompareMode.LENIENT,
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
     }
 
@@ -751,6 +765,7 @@ class LumigoRequestHandlerTest {
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
+                        new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
         JSONAssert.assertEquals(
@@ -761,6 +776,7 @@ class LumigoRequestHandlerTest {
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
+                        new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("error.stacktrace", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
@@ -795,6 +811,7 @@ class LumigoRequestHandlerTest {
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
+                        new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
         JSONAssert.assertEquals(
@@ -811,6 +828,7 @@ class LumigoRequestHandlerTest {
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
+                        new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("error.stacktrace", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));

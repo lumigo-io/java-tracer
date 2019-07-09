@@ -20,7 +20,7 @@ public class Span {
     private String transactionId;
     private String requestId;
     private String account;
-    private int maxFinishTime;
+    private long maxFinishTime;
     private String event;
     private String envs;
     private String region;
