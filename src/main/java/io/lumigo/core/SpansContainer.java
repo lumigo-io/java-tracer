@@ -120,13 +120,11 @@ public class SpansContainer {
                         .readiness(AwsUtils.getFunctionReadiness().toString())
                         .envs(
                                 Configuration.getInstance().isLumigoVerboseMode()
-                                        ? StringUtils.getMaxSizeString(
-                                                JsonUtils.getObjectAsJsonString(env))
+                                        ? JsonUtils.getObjectAsJsonString(env)
                                         : null)
                         .event(
                                 Configuration.getInstance().isLumigoVerboseMode()
-                                        ? StringUtils.getMaxSizeString(
-                                                JsonUtils.getObjectAsJsonString(event))
+                                        ? JsonUtils.getObjectAsJsonString(event)
                                         : null)
                         .build();
     }
@@ -140,7 +138,7 @@ public class SpansContainer {
                         .build();
 
         try {
-            rttDuration = reporter.reportSpans(startFunctionSpan);
+            rttDuration = reporter.reportSpans(prepareToSend(startFunctionSpan, false));
         } catch (Throwable e) {
             Logger.error(e, "Failed to send start span");
         }
@@ -152,8 +150,7 @@ public class SpansContainer {
                         .toBuilder()
                         .return_value(
                                 Configuration.getInstance().isLumigoVerboseMode()
-                                        ? StringUtils.getMaxSizeString(
-                                                JsonUtils.getObjectAsJsonString(response))
+                                        ? JsonUtils.getObjectAsJsonString(response)
                                         : null)
                         .build());
     }
@@ -183,7 +180,8 @@ public class SpansContainer {
                         .ended(System.currentTimeMillis())
                         .id(this.baseSpan.getId())
                         .build();
-        reporter.reportSpans(getAllCollectedSpans());
+        reporter.reportSpans(
+                prepareToSend(getAllCollectedSpans(), endFunctionSpan.getError() != null));
     }
 
     public Span getStartFunctionSpan() {
@@ -330,7 +328,7 @@ public class SpansContainer {
     }
 
     private static String extractHeaders(Map<String, String> headers) {
-        return StringUtils.getMaxSizeString(JsonUtils.getObjectAsJsonString(headers));
+        return JsonUtils.getObjectAsJsonString(headers);
     }
 
     private static String extractHeaders(Header[] headers) {
@@ -368,10 +366,9 @@ public class SpansContainer {
     }
 
     protected static String extractBodyFromResponse(Response response) {
-        return StringUtils.getMaxSizeString(
-                response.getAwsResponse() != null
-                        ? JsonUtils.getObjectAsJsonString(response.getAwsResponse())
-                        : null);
+        return response.getAwsResponse() != null
+                ? JsonUtils.getObjectAsJsonString(response.getAwsResponse())
+                : null;
     }
 
     public String getPatchedRoot() {
@@ -393,5 +390,61 @@ public class SpansContainer {
             Logger.error(e, "Failed to call method");
             return null;
         }
+    }
+
+    private Object prepareToSend(Object span, boolean hasError) {
+        return reduceSpanSize(span, hasError);
+    }
+
+    private List<Object> prepareToSend(List<Object> spans, boolean hasError) {
+        for (Object span : spans) {
+            reduceSpanSize(span, hasError);
+        }
+        return spans;
+    }
+
+    public Object reduceSpanSize(Object span, boolean hasError) {
+        int maxFieldSize =
+                hasError
+                        ? Configuration.getInstance().maxSpanFieldSizeWhenError()
+                        : Configuration.getInstance().maxSpanFieldSize();
+        if (span instanceof Span) {
+            Span functionSpan = (Span) span;
+            functionSpan.setEnvs(
+                    StringUtils.getMaxSizeString(functionSpan.getEnvs(), maxFieldSize));
+            functionSpan.setReturn_value(
+                    StringUtils.getMaxSizeString(functionSpan.getReturn_value(), maxFieldSize));
+        } else if (span instanceof HttpSpan) {
+            HttpSpan httpSpan = (HttpSpan) span;
+            httpSpan.getInfo()
+                    .getHttpInfo()
+                    .getRequest()
+                    .setHeaders(
+                            StringUtils.getMaxSizeString(
+                                    httpSpan.getInfo().getHttpInfo().getRequest().getHeaders(),
+                                    maxFieldSize));
+            httpSpan.getInfo()
+                    .getHttpInfo()
+                    .getRequest()
+                    .setBody(
+                            StringUtils.getMaxSizeString(
+                                    httpSpan.getInfo().getHttpInfo().getRequest().getBody(),
+                                    maxFieldSize));
+            httpSpan.getInfo()
+                    .getHttpInfo()
+                    .getResponse()
+                    .setHeaders(
+                            StringUtils.getMaxSizeString(
+                                    httpSpan.getInfo().getHttpInfo().getResponse().getHeaders(),
+                                    maxFieldSize));
+            httpSpan.getInfo()
+                    .getHttpInfo()
+                    .getResponse()
+                    .setBody(
+                            StringUtils.getMaxSizeString(
+                                    httpSpan.getInfo().getHttpInfo().getResponse().getBody(),
+                                    maxFieldSize));
+        }
+        return span;
     }
 }

@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.http.Header;
@@ -27,6 +28,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,6 +40,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
 class SpansContainerTest {
+    private static final char ch = '*';
 
     private SpansContainer spansContainer = SpansContainer.getInstance();
 
@@ -439,6 +442,183 @@ class SpansContainerTest {
                         }));
     }
 
+    @DisplayName("Check reduce of function span size, less than 1024")
+    @Test
+    void test_reduce_function_span_size_less_than_1024() {
+        Span span =
+                Span.builder().envs(createStringOfSize(100)).event(createStringOfSize(100)).build();
+
+        span = (Span) SpansContainer.getInstance().reduceSpanSize(span, false);
+
+        Assert.assertEquals("Wrong reduce size", 100, span.getEnvs().length());
+        Assert.assertEquals("Wrong reduce size", 100, span.getEnvs().length());
+    }
+
+    @DisplayName("Check reduce of function span size, more than 1024")
+    @Test
+    void test_reduce_function_span_size_more_than_1024() {
+        Span span =
+                Span.builder()
+                        .envs(createStringOfSize(2000))
+                        .event(createStringOfSize(2000))
+                        .build();
+
+        span = (Span) SpansContainer.getInstance().reduceSpanSize(span, false);
+
+        Assert.assertEquals("Wrong reduce size", 1024, span.getEnvs().length());
+        Assert.assertEquals("Wrong reduce size", 1024, span.getEnvs().length());
+    }
+
+    @DisplayName("Check reduce of function span with error size, more than 1024")
+    @Test
+    void test_reduce_function_span_size_more_than_1024_with_error() {
+        Span span =
+                Span.builder()
+                        .envs(createStringOfSize(2000))
+                        .event(createStringOfSize(2000))
+                        .build();
+
+        span = (Span) SpansContainer.getInstance().reduceSpanSize(span, true);
+
+        Assert.assertEquals("Wrong reduce size", 2000, span.getEnvs().length());
+        Assert.assertEquals("Wrong reduce size", 2000, span.getEnvs().length());
+    }
+
+    @DisplayName("Check reduce of http span size, less than 1024")
+    @Test
+    void test_reduce_http_span_size_less_than_1024() {
+        HttpSpan.HttpData request =
+                HttpSpan.HttpData.builder()
+                        .headers(createStringOfSize(100))
+                        .body(createStringOfSize(100))
+                        .build();
+        HttpSpan.HttpData response =
+                HttpSpan.HttpData.builder()
+                        .headers(createStringOfSize(100))
+                        .body(createStringOfSize(100))
+                        .build();
+        HttpSpan httpSpan =
+                HttpSpan.builder()
+                        .info(
+                                HttpSpan.Info.builder()
+                                        .httpInfo(
+                                                HttpSpan.HttpInfo.builder()
+                                                        .request(request)
+                                                        .response(response)
+                                                        .build())
+                                        .build())
+                        .build();
+
+        httpSpan = (HttpSpan) SpansContainer.getInstance().reduceSpanSize(httpSpan, false);
+
+        Assert.assertEquals(
+                "Wrong reduce size",
+                100,
+                httpSpan.getInfo().getHttpInfo().getRequest().getHeaders().length());
+        Assert.assertEquals(
+                "Wrong reduce size",
+                100,
+                httpSpan.getInfo().getHttpInfo().getRequest().getBody().length());
+        Assert.assertEquals(
+                "Wrong reduce size",
+                100,
+                httpSpan.getInfo().getHttpInfo().getResponse().getBody().length());
+        Assert.assertEquals(
+                "Wrong reduce size",
+                100,
+                httpSpan.getInfo().getHttpInfo().getResponse().getBody().length());
+    }
+
+    @DisplayName("Check reduce of http span size, more than 1024")
+    @Test
+    void test_reduce_http_span_size_more_than_1024() {
+        HttpSpan.HttpData request =
+                HttpSpan.HttpData.builder()
+                        .headers(createStringOfSize(2000))
+                        .body(createStringOfSize(2000))
+                        .build();
+        HttpSpan.HttpData response =
+                HttpSpan.HttpData.builder()
+                        .headers(createStringOfSize(2000))
+                        .body(createStringOfSize(2000))
+                        .build();
+        HttpSpan httpSpan =
+                HttpSpan.builder()
+                        .info(
+                                HttpSpan.Info.builder()
+                                        .httpInfo(
+                                                HttpSpan.HttpInfo.builder()
+                                                        .request(request)
+                                                        .response(response)
+                                                        .build())
+                                        .build())
+                        .build();
+
+        httpSpan = (HttpSpan) SpansContainer.getInstance().reduceSpanSize(httpSpan, false);
+
+        Assert.assertEquals(
+                "Wrong reduce size",
+                1024,
+                httpSpan.getInfo().getHttpInfo().getRequest().getHeaders().length());
+        Assert.assertEquals(
+                "Wrong reduce size",
+                1024,
+                httpSpan.getInfo().getHttpInfo().getRequest().getBody().length());
+        Assert.assertEquals(
+                "Wrong reduce size",
+                1024,
+                httpSpan.getInfo().getHttpInfo().getResponse().getBody().length());
+        Assert.assertEquals(
+                "Wrong reduce size",
+                1024,
+                httpSpan.getInfo().getHttpInfo().getResponse().getBody().length());
+    }
+
+    @DisplayName("Check reduce of http span with error size, more than 1024")
+    @Test
+    void test_reduce_http_span_size_more_than_1024_with_error() {
+        HttpSpan.HttpData request =
+                HttpSpan.HttpData.builder()
+                        .headers(createStringOfSize(2000))
+                        .body(createStringOfSize(2000))
+                        .build();
+        HttpSpan.HttpData response =
+                HttpSpan.HttpData.builder()
+                        .headers(createStringOfSize(2000))
+                        .body(createStringOfSize(2000))
+                        .build();
+        HttpSpan httpSpan =
+                HttpSpan.builder()
+                        .info(
+                                HttpSpan.Info.builder()
+                                        .httpInfo(
+                                                HttpSpan.HttpInfo.builder()
+                                                        .request(request)
+                                                        .response(response)
+                                                        .build())
+                                        .build())
+                        .build();
+
+        httpSpan = (HttpSpan) SpansContainer.getInstance().reduceSpanSize(httpSpan, true);
+
+        Assert.assertEquals(
+                "Wrong reduce size",
+                2000,
+                httpSpan.getInfo().getHttpInfo().getRequest().getHeaders().length());
+        Assert.assertEquals(
+                "Wrong reduce size",
+                2000,
+                httpSpan.getInfo().getHttpInfo().getRequest().getBody().length());
+        Assert.assertEquals(
+                "Wrong reduce size",
+                2000,
+                httpSpan.getInfo().getHttpInfo().getResponse().getBody().length());
+        Assert.assertEquals(
+                "Wrong reduce size",
+                2000,
+                httpSpan.getInfo().getHttpInfo().getResponse().getBody().length());
+    }
+
     private Map<String, String> createMockedEnv() {
         Map<String, String> env = new HashMap<>();
         env.put("AWS_EXECUTION_ENV", "JAVA8");
@@ -566,5 +746,11 @@ class SpansContainerTest {
                 public void consumeContent() throws IOException {}
             };
         }
+    }
+
+    private String createStringOfSize(int size) {
+        char[] charArray = new char[size];
+        Arrays.fill(new char[size], ch);
+        return new String(charArray);
     }
 }

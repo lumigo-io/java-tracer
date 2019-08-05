@@ -1,6 +1,5 @@
 package io.lumigo.core.utils;
 
-import io.lumigo.core.configuration.Configuration;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.Random;
@@ -8,12 +7,11 @@ import org.pmw.tinylog.Logger;
 
 public class StringUtils {
 
-    private static final int MAX_STRING_SIZE = Configuration.getInstance().maxSpanFieldSize();
     private static final String candidateChars = "abcdefghijklmnopqrstuvwxyz1234567890";
 
-    public static String getMaxSizeString(String input) {
-        if (input != null && input.length() > MAX_STRING_SIZE) {
-            return input.substring(0, MAX_STRING_SIZE);
+    public static String getMaxSizeString(String input, int maxStringSize) {
+        if (input != null && input.length() > maxStringSize) {
+            return input.substring(0, maxStringSize);
         }
         return input;
     }
