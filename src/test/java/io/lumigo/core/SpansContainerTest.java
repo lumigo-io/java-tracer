@@ -446,12 +446,17 @@ class SpansContainerTest {
     @Test
     void test_reduce_function_span_size_less_than_1024() {
         Span span =
-                Span.builder().envs(createStringOfSize(100)).event(createStringOfSize(100)).build();
+                Span.builder()
+                        .envs(createStringOfSize(100))
+                        .event(createStringOfSize(100))
+                        .return_value(createStringOfSize(100))
+                        .build();
 
         span = (Span) SpansContainer.getInstance().reduceSpanSize(span, false);
 
         Assert.assertEquals("Wrong reduce size", 100, span.getEnvs().length());
-        Assert.assertEquals("Wrong reduce size", 100, span.getEnvs().length());
+        Assert.assertEquals("Wrong reduce size", 100, span.getEvent().length());
+        Assert.assertEquals("Wrong reduce size", 100, span.getReturn_value().length());
     }
 
     @DisplayName("Check reduce of function span size, more than 1024")
@@ -461,12 +466,14 @@ class SpansContainerTest {
                 Span.builder()
                         .envs(createStringOfSize(2000))
                         .event(createStringOfSize(2000))
+                        .return_value(createStringOfSize(2000))
                         .build();
 
         span = (Span) SpansContainer.getInstance().reduceSpanSize(span, false);
 
         Assert.assertEquals("Wrong reduce size", 1024, span.getEnvs().length());
-        Assert.assertEquals("Wrong reduce size", 1024, span.getEnvs().length());
+        Assert.assertEquals("Wrong reduce size", 1024, span.getEvent().length());
+        Assert.assertEquals("Wrong reduce size", 1024, span.getReturn_value().length());
     }
 
     @DisplayName("Check reduce of function span with error size, more than 1024")
@@ -476,12 +483,14 @@ class SpansContainerTest {
                 Span.builder()
                         .envs(createStringOfSize(2000))
                         .event(createStringOfSize(2000))
+                        .return_value(createStringOfSize(2000))
                         .build();
 
         span = (Span) SpansContainer.getInstance().reduceSpanSize(span, true);
 
-        Assert.assertEquals("Wrong reduce size", 2000, span.getEnvs().length());
-        Assert.assertEquals("Wrong reduce size", 2000, span.getEnvs().length());
+        Assert.assertEquals("Wrong reduce size", 1024, span.getEnvs().length());
+        Assert.assertEquals("Wrong reduce size", 2000, span.getEvent().length());
+        Assert.assertEquals("Wrong reduce size", 2000, span.getReturn_value().length());
     }
 
     @DisplayName("Check reduce of http span size, less than 1024")
