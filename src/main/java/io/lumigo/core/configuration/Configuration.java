@@ -96,6 +96,10 @@ public class Configuration {
         return 1024;
     }
 
+    public int maxSpanFieldSizeWhenError() {
+        return maxSpanFieldSize() * 10;
+    }
+
     public boolean isAwsEnvironment() {
         return envUtil.getEnv("LAMBDA_RUNTIME_DIR") != null;
     }
