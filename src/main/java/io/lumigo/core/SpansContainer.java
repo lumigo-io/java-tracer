@@ -411,7 +411,7 @@ public class SpansContainer {
         if (span instanceof Span) {
             Span functionSpan = (Span) span;
             functionSpan.setEnvs(
-                    StringUtils.getMaxSizeString(functionSpan.getEnvs(), maxFieldSize));
+                    StringUtils.getMaxSizeString(functionSpan.getEnvs(), Configuration.getInstance().maxSpanFieldSize()));
             functionSpan.setReturn_value(
                     StringUtils.getMaxSizeString(functionSpan.getReturn_value(), maxFieldSize));
         } else if (span instanceof HttpSpan) {
