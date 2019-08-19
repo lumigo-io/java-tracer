@@ -72,7 +72,6 @@ public class AmazonHttpClientInstrumentation implements LumigoInstrumentationApi
                 Logger.error(e, "Failed to send data on http response");
             } finally {
                 startTimeMap.remove(request.hashCode());
-                handled.remove(request.hashCode());
             }
         }
     }
