@@ -89,6 +89,9 @@ class AmazonHttpClientInstrumentationTest {
         assertNull(
                 AmazonHttpClientInstrumentation.AmazonHttpClientAdvice.startTimeMap.get(
                         request.hashCode()));
+        assertNotNull(
+                AmazonHttpClientInstrumentation.AmazonHttpClientAdvice.handled.get(
+                        request.hashCode()));
     }
 
     @Test
