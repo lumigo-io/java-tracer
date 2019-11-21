@@ -55,7 +55,7 @@ class SqsParserTest {
     }
 
     @Test
-    void test_parse_sns_with_exception() {
+    void test_parse_sqs_with_exception() {
         when(sqsResult.getMessageId()).thenThrow(new RuntimeException());
         when(request.getParameters()).thenReturn(new HashMap<>());
 

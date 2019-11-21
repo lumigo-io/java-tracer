@@ -20,4 +20,9 @@ class AwsParserFactoryTest {
     public void test_check_sns_value() {
         assertEquals(SnsParser.class, AwsParserFactory.getParser("AmazonSNS").getClass());
     }
+
+    @Test
+    public void test_check_sqs_value() {
+        assertEquals(SqsParser.class, AwsParserFactory.getParser("AmazonSQS").getClass());
+    }
 }
