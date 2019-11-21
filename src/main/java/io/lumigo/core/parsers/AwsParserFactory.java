@@ -12,6 +12,8 @@ public class AwsParserFactory {
         switch (serviceName) {
             case "AmazonSNS":
                 return new SnsParser();
+            case "AmazonSQS":
+                return new SqsParser();
             default:
                 return new DefaultParser();
         }
