@@ -78,6 +78,7 @@ public class AwsLambdaEventGenerator {
         SQSEvent.SQSMessage record = mock(SQSEvent.SQSMessage.class);
         when(sqsEvent.getRecords()).thenReturn(Collections.singletonList(record));
         when(record.getEventSourceArn()).thenReturn("sqs-arn");
+        when(record.getMessageId()).thenReturn("sqs-message-id");
         return sqsEvent;
     }
 

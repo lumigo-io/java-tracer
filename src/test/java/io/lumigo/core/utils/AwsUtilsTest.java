@@ -139,7 +139,7 @@ class AwsUtilsTest {
     @Test
     void test_extractTriggeredByFromEvent_sqsEvent() throws JSONException {
         JSONAssert.assertEquals(
-                "{\"triggeredBy\": \"sqs\", \"arn\": \"sqs-arn\"}",
+                "{\"triggeredBy\": \"sqs\", \"arn\": \"sqs-arn\", \"messageId\": \"sqs-message-id\"}",
                 JsonUtils.getObjectAsJsonString(
                         AwsUtils.extractTriggeredByFromEvent(awsLambdaEventGenerator.sqsEvent())),
                 true);

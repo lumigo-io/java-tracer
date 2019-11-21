@@ -84,6 +84,7 @@ public class AwsUtils {
                 if (((SQSEvent) event).getRecords() != null
                         && ((SQSEvent) event).getRecords().size() > 0) {
                     triggeredBy.setArn(((SQSEvent) event).getRecords().get(0).getEventSourceArn());
+                    triggeredBy.setMessageId(((SQSEvent) event).getRecords().get(0).getMessageId());
                 }
             } else if (event instanceof APIGatewayProxyRequestEvent) {
                 triggeredBy.setTriggeredBy("apigw");
