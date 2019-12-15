@@ -24,7 +24,7 @@ public class Reporter {
     }
 
     public long reportSpans(List<Object> spans) throws IOException {
-        long time = System.nanoTime();
+        long time = System.currentTimeMillis();
         String spansAsString = JsonUtils.getObjectAsJsonString(spans);
         Logger.debug("Reporting the spans: {}", spansAsString);
 
@@ -42,7 +42,7 @@ public class Reporter {
             if (response.body() != null) {
                 response.body().close();
             }
-            long duration = System.nanoTime() - time;
+            long duration = System.currentTimeMillis() - time;
             return duration;
         }
         return 0;
