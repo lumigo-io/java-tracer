@@ -25,4 +25,9 @@ class AwsParserFactoryTest {
     public void test_check_sqs_value() {
         assertEquals(SqsParser.class, AwsParserFactory.getParser("AmazonSQS").getClass());
     }
+
+    @Test
+    public void test_check_kinesis_value() {
+        assertEquals(KinesisParser.class, AwsParserFactory.getParser("AmazonKinesis").getClass());
+    }
 }
