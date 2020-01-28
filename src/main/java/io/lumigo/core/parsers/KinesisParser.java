@@ -7,7 +7,7 @@ import com.amazonaws.services.kinesis.model.PutRecordResult;
 import com.amazonaws.services.kinesis.model.PutRecordsRequest;
 import com.amazonaws.services.kinesis.model.PutRecordsResult;
 import io.lumigo.models.HttpSpan;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import org.pmw.tinylog.Logger;
 
@@ -34,7 +34,7 @@ public class KinesisParser implements AwsParser {
 
     private List<String> extractMessageIds(Object response) {
 
-        ArrayList<String> result = new ArrayList<>();
+        List<String> result = new LinkedList<>();
         if (response instanceof PutRecordsResult) {
             ((PutRecordsResult) response)
                     .getRecords()

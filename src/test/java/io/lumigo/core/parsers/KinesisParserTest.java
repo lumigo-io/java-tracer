@@ -52,11 +52,13 @@ class KinesisParserTest {
                 .thenReturn("fee47356-6f6a-58c8-96dc-26d8aaa4631a");
         when(putRecordRequest.getStreamName()).thenReturn("streamName");
         when(request.getOriginalRequest()).thenReturn(putRecordRequest);
+
         kinesisParser.parse(span, request, response);
 
-        assertEquals("streamName", span.getInfo().getResourceName());
-        assertEquals(1, span.getInfo().getMessageIds().size());
-        assertEquals("fee47356-6f6a-58c8-96dc-26d8aaa4631a", span.getInfo().getMessageIds().get(0));
+        HttpSpan expectedSpan = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
+        expectedSpan.getInfo().setResourceName("streamName");
+        expectedSpan.getInfo().setMessageIds(Arrays.asList("fee47356-6f6a-58c8-96dc-26d8aaa4631a"));
+        assertEquals(span, expectedSpan);
     }
 
     @Test
@@ -67,10 +69,8 @@ class KinesisParserTest {
 
         kinesisParser.parse(span, request, response);
 
-        assertNull(span.getInfo().getResourceName());
-        assertNull(span.getInfo().getTargetArn());
-        assertNull(span.getInfo().getMessageId());
-        assertNull(span.getInfo().getMessageIds());
+        HttpSpan expectedSpan = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
+        assertEquals(span, expectedSpan);
     }
 
     @Test
@@ -81,16 +81,16 @@ class KinesisParserTest {
         firstResult.setSequenceNumber("1");
         secResult.setSequenceNumber("2");
         PutRecordsResultEntry[] results = {firstResult, secResult};
-
         when(putRecordsResult.getRecords()).thenReturn(Arrays.asList(results));
         when(putRecordsRequest.getStreamName()).thenReturn("streamName");
         when(request.getOriginalRequest()).thenReturn(putRecordsRequest);
+
         kinesisParser.parse(span, request, response);
 
-        assertEquals("streamName", span.getInfo().getResourceName());
-        assertEquals(2, span.getInfo().getMessageIds().size());
-        assertEquals("1", span.getInfo().getMessageIds().get(0));
-        assertEquals("2", span.getInfo().getMessageIds().get(1));
+        HttpSpan expectedSpan = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
+        expectedSpan.getInfo().setResourceName("streamName");
+        expectedSpan.getInfo().setMessageIds(Arrays.asList("1", "2"));
+        assertEquals(span, expectedSpan);
     }
 
     @Test
@@ -100,10 +100,8 @@ class KinesisParserTest {
 
         kinesisParser.parse(span, request, response);
 
-        assertNull(span.getInfo().getResourceName());
-        assertNull(span.getInfo().getTargetArn());
-        assertNull(span.getInfo().getMessageId());
-        assertNull(span.getInfo().getMessageIds());
+        HttpSpan expectedSpan = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
+        assertEquals(span, expectedSpan);
     }
 
     @Test
@@ -114,9 +112,7 @@ class KinesisParserTest {
 
         kinesisParser.parse(span, request, response);
 
-        assertNull(span.getInfo().getResourceName());
-        assertNull(span.getInfo().getTargetArn());
-        assertNull(span.getInfo().getMessageId());
-        assertNull(span.getInfo().getMessageIds());
+        HttpSpan expectedSpan = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
+        assertEquals(span, expectedSpan);
     }
 }
