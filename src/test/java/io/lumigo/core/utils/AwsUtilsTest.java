@@ -95,7 +95,7 @@ class AwsUtilsTest {
     @Test
     void test_extractTriggeredByFromEvent_kinesisEvent() throws JSONException {
         JSONAssert.assertEquals(
-                "{\"triggeredBy\": \"kinesis\", \"arn\": \"kinesis-arn\"}",
+                "{\"triggeredBy\": \"kinesis\", \"arn\": \"kinesis-arn\", \"messageId\":\"1\", messageIds: [\"1\"]}",
                 JsonUtils.getObjectAsJsonString(
                         AwsUtils.extractTriggeredByFromEvent(
                                 awsLambdaEventGenerator.kinesisEvent())),
