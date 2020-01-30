@@ -14,6 +14,8 @@ public class AwsParserFactory {
                 return new SnsParser();
             case "AmazonSQS":
                 return new SqsParser();
+            case "AmazonKinesis":
+                return new KinesisParser();
             default:
                 return new DefaultParser();
         }

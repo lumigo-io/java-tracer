@@ -36,8 +36,11 @@ public class AwsLambdaEventGenerator {
     public KinesisEvent kinesisEvent() {
         KinesisEvent kinesisEvent = mock(KinesisEvent.class);
         KinesisEvent.KinesisEventRecord record = mock(KinesisEvent.KinesisEventRecord.class);
+        KinesisEvent.Record kinesisRecord = mock(KinesisEvent.Record.class);
         when(kinesisEvent.getRecords()).thenReturn(Collections.singletonList(record));
         when(record.getEventSourceARN()).thenReturn("kinesis-arn");
+        when(kinesisRecord.getSequenceNumber()).thenReturn("1");
+        when(record.getKinesis()).thenReturn(kinesisRecord);
         return kinesisEvent;
     }
 

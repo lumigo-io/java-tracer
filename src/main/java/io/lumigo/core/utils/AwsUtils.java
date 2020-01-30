@@ -3,8 +3,11 @@ package io.lumigo.core.utils;
 import com.amazonaws.services.lambda.runtime.events.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.lumigo.models.Span;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.pmw.tinylog.Logger;
@@ -49,8 +52,19 @@ public class AwsUtils {
                 triggeredBy.setTriggeredBy("kinesis");
                 if (((KinesisEvent) event).getRecords() != null
                         && ((KinesisEvent) event).getRecords().size() > 0) {
-                    triggeredBy.setArn(
-                            ((KinesisEvent) event).getRecords().get(0).getEventSourceARN());
+                    List<KinesisEvent.KinesisEventRecord> records =
+                            ((KinesisEvent) event).getRecords();
+                    triggeredBy.setArn(records.get(0).getEventSourceARN());
+                    List<String> messageIds =
+                            records.stream()
+                                    .map(
+                                            kinesisEventRecord ->
+                                                    kinesisEventRecord
+                                                            .getKinesis()
+                                                            .getSequenceNumber())
+                                    .collect(Collectors.toList());
+                    triggeredBy.setMessageId(records.get(0).getKinesis().getSequenceNumber());
+                    triggeredBy.setMessageIds(messageIds);
                 }
             } else if (event instanceof KinesisFirehoseEvent) {
                 triggeredBy.setTriggeredBy("kinesis");
@@ -175,7 +189,7 @@ public class AwsUtils {
         return amznTraceId.substring(amznTraceId.indexOf(";"));
     }
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     @NoArgsConstructor
     @Data
     public static class TriggeredBy {
@@ -186,6 +200,16 @@ public class AwsUtils {
         private String api;
         private String stage;
         private String messageId;
+        private List<String> messageIds = Collections.emptyList();
+
+        public List<String> getMessageIds() {
+            if (this.messageIds != null) return this.messageIds;
+            return Collections.emptyList();
+        }
+
+        public void setMessageIds(List<String> messageIds) {
+            this.messageIds = messageIds;
+        }
     }
 
     public static synchronized Span.READINESS getFunctionReadiness() {

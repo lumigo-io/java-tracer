@@ -1,6 +1,8 @@
 package io.lumigo.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Collections;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,7 +22,6 @@ public class HttpSpan {
     private Info info;
     private String parentId;
 
-    @AllArgsConstructor
     @Builder(toBuilder = true)
     @Data(staticConstructor = "of")
     public static class Info {
@@ -28,8 +29,28 @@ public class HttpSpan {
         private TraceId traceId;
         private HttpInfo httpInfo;
         private String messageId;
+        private List<String> messageIds;
         private String resourceName;
         private String targetArn;
+
+        public Info(
+                Tracer tracer,
+                TraceId traceId,
+                HttpInfo httpInfo,
+                String messageId,
+                List<String> messageIds,
+                String resourceName,
+                String targetArn) {
+            this.tracer = tracer;
+            this.traceId = traceId;
+            this.httpInfo = httpInfo;
+            this.messageId = messageId;
+            if (messageIds != null) {
+                this.messageIds = Collections.unmodifiableList(messageIds);
+            }
+            this.resourceName = resourceName;
+            this.targetArn = targetArn;
+        }
     }
 
     @AllArgsConstructor
