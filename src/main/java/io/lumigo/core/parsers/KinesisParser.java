@@ -6,27 +6,25 @@ import com.amazonaws.services.kinesis.model.PutRecordRequest;
 import com.amazonaws.services.kinesis.model.PutRecordResult;
 import com.amazonaws.services.kinesis.model.PutRecordsRequest;
 import com.amazonaws.services.kinesis.model.PutRecordsResult;
-import io.lumigo.models.HttpSpan;
+import io.lumigo.models.ContainerHttpSpan;
 import java.util.LinkedList;
 import java.util.List;
 import org.pmw.tinylog.Logger;
 
 public class KinesisParser implements AwsParser {
     @Override
-    public void parse(HttpSpan span, Request request, Response response) {
+    public void parse(ContainerHttpSpan span, Request request, Response response) {
         try {
             if (request.getOriginalRequest() instanceof PutRecordRequest) {
-                span.getInfo()
-                        .setResourceName(
-                                ((PutRecordRequest) request.getOriginalRequest()).getStreamName());
+                span.setResourceName(
+                        ((PutRecordRequest) request.getOriginalRequest()).getStreamName());
             }
             if (request.getOriginalRequest() instanceof PutRecordsRequest) {
-                span.getInfo()
-                        .setResourceName(
-                                ((PutRecordsRequest) request.getOriginalRequest()).getStreamName());
+                span.setResourceName(
+                        ((PutRecordsRequest) request.getOriginalRequest()).getStreamName());
             }
             List<String> messageIds = extractMessageIds(response.getAwsResponse());
-            if (messageIds.size() > 0) span.getInfo().setMessageIds(messageIds);
+            if (messageIds.size() > 0) span.setMessageIds(messageIds);
         } catch (Exception e) {
             Logger.error(e, "Failed to extract parse for Kinesis request");
         }

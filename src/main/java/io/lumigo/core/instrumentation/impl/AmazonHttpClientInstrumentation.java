@@ -5,9 +5,10 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 
 import com.amazonaws.Request;
 import com.amazonaws.Response;
-import io.lumigo.core.SpansContainer;
+import io.lumigo.core.SpansCreator;
 import io.lumigo.core.instrumentation.LumigoInstrumentationApi;
 import io.lumigo.core.instrumentation.agent.Loader;
+import io.lumigo.core.network.Reporter;
 import io.lumigo.core.utils.LRUCache;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
@@ -32,7 +33,9 @@ public class AmazonHttpClientInstrumentation implements LumigoInstrumentationApi
 
     public static class AmazonHttpClientAdvice {
 
-        public static final SpansContainer spansContainer = SpansContainer.getInstance();
+        public static final Reporter reporter = new Reporter();
+
+        public static final SpansCreator spansCreator = new SpansCreator();
 
         public static final LRUCache<Integer, Boolean> handled = new LRUCache<>(1000);
 
@@ -41,8 +44,6 @@ public class AmazonHttpClientInstrumentation implements LumigoInstrumentationApi
         @Advice.OnMethodEnter
         public static void methodEnter(@Advice.Argument(0) final Request<?> request) {
             try {
-                String patchedRoot = spansContainer.getPatchedRoot();
-                request.getHeaders().put("X-Amzn-Trace-Id", patchedRoot);
                 startTimeMap.put(request.hashCode(), System.currentTimeMillis());
             } catch (Exception e) {
                 Logger.error(e, "Failed to send data on http requests");
@@ -59,8 +60,9 @@ public class AmazonHttpClientInstrumentation implements LumigoInstrumentationApi
                             "Handling request {} from host {}",
                             request.hashCode(),
                             request.getEndpoint());
-                    spansContainer.addHttpSpan(
-                            startTimeMap.get(request.hashCode()), request, response);
+                    reporter.reportSpans(
+                            spansCreator.createHttpSpan(
+                                    startTimeMap.get(request.hashCode()), request, response));
                     handled.put(request.hashCode(), true);
                 } else {
                     Logger.warn(

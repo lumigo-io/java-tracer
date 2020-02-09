@@ -73,20 +73,6 @@ class ConfigurationTest {
     }
 
     @Test
-    void isAwsEnvironment_true() {
-        Configuration.getInstance().setEnvUtil(envUtil);
-        when(envUtil.getEnv("LAMBDA_RUNTIME_DIR")).thenReturn("value");
-
-        assertTrue(Configuration.getInstance().isAwsEnvironment());
-    }
-
-    @Test
-    void isAwsEnvironment_false() {
-        Configuration.getInstance().setEnvUtil(envUtil);
-        assertFalse(Configuration.getInstance().isAwsEnvironment());
-    }
-
-    @Test
     void isAmazonHost_true() {
         assertTrue(Configuration.getInstance().isAwsHost("https://sns.amazonaws.com"));
     }

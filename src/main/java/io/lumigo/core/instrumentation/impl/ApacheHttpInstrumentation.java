@@ -2,10 +2,11 @@ package io.lumigo.core.instrumentation.impl;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import io.lumigo.core.SpansContainer;
+import io.lumigo.core.SpansCreator;
 import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.instrumentation.LumigoInstrumentationApi;
 import io.lumigo.core.instrumentation.agent.Loader;
+import io.lumigo.core.network.Reporter;
 import io.lumigo.core.utils.LRUCache;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
@@ -42,7 +43,9 @@ public class ApacheHttpInstrumentation implements LumigoInstrumentationApi {
 
     public static class ApacheHttpAdvice {
 
-        public static final SpansContainer spansContainer = SpansContainer.getInstance();
+        public static final Reporter reporter = new Reporter();
+
+        public static final SpansCreator spansCreator = new SpansCreator();
 
         public static final LRUCache<Integer, Boolean> handled = new LRUCache<>(1000);
 
@@ -83,10 +86,11 @@ public class ApacheHttpInstrumentation implements LumigoInstrumentationApi {
                             request.hashCode(),
                             request.getURI().getHost());
                     if (result instanceof HttpResponse) {
-                        spansContainer.addHttpSpan(
-                                startTimeMap.get(request.hashCode()),
-                                request,
-                                (HttpResponse) result);
+                        reporter.reportSpans(
+                                spansCreator.createHttpSpan(
+                                        startTimeMap.get(request.hashCode()),
+                                        request,
+                                        (HttpResponse) result));
                         handled.put(request.hashCode(), true);
                     }
                 } else {

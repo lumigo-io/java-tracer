@@ -9,7 +9,7 @@ import com.amazonaws.Response;
 import com.amazonaws.http.HttpResponse;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageResult;
-import io.lumigo.models.HttpSpan;
+import io.lumigo.models.ContainerHttpSpan;
 import java.util.HashMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ import org.mockito.MockitoAnnotations;
 
 class SqsParserTest {
 
-    private HttpSpan span = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
+    private ContainerHttpSpan span = ContainerHttpSpan.builder().build();
     SqsParser sqsParser = new SqsParser();
     @Mock Request request;
     @Mock HttpResponse httpResponse;
@@ -40,8 +40,8 @@ class SqsParserTest {
 
         sqsParser.parse(span, request, response);
 
-        assertEquals("queueUrl", span.getInfo().getResourceName());
-        assertEquals("fee47356-6f6a-58c8-96dc-26d8aaa4631a", span.getInfo().getMessageId());
+        assertEquals("queueUrl", span.getResourceName());
+        assertEquals("fee47356-6f6a-58c8-96dc-26d8aaa4631a", span.getMessageIds().get(0));
     }
 
     @Test
@@ -50,8 +50,8 @@ class SqsParserTest {
 
         sqsParser.parse(span, request, new Response(null, httpResponse));
 
-        assertNull(span.getInfo().getResourceName());
-        assertNull(span.getInfo().getMessageId());
+        assertNull(span.getResourceName());
+        assertNull(span.getMessageIds());
     }
 
     @Test
@@ -61,7 +61,7 @@ class SqsParserTest {
 
         sqsParser.parse(span, request, response);
 
-        assertNull(span.getInfo().getResourceName());
-        assertNull(span.getInfo().getMessageId());
+        assertNull(span.getResourceName());
+        assertNull(span.getMessageIds());
     }
 }

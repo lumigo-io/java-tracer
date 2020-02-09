@@ -7,7 +7,7 @@ import com.amazonaws.Request;
 import com.amazonaws.Response;
 import com.amazonaws.http.HttpResponse;
 import com.amazonaws.services.sns.model.PublishResult;
-import io.lumigo.models.HttpSpan;
+import io.lumigo.models.ContainerHttpSpan;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +19,7 @@ import org.mockito.MockitoAnnotations;
 
 class SnsParserTest {
 
-    private HttpSpan span = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
+    private ContainerHttpSpan span = ContainerHttpSpan.builder().build();
     SnsParser SnsParser = new SnsParser();
     @Mock Request request;
     @Mock HttpResponse httpResponse;
@@ -41,9 +41,9 @@ class SnsParserTest {
 
         SnsParser.parse(span, request, response);
 
-        assertEquals("topic", span.getInfo().getResourceName());
-        assertEquals("topic", span.getInfo().getTargetArn());
-        assertEquals("fee47356-6f6a-58c8-96dc-26d8aaa4631a", span.getInfo().getMessageId());
+        assertEquals("topic", span.getResourceName());
+        assertEquals("topic", span.getTargetArn());
+        assertEquals("fee47356-6f6a-58c8-96dc-26d8aaa4631a", span.getMessageIds().get(0));
     }
 
     @Test
@@ -52,9 +52,9 @@ class SnsParserTest {
 
         SnsParser.parse(span, request, new Response(null, httpResponse));
 
-        assertNull(span.getInfo().getResourceName());
-        assertNull(span.getInfo().getTargetArn());
-        assertNull(span.getInfo().getMessageId());
+        assertNull(span.getResourceName());
+        assertNull(span.getTargetArn());
+        assertNull(span.getMessageIds());
     }
 
     @Test
@@ -64,8 +64,8 @@ class SnsParserTest {
 
         SnsParser.parse(span, request, response);
 
-        assertNull(span.getInfo().getResourceName());
-        assertNull(span.getInfo().getTargetArn());
-        assertNull(span.getInfo().getMessageId());
+        assertNull(span.getResourceName());
+        assertNull(span.getTargetArn());
+        assertNull(span.getMessageIds());
     }
 }

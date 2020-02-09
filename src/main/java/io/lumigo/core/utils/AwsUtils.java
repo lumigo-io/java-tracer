@@ -2,7 +2,6 @@ package io.lumigo.core.utils;
 
 import com.amazonaws.services.lambda.runtime.events.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.lumigo.models.Span;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -209,15 +208,6 @@ public class AwsUtils {
 
         public void setMessageIds(List<String> messageIds) {
             this.messageIds = messageIds;
-        }
-    }
-
-    public static synchronized Span.READINESS getFunctionReadiness() {
-        if (System.getProperty(COLD_START_KEY) != null) {
-            return Span.READINESS.WARM;
-        } else {
-            System.setProperty(COLD_START_KEY, "false");
-            return Span.READINESS.COLD;
         }
     }
 

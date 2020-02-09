@@ -8,7 +8,7 @@ import com.amazonaws.Request;
 import com.amazonaws.Response;
 import com.amazonaws.http.HttpResponse;
 import com.amazonaws.services.kinesis.model.*;
-import io.lumigo.models.HttpSpan;
+import io.lumigo.models.ContainerHttpSpan;
 import java.util.Arrays;
 import java.util.HashMap;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +18,7 @@ import org.mockito.MockitoAnnotations;
 
 class KinesisParserTest {
 
-    private HttpSpan span = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
+    private ContainerHttpSpan span = ContainerHttpSpan.builder().build();
     KinesisParser kinesisParser = new KinesisParser();
     @Mock Request request;
     @Mock HttpResponse httpResponse;
@@ -39,10 +39,9 @@ class KinesisParserTest {
 
         kinesisParser.parse(span, request, new Response(null, httpResponse));
 
-        assertNull(span.getInfo().getResourceName());
-        assertNull(span.getInfo().getTargetArn());
-        assertNull(span.getInfo().getMessageId());
-        assertNull(span.getInfo().getMessageIds());
+        assertNull(span.getResourceName());
+        assertNull(span.getTargetArn());
+        assertNull(span.getMessageIds());
     }
 
     @Test
@@ -55,9 +54,9 @@ class KinesisParserTest {
 
         kinesisParser.parse(span, request, response);
 
-        HttpSpan expectedSpan = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
-        expectedSpan.getInfo().setResourceName("streamName");
-        expectedSpan.getInfo().setMessageIds(Arrays.asList("fee47356-6f6a-58c8-96dc-26d8aaa4631a"));
+        ContainerHttpSpan expectedSpan = ContainerHttpSpan.builder().build();
+        expectedSpan.setResourceName("streamName");
+        expectedSpan.setMessageIds(Arrays.asList("fee47356-6f6a-58c8-96dc-26d8aaa4631a"));
         assertEquals(span, expectedSpan);
     }
 
@@ -69,7 +68,7 @@ class KinesisParserTest {
 
         kinesisParser.parse(span, request, response);
 
-        HttpSpan expectedSpan = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
+        ContainerHttpSpan expectedSpan = ContainerHttpSpan.builder().build();
         assertEquals(span, expectedSpan);
     }
 
@@ -87,9 +86,9 @@ class KinesisParserTest {
 
         kinesisParser.parse(span, request, response);
 
-        HttpSpan expectedSpan = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
-        expectedSpan.getInfo().setResourceName("streamName");
-        expectedSpan.getInfo().setMessageIds(Arrays.asList("1", "2"));
+        ContainerHttpSpan expectedSpan = ContainerHttpSpan.builder().build();
+        expectedSpan.setResourceName("streamName");
+        expectedSpan.setMessageIds(Arrays.asList("1", "2"));
         assertEquals(span, expectedSpan);
     }
 
@@ -100,7 +99,7 @@ class KinesisParserTest {
 
         kinesisParser.parse(span, request, response);
 
-        HttpSpan expectedSpan = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
+        ContainerHttpSpan expectedSpan = ContainerHttpSpan.builder().build();
         assertEquals(span, expectedSpan);
     }
 
@@ -112,7 +111,7 @@ class KinesisParserTest {
 
         kinesisParser.parse(span, request, response);
 
-        HttpSpan expectedSpan = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
+        ContainerHttpSpan expectedSpan = ContainerHttpSpan.builder().build();
         assertEquals(span, expectedSpan);
     }
 }

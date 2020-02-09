@@ -3,16 +3,12 @@ package io.lumigo.core.instrumentation.impl;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import io.lumigo.core.SpansContainer;
 import io.lumigo.core.configuration.Configuration;
 import io.lumigo.handlers.LumigoConfiguration;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -25,7 +21,6 @@ class ApacheHttpInstrumentationTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
-        initSpansContainer();
         initConfiguration();
     }
 
@@ -85,17 +80,6 @@ class ApacheHttpInstrumentationTest {
         assertNotNull(ApacheHttpInstrumentation.ApacheHttpAdvice.handled.get(request.hashCode()));
     }
 
-    @Disabled("Needs static mocking")
-    @Test
-    public void handling_exit_response_create_new_span() throws Exception {
-        when(request.getURI()).thenReturn(URI.create("https://not.lumigo.host/api/spans"));
-
-        ApacheHttpInstrumentation.ApacheHttpAdvice.methodExit(request, response);
-
-        assertEquals(1, SpansContainer.getInstance().getHttpSpans().size());
-        assertNotNull(ApacheHttpInstrumentation.ApacheHttpAdvice.handled.get(request.hashCode()));
-    }
-
     @Test
     public void check_typeMatcher() {
         assertNotNull(new ApacheHttpInstrumentation().getTypeMatcher());
@@ -104,16 +88,6 @@ class ApacheHttpInstrumentationTest {
     @Test
     public void check_transformer() {
         assertNotNull(new ApacheHttpInstrumentation().getTransformer());
-    }
-
-    private void initSpansContainer() {
-        Map<String, String> env = new HashMap<>();
-        env.put("_X_AMZN_TRACE_ID", "Root=1-2-3;Another=456;Bla=789");
-        try {
-            SpansContainer.getInstance().clear();
-            SpansContainer.getInstance().init(env, null, null, null);
-        } catch (Exception e) {
-        }
     }
 
     private void initConfiguration() {

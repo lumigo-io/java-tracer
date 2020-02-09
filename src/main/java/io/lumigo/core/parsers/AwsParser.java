@@ -2,11 +2,11 @@ package io.lumigo.core.parsers;
 
 import com.amazonaws.Request;
 import com.amazonaws.Response;
-import io.lumigo.models.HttpSpan;
+import io.lumigo.models.ContainerHttpSpan;
 import java.util.List;
 
 public interface AwsParser {
-    void parse(HttpSpan span, Request request, Response response);
+    void parse(ContainerHttpSpan span, Request request, Response response);
 
     default String getParameter(Request request, String key) {
 

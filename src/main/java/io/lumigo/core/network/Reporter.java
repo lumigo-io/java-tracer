@@ -28,23 +28,19 @@ public class Reporter {
         String spansAsString = JsonUtils.getObjectAsJsonString(spans);
         Logger.debug("Reporting the spans: {}", spansAsString);
 
-        if (Configuration.getInstance().isAwsEnvironment()) {
-            RequestBody body =
-                    RequestBody.create(
-                            MediaType.get("application/json; charset=utf-8"), spansAsString);
-            Request request =
-                    new Request.Builder()
-                            .header("Accept", "application/json")
-                            .url(Configuration.getInstance().getLumigoEdge())
-                            .post(body)
-                            .build();
-            Response response = client.newCall(request).execute();
-            if (response.body() != null) {
-                response.body().close();
-            }
-            long duration = System.currentTimeMillis() - time;
-            return duration;
+        RequestBody body =
+                RequestBody.create(MediaType.get("application/json; charset=utf-8"), spansAsString);
+        Request request =
+                new Request.Builder()
+                        .header("Accept", "application/json")
+                        .url(Configuration.getInstance().getLumigoEdge())
+                        .post(body)
+                        .build();
+        Response response = client.newCall(request).execute();
+        if (response.body() != null) {
+            response.body().close();
         }
-        return 0;
+        long duration = System.currentTimeMillis() - time;
+        return duration;
     }
 }

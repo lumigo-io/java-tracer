@@ -4,20 +4,24 @@ import com.amazonaws.Request;
 import com.amazonaws.Response;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageResult;
-import io.lumigo.models.HttpSpan;
+import io.lumigo.models.ContainerHttpSpan;
+import java.util.Collections;
 import org.pmw.tinylog.Logger;
 
 public class SqsParser implements AwsParser {
     @Override
-    public void parse(HttpSpan span, Request request, Response response) {
+    public void parse(ContainerHttpSpan span, Request request, Response response) {
         if (request.getOriginalRequest() instanceof SendMessageRequest) {
             String queueUrl = ((SendMessageRequest) request.getOriginalRequest()).getQueueUrl();
-            span.getInfo().setResourceName(queueUrl);
+            span.setResourceName(queueUrl);
             Logger.debug("Got queueUrl : " + queueUrl);
         } else {
             Logger.error("Failed to extract queueUrl form SQS request");
         }
-        span.getInfo().setMessageId(extractMessageId(response.getAwsResponse()));
+        String messageId = extractMessageId(response.getAwsResponse());
+        if (messageId != null) {
+            span.setMessageIds(Collections.singletonList(messageId));
+        }
     }
 
     private String extractMessageId(Object response) {
