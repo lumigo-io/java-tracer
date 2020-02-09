@@ -29,7 +29,7 @@ public class SpansCreator {
 
         ContainerSpan.ContainerTracerInformation containerTracerInformation =
                 ContainerSpan.ContainerTracerInformation.builder()
-                        .runtime(configuration.javaVersion())
+                        .runtime("java_" + configuration.javaVersion())
                         .token(configuration.getLumigoToken())
                         .version(configuration.getLumigoTracerVersion())
                         .build();
