@@ -8,6 +8,8 @@ import io.lumigo.core.instrumentation.LumigoInstrumentationApi;
 import io.lumigo.core.instrumentation.agent.Loader;
 import io.lumigo.core.network.Reporter;
 import io.lumigo.core.utils.LRUCache;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
@@ -88,17 +90,19 @@ public class ApacheHttpInstrumentation implements LumigoInstrumentationApi {
                             request.getURI().getHost());
                     if (result instanceof HttpResponse) {
                         String invocationId = UUID.randomUUID().toString();
-                        reporter.reportSpans(
+                        List<Object> spans = new LinkedList<>();
+                        spans.add(
                                 spansCreator.createHttpSpan(
                                         startTimeMap.get(request.hashCode()),
                                         invocationId,
                                         request,
                                         (HttpResponse) result));
-                        reporter.reportSpans(
+                        spans.add(
                                 spansCreator.createContainerSpan(
                                         startTimeMap.get(request.hashCode()),
                                         invocationId,
                                         System.getenv()));
+                        reporter.reportSpans(spans);
                         handled.put(request.hashCode(), true);
                     }
                 } else {

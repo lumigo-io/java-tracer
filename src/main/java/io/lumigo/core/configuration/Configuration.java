@@ -20,7 +20,6 @@ public class Configuration {
     public static final String LUMIGO_VERBOSE = "LUMIGO_VERBOSE";
     public static final String REPORTER_TIMEOUT = "LUMIGO_REPORTER_TIMEOUT";
     public static final String LUMIGO_KILL_SWITCH = "LUMIGO_SWITCH_OFF";
-    public static final String LUMIGO_INSTRUMENTATION = "LUMIGO_INSTRUMENTATION";
     public static final String AWS_DEFAULT_REGION = "AWS_DEFAULT_REGION";
 
     private static Configuration instance;
