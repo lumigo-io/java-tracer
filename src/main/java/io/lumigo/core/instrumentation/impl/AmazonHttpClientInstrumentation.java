@@ -10,6 +10,7 @@ import io.lumigo.core.instrumentation.LumigoInstrumentationApi;
 import io.lumigo.core.instrumentation.agent.Loader;
 import io.lumigo.core.network.Reporter;
 import io.lumigo.core.utils.LRUCache;
+import java.util.UUID;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -60,9 +61,18 @@ public class AmazonHttpClientInstrumentation implements LumigoInstrumentationApi
                             "Handling request {} from host {}",
                             request.hashCode(),
                             request.getEndpoint());
+                    String invocationId = UUID.randomUUID().toString();
                     reporter.reportSpans(
                             spansCreator.createHttpSpan(
-                                    startTimeMap.get(request.hashCode()), request, response));
+                                    startTimeMap.get(request.hashCode()),
+                                    invocationId,
+                                    request,
+                                    response));
+                    reporter.reportSpans(
+                            spansCreator.createContainerSpan(
+                                    startTimeMap.get(request.hashCode()),
+                                    invocationId,
+                                    System.getenv()));
                     handled.put(request.hashCode(), true);
                 } else {
                     Logger.warn(

@@ -7,6 +7,7 @@ import io.lumigo.core.parsers.AwsParserFactory;
 import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.core.utils.StringUtils;
 import io.lumigo.models.ContainerHttpSpan;
+import io.lumigo.models.ContainerSpan;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -22,8 +23,36 @@ import org.pmw.tinylog.Logger;
 public class SpansCreator {
     private static final int MAX_STRING_SIZE = Configuration.getInstance().maxSpanFieldSize();
 
+    public ContainerSpan createContainerSpan(
+            Long startTime, String invocationId, Map<String, String> env) {
+        Configuration configuration = Configuration.getInstance();
+
+        ContainerSpan.ContainerTracerInformation containerTracerInformation =
+                ContainerSpan.ContainerTracerInformation.builder()
+                        .runtime(configuration.javaVersion())
+                        .token(configuration.getLumigoToken())
+                        .version(configuration.getLumigoTracerVersion())
+                        .build();
+
+        ContainerSpan.ECSContainerEnvironmentInformation ecsContainerEnvironmentInformation =
+                ContainerSpan.ECSContainerEnvironmentInformation.builder()
+                        .envs(
+                                Configuration.getInstance().isLumigoVerboseMode()
+                                        ? JsonUtils.getObjectAsJsonString(env)
+                                        : null)
+                        .build();
+
+        return ContainerSpan.builder()
+                .started(startTime)
+                .ended(System.currentTimeMillis())
+                .tracerInformation(containerTracerInformation)
+                .invocationId(invocationId)
+                .ecsContainerEnvironmentInformation(ecsContainerEnvironmentInformation)
+                .build();
+    }
+
     public ContainerHttpSpan createHttpSpan(
-            Long startTime, HttpUriRequest request, HttpResponse response) {
+            Long startTime, String invocationId, HttpUriRequest request, HttpResponse response) {
         Configuration configuration = Configuration.getInstance();
 
         ContainerHttpSpan.ContainerHttpSpanRequest containerHttpSpanRequest =
@@ -53,11 +82,12 @@ public class SpansCreator {
                                 .build())
                 .request(containerHttpSpanRequest)
                 .response(containerHttpSpanResponse)
+                .invocationId(invocationId)
                 .build();
     }
 
     public ContainerHttpSpan createHttpSpan(
-            Long startTime, Request<?> request, Response<?> response) {
+            Long startTime, String invocationId, Request<?> request, Response<?> response) {
         Configuration configuration = Configuration.getInstance();
 
         ContainerHttpSpan.ContainerHttpSpanRequest containerHttpSpanRequest =
@@ -92,6 +122,7 @@ public class SpansCreator {
                                         .build())
                         .request(containerHttpSpanRequest)
                         .response(containerHttpSpanResponse)
+                        .invocationId(invocationId)
                         .build();
         AwsParserFactory.getParser(request.getServiceName()).parse(httpSpan, request, response);
         return httpSpan;

@@ -12,10 +12,9 @@ public class ContainerHttpSpan {
 
     private long started;
     private long ended;
-    private Long invocationId;
+    private String invocationId;
 
     private ContainerTracerInformation tracerInformation;
-    private ECSContainerEnvironmentInformation ecsContainerEnvironmentInformation;
     private ContainerHttpSpanRequest request;
     private ContainerHttpSpanResponse response;
     private String host;
@@ -30,15 +29,6 @@ public class ContainerHttpSpan {
         private String version;
         private String token;
         private String runtime;
-    }
-
-    @AllArgsConstructor
-    @Builder(toBuilder = true)
-    @Data(staticConstructor = "of")
-    public static class ECSContainerEnvironmentInformation {
-        private String clusterName;
-        private String region;
-        private String accountId;
     }
 
     @AllArgsConstructor

@@ -12,7 +12,7 @@ public class ContainerSpan {
     private long started;
     private long ended;
     private String type;
-    private Long invocationId;
+    private String invocationId;
     private ContainerTracerInformation tracerInformation;
     private ECSContainerEnvironmentInformation ecsContainerEnvironmentInformation;
 
@@ -32,5 +32,6 @@ public class ContainerSpan {
         private String clusterName;
         private String region;
         private String accountId;
+        private String envs;
     }
 }
