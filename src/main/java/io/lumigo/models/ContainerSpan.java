@@ -11,7 +11,7 @@ public class ContainerSpan {
 
     private long started;
     private long ended;
-    private String type;
+    @Builder.Default private String type = "ContainerInvocationEnded";
     private String invocationId;
     private ContainerTracerInformation tracerInformation;
     private ECSContainerEnvironmentInformation ecsContainerEnvironmentInformation;

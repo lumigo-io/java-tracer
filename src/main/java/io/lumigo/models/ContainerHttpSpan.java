@@ -12,6 +12,7 @@ public class ContainerHttpSpan {
 
     private long started;
     private long ended;
+    @Builder.Default private String type = "ContainerHttpSpan";
     private String invocationId;
 
     private ContainerTracerInformation tracerInformation;

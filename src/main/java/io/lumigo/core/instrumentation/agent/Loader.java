@@ -9,6 +9,7 @@ import net.bytebuddy.agent.builder.AgentBuilder;
 import org.pmw.tinylog.Logger;
 
 public class Loader {
+
     public static void instrument(java.lang.instrument.Instrumentation inst) {
         Logger.debug("Start Instrumentation");
         ApacheHttpInstrumentation apacheHttpInstrumentation = new ApacheHttpInstrumentation();
