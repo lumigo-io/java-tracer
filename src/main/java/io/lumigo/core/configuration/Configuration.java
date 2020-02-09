@@ -17,11 +17,11 @@ public class Configuration {
     public static final String TOKEN_KEY = "LUMIGO_TRACER_TOKEN";
     public static final String TRACER_HOST_KEY = "LUMIGO_TRACER_HOST";
     public static final String DEBUG_KEY = "LUMIGO_DEBUG";
-    public static final String REGION_KEY = "AWS_REGION";
     public static final String LUMIGO_VERBOSE = "LUMIGO_VERBOSE";
     public static final String REPORTER_TIMEOUT = "LUMIGO_REPORTER_TIMEOUT";
     public static final String LUMIGO_KILL_SWITCH = "LUMIGO_SWITCH_OFF";
     public static final String LUMIGO_INSTRUMENTATION = "LUMIGO_INSTRUMENTATION";
+    public static final String AWS_DEFAULT_REGION = "AWS_DEFAULT_REGION";
 
     private static Configuration instance;
     private LumigoConfiguration inlineConf;
@@ -65,7 +65,7 @@ public class Configuration {
                         ? inlineConf.getEdgeHost()
                         : envUtil.getEnv(TRACER_HOST_KEY);
         if (url == null) {
-            url = String.format(EDGE_DEFAULT_URL, envUtil.getEnv(REGION_KEY));
+            url = String.format(EDGE_DEFAULT_URL, envUtil.getEnv(AWS_DEFAULT_REGION));
         }
         return EDGE_PREFIX + url + EDGE_SUFFIX;
     }
