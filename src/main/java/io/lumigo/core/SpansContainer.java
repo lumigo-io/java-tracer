@@ -404,6 +404,10 @@ public class SpansContainer {
     }
 
     public Object reduceSpanSize(Object span, boolean hasError) {
+        int maxEventFieldSize =
+                hasError
+                        ? Configuration.getInstance().maxSpanFieldSizeWhenError()
+                        : Configuration.getInstance().maxEventFieldSize();
         int maxFieldSize =
                 hasError
                         ? Configuration.getInstance().maxSpanFieldSizeWhenError()
@@ -417,7 +421,7 @@ public class SpansContainer {
             functionSpan.setReturn_value(
                     StringUtils.getMaxSizeString(functionSpan.getReturn_value(), maxFieldSize));
             functionSpan.setEvent(
-                    StringUtils.getMaxSizeString(functionSpan.getEvent(), maxFieldSize));
+                    StringUtils.getMaxSizeString(functionSpan.getEvent(), maxEventFieldSize));
         } else if (span instanceof HttpSpan) {
             HttpSpan httpSpan = (HttpSpan) span;
             httpSpan.getInfo()

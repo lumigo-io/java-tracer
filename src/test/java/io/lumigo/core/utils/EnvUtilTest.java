@@ -19,4 +19,15 @@ class EnvUtilTest {
             assertEquals(System.getenv(key), envUtil.getEnv(key));
         }
     }
+
+    @Test
+    void getEnvIntSuccess() {
+        assertEquals(2, envUtil.getEnvInt("FOR_LUMIGO_TEST", 1));
+    }
+
+    @Test
+    void getEnvIntFail() {
+        System.setProperty("TEST_KEY", "wrong");
+        assertEquals(1, envUtil.getEnvInt("TEST_KEY", 1));
+    }
 }

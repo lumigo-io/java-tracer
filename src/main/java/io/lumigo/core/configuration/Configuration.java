@@ -24,6 +24,7 @@ public class Configuration {
     public static final String REPORTER_TIMEOUT = "LUMIGO_REPORTER_TIMEOUT";
     public static final String LUMIGO_KILL_SWITCH = "LUMIGO_SWITCH_OFF";
     public static final String LUMIGO_INSTRUMENTATION = "LUMIGO_INSTRUMENTATION";
+    public static final String EVENT_MAX_SIZE = "EVENT_MAX_SIZE";
 
     private static Configuration instance;
     private LumigoConfiguration inlineConf;
@@ -94,6 +95,10 @@ public class Configuration {
 
     public int maxSpanFieldSize() {
         return 1024;
+    }
+
+    public int maxEventFieldSize() {
+        return Math.min(envUtil.getEnvInt(EVENT_MAX_SIZE, 1), 10) * 1024;
     }
 
     public int maxSpanFieldSizeWhenError() {

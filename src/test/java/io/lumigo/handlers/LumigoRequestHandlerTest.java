@@ -193,6 +193,7 @@ class LumigoRequestHandlerTest {
                 .thenReturn("2019/05/12/[$LATEST]7f67fc1238a941749d8126be19f0cdc6");
 
         when(envUtil.getBooleanEnv(any(), any())).thenCallRealMethod();
+        when(envUtil.getEnvInt(any(), any())).thenCallRealMethod();
     }
 
     private void createMockedEnv() {
