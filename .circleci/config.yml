@@ -97,7 +97,7 @@ jobs:
           command: cd ../integration-tests && export testJava=true && npm run test-parallel
           no_output_timeout: 30m
       - store_test_results:
-          path: src/test/test-results
+          path: ../integration-tests/src/test/test-results
 
   deploy:
     <<: *defaults
