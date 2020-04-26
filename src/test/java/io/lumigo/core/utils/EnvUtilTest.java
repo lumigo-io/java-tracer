@@ -29,9 +29,9 @@ class EnvUtilTest {
 
     @Test
     void getEnv_string_array() {
-        String[] arr = {System.getenv("USER")};
+        String[] arr = {System.getenv("HOME")};
 
-        String[] actual = envUtil.getStringArrayEnv("USER", null);
+        String[] actual = envUtil.getStringArrayEnv("HOME", null);
 
         assertEquals(1, actual.length);
         assertEquals(arr[0], actual[0]);
