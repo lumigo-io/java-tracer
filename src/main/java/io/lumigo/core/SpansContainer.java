@@ -6,6 +6,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.network.Reporter;
 import io.lumigo.core.parsers.AwsParserFactory;
+import io.lumigo.core.parsers.event.EventParserFactory;
 import io.lumigo.core.utils.AwsUtils;
 import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.core.utils.StringUtils;
@@ -124,7 +125,8 @@ public class SpansContainer {
                                         : null)
                         .event(
                                 Configuration.getInstance().isLumigoVerboseMode()
-                                        ? JsonUtils.getObjectAsJsonString(event)
+                                        ? JsonUtils.getObjectAsJsonString(
+                                                EventParserFactory.parseEvent(event))
                                         : null)
                         .build();
     }
