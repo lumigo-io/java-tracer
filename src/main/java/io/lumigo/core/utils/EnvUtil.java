@@ -12,6 +12,14 @@ public class EnvUtil {
         return value == null ? dflt : "true".equalsIgnoreCase(value);
     }
 
+    public String[] getStringArrayEnv(String key, String[] dflt) {
+        String value = getEnv(key);
+        if (value != null && !value.isEmpty()) {
+            return value.split(",");
+        }
+        return dflt;
+    }
+
     public Map<String, String> getEnv() {
         return System.getenv();
     }
