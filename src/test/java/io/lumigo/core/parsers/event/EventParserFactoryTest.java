@@ -1,14 +1,36 @@
 package io.lumigo.core.parsers.event;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.SNSEvent;
+import com.amazonaws.services.lambda.runtime.events.SQSEvent;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.lumigo.core.utils.JsonUtils;
+import java.util.HashMap;
 import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 class EventParserFactoryTest {
+
+    @Mock private APIGatewayProxyRequestEvent apiGwMockevent;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.initMocks(this);
+    }
+
+    @Test
+    public void test_exception() {
+        when(apiGwMockevent.getHeaders()).thenThrow(new RuntimeException());
+
+        assertEquals(apiGwMockevent, EventParserFactory.parseEvent(apiGwMockevent));
+    }
 
     @Test
     public void test_default_event() {
@@ -81,5 +103,59 @@ class EventParserFactoryTest {
                         + "\"stageVariables\":{\"stageVariablesKey\":\"stageVariablesValue\"}}";
 
         assertEquals(expectedEventAsJson, JsonUtils.getObjectAsJsonString(event));
+    }
+
+    @Test
+    public void test_check_sns_event() {
+        Map<String, SNSEvent.MessageAttribute> messageAttributes = new HashMap<>();
+        SNSEvent.MessageAttribute messageAttribute = new SNSEvent.MessageAttribute();
+        messageAttribute.setType("type");
+        messageAttribute.setValue("value");
+        messageAttributes.put("key", messageAttribute);
+        SNSEvent.SNS sns = new SNSEvent.SNS();
+        sns.setMessage("msg");
+        sns.setType("type");
+        sns.setSignature("signature");
+        sns.setSignatureVersion("signatureVersion");
+        sns.setSubject("subject(");
+        sns.setTopicArn("topicArn");
+        sns.setMessageId("MessageId");
+        sns.setMessageAttributes(messageAttributes);
+        SNSEvent snsEvent = new SNSEvent();
+        SNSEvent.SNSRecord record = new SNSEvent.SNSRecord();
+        record.setEventSource("aws:sns");
+        record.setSns(sns);
+        snsEvent.setRecords(Lists.newArrayList(record));
+
+        Object actualEvent = EventParserFactory.parseEvent(snsEvent);
+
+        String expectedEventAsJson =
+                "{\"records\":[{\"message\":\"msg\",\"messageAttributes\":{\"key\":{\"type\":\"type\",\"value\":\"value\"}},\"messageId\":\"MessageId\"}]}";
+        assertEquals(expectedEventAsJson, JsonUtils.getObjectAsJsonString(actualEvent));
+    }
+
+    @Test
+    public void test_check_sqs_event() {
+        Map<String, SQSEvent.MessageAttribute> messageAttributes = new HashMap<>();
+        SQSEvent.MessageAttribute messageAttribute = new SQSEvent.MessageAttribute();
+        messageAttribute.setDataType("type");
+        messageAttribute.setStringValue("value");
+        messageAttributes.put("key", messageAttribute);
+        SQSEvent.SQSMessage record = new SQSEvent.SQSMessage();
+        record.setEventSource("aws:sns");
+        record.setBody("body");
+        record.setMessageAttributes(messageAttributes);
+        record.setMessageId("MessageId");
+        record.setAwsRegion("region");
+        record.setMd5OfBody("Md5OfBody");
+        record.setEventSourceArn("arn");
+        SQSEvent sqsEvent = new SQSEvent();
+        sqsEvent.setRecords(Lists.newArrayList(record));
+
+        Object actualEvent = EventParserFactory.parseEvent(sqsEvent);
+
+        String expectedEventAsJson =
+                "{\"records\":[{\"body\":\"body\",\"messageAttributes\":{\"key\":{\"type\":\"type\",\"value\":\"value\"}},\"messageId\":\"MessageId\"}]}";
+        assertEquals(expectedEventAsJson, JsonUtils.getObjectAsJsonString(actualEvent));
     }
 }
