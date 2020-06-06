@@ -76,12 +76,6 @@
         <httpcomponents.httpcore.version>4.4.10</httpcomponents.httpcore.version>
         <junit.version>5.4.2</junit.version>
     </properties>
-    <repositories>
-        <repository>
-            <id>nuiton</id>
-            <url>http://maven.nuiton.org/release/</url>
-        </repository>
-    </repositories>
     <dependencies>
         <!-- AWS sdk dependencies -->
         <dependency>
@@ -157,6 +151,8 @@
             <groupId>com.sun</groupId>
             <artifactId>tools</artifactId>
             <version>1.7.0.13</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/tools-1.7.0.13.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>net.bytebuddy</groupId>
