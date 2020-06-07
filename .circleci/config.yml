@@ -85,11 +85,11 @@ workflows:
           requires:
             - test
       - e2e-test:
-        requires:
-          - integration-test
-        filters:
-          branches:
-            ignore: master
+          requires:
+            - integration-test
+          filters:
+            branches:
+              ignore: master
       - deploy:
           filters:
             branches:
@@ -118,7 +118,7 @@ jobs:
           no_output_timeout: 30m
       - store_test_results:
           path: ../integration-tests/src/test/test-results
-            - run: mkdir -p ../envs && cd ../integration-tests && cp src/e2e-test/cypress.env.json ../envs
+      - run: mkdir -p ../envs && cd ../integration-tests && cp src/e2e-test/cypress.env.json ../envs
       - run: mkdir -p ../stack && cd ../integration-tests && cp src/e2e-test/cypress/cf-stack.json ../stack
       - persist_to_workspace:
           root: ../
@@ -126,7 +126,6 @@ jobs:
             - envs/
             - stack/
             - .aws/
-
   e2e-test:
     <<: *defaults
     steps:

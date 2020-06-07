@@ -78,8 +78,8 @@
     </properties>
     <repositories>
         <repository>
-            <id>nuiton</id>
-            <url>http://maven.nuiton.org/release/</url>
+            <id>local-maven-repository</id>
+            <url>file:///${project.basedir}/local-repository</url>
         </repository>
     </repositories>
     <dependencies>
