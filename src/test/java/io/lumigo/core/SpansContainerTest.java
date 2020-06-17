@@ -353,9 +353,9 @@ class SpansContainerTest {
                         new Customization("ended", (o1, o2) -> o1 != null)));
     }
 
-    @DisplayName("AWS Http span creation")
+    @DisplayName("AWS Http span creation with x-amzn-requestid")
     @Test
-    void add_aws_http_span() throws Exception {
+    void add_aws_http_span_with_spnid_from_header_amzn() throws Exception {
         Map<String, String> headers = new HashMap<>();
         headers.put("x-amzn-requestid", "id123");
 
@@ -397,6 +397,70 @@ class SpansContainerTest {
                         + "         },\n"
                         + "         \"response\":{\n"
                         + "            \"headers\":\"{\\\"x-amzn-requestid\\\":\\\"id123\\\"}\",\n"
+                        + "            \"body\":\"awsResponse\",\n"
+                        + "            \"uri\":null,\n"
+                        + "            \"statusCode\":200,\n"
+                        + "            \"method\":null\n"
+                        + "         }\n"
+                        + "      }\n"
+                        + "   },\n"
+                        + "   \"parentId\":\"3n2783hf7823hdui32\"\n"
+                        + "}";
+        JSONAssert.assertEquals(
+                expectedSpan,
+                JsonUtils.getObjectAsJsonString(actualSpan),
+                new CustomComparator(
+                        JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o1 != null),
+                        new Customization("id", (o1, o2) -> o1.equals("id123")),
+                        new Customization("started", (o1, o2) -> o1 != null),
+                        new Customization("ended", (o1, o2) -> o1 != null)));
+    }
+
+    @DisplayName("AWS Http span creation with x-amz-requestid")
+    @Test
+    void add_aws_http_span_with_spnid_from_header_amz() throws Exception {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("x-amz-requestid", "id123");
+
+        spansContainer.init(createMockedEnv(), reporter, context, null);
+        when(awsRequest.getEndpoint()).thenReturn(URI.create("https://sns.amazonaws.com"));
+        when(awsRequest.getHttpMethod()).thenReturn(HttpMethodName.GET);
+        when(awsHttpResponse.getStatusCode()).thenReturn(200);
+        when(awsHttpResponse.getHeaders()).thenReturn(headers);
+        Response<String> awsResponse = new Response<>("awsResponse", awsHttpResponse);
+        long startTime = System.currentTimeMillis();
+        spansContainer.addHttpSpan(startTime, awsRequest, awsResponse);
+
+        HttpSpan actualSpan = spansContainer.getHttpSpans().get(0);
+        String expectedSpan =
+                "{\n"
+                        + "   \"started\":1559127760071,\n"
+                        + "   \"ended\":1559127760085,\n"
+                        + "   \"id\":\"cc9ceb9c-dad2-4762-8f0c-147408bdc063\",\n"
+                        + "   \"type\":\"http\",\n"
+                        + "   \"transactionId\":\"3\",\n"
+                        + "   \"account\":\"1111\",\n"
+                        + "   \"region\":\"us-west-2\",\n"
+                        + "   \"token\":null,\n"
+                        + "   \"info\":{\n"
+                        + "      \"tracer\":{\n"
+                        + "         \"version\":\"1.0\"\n"
+                        + "      },\n"
+                        + "      \"traceId\":{\n"
+                        + "         \"Root\":\"1-2-3\"\n"
+                        + "      },\n"
+                        + "      \"httpInfo\":{\n"
+                        + "         \"host\":\"sns.amazonaws.com\",\n"
+                        + "         \"request\":{\n"
+                        + "            \"headers\":\"{}\",\n"
+                        + "            \"body\":null,\n"
+                        + "            \"uri\":\"https://sns.amazonaws.com\",\n"
+                        + "            \"statusCode\":null,\n"
+                        + "            \"method\":GET\n"
+                        + "         },\n"
+                        + "         \"response\":{\n"
+                        + "            \"headers\":\"{\\\"x-amz-requestid\\\":\\\"id123\\\"}\",\n"
                         + "            \"body\":\"awsResponse\",\n"
                         + "            \"uri\":null,\n"
                         + "            \"statusCode\":200,\n"
