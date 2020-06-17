@@ -284,6 +284,17 @@ public class SpansContainer {
 
     public void addHttpSpan(Long startTime, Request<?> request, Response<?> response) {
         HttpSpan httpSpan = createBaseHttpSpan(startTime);
+        String spanId = null;
+        for (Map.Entry<String, String> header :
+                response.getHttpResponse().getHeaders().entrySet()) {
+            if ("x-amzn-requestid".equalsIgnoreCase(header.getKey())
+                    || "x-amz-requestid".equalsIgnoreCase(header.getKey())) {
+                spanId = header.getValue();
+            }
+        }
+        if (spanId != null) {
+            httpSpan.setId(spanId);
+        }
         httpSpan.getInfo()
                 .setHttpInfo(
                         HttpSpan.HttpInfo.builder()

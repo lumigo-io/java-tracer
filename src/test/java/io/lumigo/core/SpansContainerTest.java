@@ -298,6 +298,7 @@ class SpansContainerTest {
         spansContainer.init(createMockedEnv(), reporter, context, null);
         when(httpRequest.getURI()).thenReturn(URI.create("https://google.com"));
         when(httpResponse.getStatusLine()).thenReturn(statusLine);
+        when(httpResponse.getAllHeaders()).thenReturn(new Header[0]);
         when(statusLine.getStatusCode()).thenReturn(200);
 
         long startTime = System.currentTimeMillis();
@@ -355,11 +356,15 @@ class SpansContainerTest {
     @DisplayName("AWS Http span creation")
     @Test
     void add_aws_http_span() throws Exception {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("x-amzn-requestid", "id123");
+
         spansContainer.init(createMockedEnv(), reporter, context, null);
         when(awsRequest.getEndpoint()).thenReturn(URI.create("https://sns.amazonaws.com"));
         when(awsRequest.getHttpMethod()).thenReturn(HttpMethodName.GET);
         when(awsHttpResponse.getStatusCode()).thenReturn(200);
-        Response awsResponse = new Response("awsResponse", awsHttpResponse);
+        when(awsHttpResponse.getHeaders()).thenReturn(headers);
+        Response<String> awsResponse = new Response<>("awsResponse", awsHttpResponse);
         long startTime = System.currentTimeMillis();
         spansContainer.addHttpSpan(startTime, awsRequest, awsResponse);
 
@@ -391,7 +396,7 @@ class SpansContainerTest {
                         + "            \"method\":GET\n"
                         + "         },\n"
                         + "         \"response\":{\n"
-                        + "            \"headers\":\"{}\",\n"
+                        + "            \"headers\":\"{\\\"x-amzn-requestid\\\":\\\"id123\\\"}\",\n"
                         + "            \"body\":\"awsResponse\",\n"
                         + "            \"uri\":null,\n"
                         + "            \"statusCode\":200,\n"
@@ -407,7 +412,7 @@ class SpansContainerTest {
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
                         new Customization("info.tracer.version", (o1, o2) -> o1 != null),
-                        new Customization("id", (o1, o2) -> o1 != null),
+                        new Customization("id", (o1, o2) -> o1.equals("id123")),
                         new Customization("started", (o1, o2) -> o1 != null),
                         new Customization("ended", (o1, o2) -> o1 != null)));
     }
