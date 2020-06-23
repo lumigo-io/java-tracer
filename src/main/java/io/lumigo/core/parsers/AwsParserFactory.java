@@ -16,6 +16,8 @@ public class AwsParserFactory {
                 return new SqsParser();
             case "AmazonKinesis":
                 return new KinesisParser();
+            case "AmazonDynamoDB":
+                return new DynamoDBParser();
             default:
                 return new DefaultParser();
         }

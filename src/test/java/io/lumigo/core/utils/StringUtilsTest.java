@@ -1,12 +1,16 @@
 package io.lumigo.core.utils;
 
+import static io.lumigo.core.utils.StringUtils.buildMd5Hash;
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 
@@ -68,5 +72,35 @@ class StringUtilsTest {
     void extractStringForStream_empty_stream() throws IOException {
         InputStream empty = new ByteArrayInputStream(new byte[0]);
         assertNull(StringUtils.extractStringForStream(empty, 100));
+    }
+
+    @Test
+    void buildMd5Hash_happy_flow() {
+        Map<String, AttributeValue> item =
+                new HashMap<String, AttributeValue>() {
+                    {
+                        put("k", new AttributeValue("v"));
+                    }
+                };
+        assertEquals(buildMd5Hash(item), "44244ce1a15ee6d4dc270001564cb759");
+    }
+
+    @Test
+    void buildMd5Hash_order_doesnt_matter() {
+        Map<String, AttributeValue> item1 =
+                new HashMap<String, AttributeValue>() {
+                    {
+                        put("k", new AttributeValue("v"));
+                        put("k2", new AttributeValue("v2"));
+                    }
+                };
+        Map<String, AttributeValue> item2 =
+                new HashMap<String, AttributeValue>() {
+                    {
+                        put("k2", new AttributeValue("v2"));
+                        put("k", new AttributeValue("v"));
+                    }
+                };
+        assertEquals(buildMd5Hash(item1), buildMd5Hash(item2));
     }
 }

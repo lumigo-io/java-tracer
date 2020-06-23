@@ -3,9 +3,13 @@ package infa;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.StreamRecord;
 import com.amazonaws.services.lambda.runtime.events.*;
 import com.amazonaws.services.s3.event.S3EventNotification;
+import com.sun.tools.javac.util.List;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,11 +29,31 @@ public class AwsLambdaEventGenerator {
         return s3Event;
     }
 
-    public DynamodbEvent dynamodbEvent() {
+    public DynamodbEvent dynamodbPartialEvent() {
         DynamodbEvent dynamodbEvent = mock(DynamodbEvent.class);
         DynamodbEvent.DynamodbStreamRecord record = mock(DynamodbEvent.DynamodbStreamRecord.class);
         when(dynamodbEvent.getRecords()).thenReturn(Collections.singletonList(record));
         when(record.getEventSourceARN()).thenReturn("dynamodb-arn");
+        return dynamodbEvent;
+    }
+
+    public DynamodbEvent dynamodbEvent() {
+        DynamodbEvent dynamodbEvent = mock(DynamodbEvent.class);
+        DynamodbEvent.DynamodbStreamRecord record = mock(DynamodbEvent.DynamodbStreamRecord.class);
+        StreamRecord streamRecord = mock(StreamRecord.class);
+        DynamodbEvent.DynamodbStreamRecord record2 = mock(DynamodbEvent.DynamodbStreamRecord.class);
+        StreamRecord streamRecord2 = mock(StreamRecord.class);
+        when(dynamodbEvent.getRecords()).thenReturn(List.of(record, record2));
+        when(record.getEventSourceARN()).thenReturn("dynamodb-arn");
+        when(record.getEventName()).thenReturn("INSERT");
+        when(record.getDynamodb()).thenReturn(streamRecord);
+        when(streamRecord.getApproximateCreationDateTime()).thenReturn(new Date(769554000));
+        when(streamRecord.getNewImage())
+                .thenReturn(Collections.singletonMap("k", new AttributeValue("v")));
+        when(record2.getEventName()).thenReturn("MODIFY");
+        when(record2.getDynamodb()).thenReturn(streamRecord2);
+        when(streamRecord2.getKeys())
+                .thenReturn(Collections.singletonMap("k2", new AttributeValue("v2")));
         return dynamodbEvent;
     }
 

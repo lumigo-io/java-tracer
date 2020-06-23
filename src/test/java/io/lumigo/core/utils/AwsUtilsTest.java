@@ -83,9 +83,19 @@ class AwsUtilsTest {
     }
 
     @Test
-    void test_extractTriggeredByFromEvent_dynamodb() throws JSONException {
+    void test_extractTriggeredByFromEvent_dynamodb_with_partial_event() throws JSONException {
         JSONAssert.assertEquals(
                 "{\"triggeredBy\": \"dynamodb\", \"arn\": \"dynamodb-arn\"}",
+                JsonUtils.getObjectAsJsonString(
+                        AwsUtils.extractTriggeredByFromEvent(
+                                awsLambdaEventGenerator.dynamodbPartialEvent())),
+                true);
+    }
+
+    @Test
+    void test_extractTriggeredByFromEvent_dynamodb_with_full_event() throws JSONException {
+        JSONAssert.assertEquals(
+                "{\"triggeredBy\": \"dynamodb\", \"arn\": \"dynamodb-arn\", \"messageIds\": [\"44244ce1a15ee6d4dc270001564cb759\", \"0ba280a753e516f855d0b62a52d0b390\"], \"approxEventCreationTime\": 769554000}",
                 JsonUtils.getObjectAsJsonString(
                         AwsUtils.extractTriggeredByFromEvent(
                                 awsLambdaEventGenerator.dynamodbEvent())),

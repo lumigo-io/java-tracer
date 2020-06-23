@@ -30,4 +30,9 @@ class AwsParserFactoryTest {
     public void test_check_kinesis_value() {
         assertEquals(KinesisParser.class, AwsParserFactory.getParser("AmazonKinesis").getClass());
     }
+
+    @Test
+    public void test_check_dynamodb_value() {
+        assertEquals(DynamoDBParser.class, AwsParserFactory.getParser("AmazonDynamoDB").getClass());
+    }
 }
