@@ -72,7 +72,7 @@ public class StringUtils {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
             String itemAsJson = ItemUtils.toItem(item).toJSON();
-            md.update(itemAsJson.getBytes());
+            md.update(itemAsJson.getBytes(Charset.defaultCharset()));
             return bytesToHex(md.digest());
         } catch (NoSuchAlgorithmException e) {
             Logger.error(e, "Failed to build hash of item");
