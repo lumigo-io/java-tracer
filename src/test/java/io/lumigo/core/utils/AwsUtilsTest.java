@@ -103,6 +103,16 @@ class AwsUtilsTest {
     }
 
     @Test
+    void test_extractTriggeredByFromEvent_dynamodb_with_unknown_event() throws JSONException {
+        JSONAssert.assertEquals(
+                "{\"triggeredBy\": \"dynamodb\", \"arn\": \"dynamodb-arn\"}",
+                JsonUtils.getObjectAsJsonString(
+                        AwsUtils.extractTriggeredByFromEvent(
+                                awsLambdaEventGenerator.dynamodbUnknownEvent())),
+                true);
+    }
+
+    @Test
     void test_extractTriggeredByFromEvent_kinesisEvent() throws JSONException {
         JSONAssert.assertEquals(
                 "{\"triggeredBy\": \"kinesis\", \"arn\": \"kinesis-arn\", \"messageId\":\"1\", messageIds: [\"1\"]}",

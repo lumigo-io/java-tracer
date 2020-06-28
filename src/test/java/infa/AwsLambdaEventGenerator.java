@@ -29,6 +29,15 @@ public class AwsLambdaEventGenerator {
         return s3Event;
     }
 
+    public DynamodbEvent dynamodbUnknownEvent() {
+        DynamodbEvent dynamodbEvent = mock(DynamodbEvent.class);
+        DynamodbEvent.DynamodbStreamRecord record = mock(DynamodbEvent.DynamodbStreamRecord.class);
+        when(dynamodbEvent.getRecords()).thenReturn(List.of(record));
+        when(record.getEventSourceARN()).thenReturn("dynamodb-arn");
+        when(record.getEventName()).thenReturn("UNKNOWN");
+        return dynamodbEvent;
+    }
+
     public DynamodbEvent dynamodbPartialEvent() {
         DynamodbEvent dynamodbEvent = mock(DynamodbEvent.class);
         DynamodbEvent.DynamodbStreamRecord record = mock(DynamodbEvent.DynamodbStreamRecord.class);

@@ -161,7 +161,7 @@ public class AwsUtils {
                 return triggeredBy;
             }
 
-            Logger.info("Found triggered by handler fo event {}", event.getClass().getName());
+            Logger.info("Found triggered by handler to event {}", event.getClass().getName());
             return triggeredBy;
 
         } catch (RuntimeException e) {
@@ -220,7 +220,7 @@ public class AwsUtils {
         private String stage;
         private String messageId;
         private List<String> messageIds = Collections.emptyList();
-        private Long approxEventCreationTime;
+        private long approxEventCreationTime = 0;
 
         public List<String> getMessageIds() {
             if (this.messageIds != null) return this.messageIds;
