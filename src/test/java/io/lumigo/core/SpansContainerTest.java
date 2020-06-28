@@ -1,7 +1,6 @@
 package io.lumigo.core;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 import com.amazonaws.Request;
@@ -10,8 +9,10 @@ import com.amazonaws.http.HttpMethodName;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.util.StringInputStream;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.network.Reporter;
 import io.lumigo.core.utils.JsonUtils;
+import io.lumigo.handlers.LumigoConfiguration;
 import io.lumigo.models.HttpSpan;
 import io.lumigo.models.Span;
 import java.io.IOException;
@@ -54,6 +55,7 @@ class SpansContainerTest {
 
     @BeforeEach
     void setUp() {
+        Configuration.getInstance().init(LumigoConfiguration.builder().verbose(true).build());
         MockitoAnnotations.initMocks(this);
         spansContainer.clear();
         mockContext();

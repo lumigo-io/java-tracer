@@ -48,6 +48,8 @@ public class AwsUtils {
                 triggeredBy.setTriggeredBy("dynamodb");
                 if (((DynamodbEvent) event).getRecords() != null
                         && ((DynamodbEvent) event).getRecords().size() > 0) {
+                    triggeredBy.setArn(
+                            ((DynamodbEvent) event).getRecords().get(0).getEventSourceARN());
                     DynamodbEvent.DynamodbStreamRecord firstRecord =
                             ((DynamodbEvent) event).getRecords().get(0);
                     triggeredBy.setArn(firstRecord.getEventSourceARN());
