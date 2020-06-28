@@ -1,6 +1,7 @@
 package io.lumigo.core.utils;
 
 import static io.lumigo.core.utils.StringUtils.buildMd5Hash;
+import static io.lumigo.core.utils.StringUtils.dynamodbItemToHash;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
@@ -76,17 +77,11 @@ class StringUtilsTest {
 
     @Test
     void buildMd5Hash_happy_flow() {
-        Map<String, AttributeValue> item =
-                new HashMap<String, AttributeValue>() {
-                    {
-                        put("k", new AttributeValue("v"));
-                    }
-                };
-        assertEquals(buildMd5Hash(item), "44244ce1a15ee6d4dc270001564cb759");
+        assertEquals("81dc9bdb52d04dc20036dbd8313ed055", buildMd5Hash("1234"));
     }
 
     @Test
-    void buildMd5Hash_order_doesnt_matter() {
+    void dynamodbItemToHash_order_doesnt_matter() {
         Map<String, AttributeValue> item1 =
                 new HashMap<String, AttributeValue>() {
                     {
@@ -101,6 +96,6 @@ class StringUtilsTest {
                         put("k", new AttributeValue("v"));
                     }
                 };
-        assertEquals(buildMd5Hash(item1), buildMd5Hash(item2));
+        assertEquals(dynamodbItemToHash(item1), dynamodbItemToHash(item2));
     }
 }

@@ -1,6 +1,6 @@
 package io.lumigo.core.parsers;
 
-import static io.lumigo.core.utils.StringUtils.buildMd5Hash;
+import static io.lumigo.core.utils.StringUtils.dynamodbItemToHash;
 
 import com.amazonaws.AmazonWebServiceRequest;
 import com.amazonaws.Request;
@@ -27,19 +27,19 @@ public class DynamoDBParser implements AwsParser {
     private String extractMessageId(AmazonWebServiceRequest request) {
 
         if (request instanceof PutItemRequest) {
-            return buildMd5Hash(((PutItemRequest) request).getItem());
+            return dynamodbItemToHash(((PutItemRequest) request).getItem());
         } else if (request instanceof UpdateItemRequest) {
-            return buildMd5Hash(((UpdateItemRequest) request).getKey());
+            return dynamodbItemToHash(((UpdateItemRequest) request).getKey());
         } else if (request instanceof DeleteItemRequest) {
-            return buildMd5Hash(((DeleteItemRequest) request).getKey());
+            return dynamodbItemToHash(((DeleteItemRequest) request).getKey());
         } else if (request instanceof BatchWriteItemRequest) {
             Map<String, List<WriteRequest>> requests =
                     ((BatchWriteItemRequest) request).getRequestItems();
             WriteRequest firstRequest = requests.entrySet().iterator().next().getValue().get(0);
             if (firstRequest.getPutRequest() != null) {
-                return buildMd5Hash(firstRequest.getPutRequest().getItem());
+                return dynamodbItemToHash(firstRequest.getPutRequest().getItem());
             } else if (firstRequest.getDeleteRequest() != null) {
-                return buildMd5Hash(firstRequest.getDeleteRequest().getKey());
+                return dynamodbItemToHash(firstRequest.getDeleteRequest().getKey());
             }
         }
         return null;

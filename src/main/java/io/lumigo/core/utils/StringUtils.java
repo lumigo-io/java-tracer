@@ -68,15 +68,18 @@ public class StringUtils {
         return sb.toString();
     }
 
-    public static String buildMd5Hash(Map<String, AttributeValue> item) {
+    public static String buildMd5Hash(String s) {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
-            String itemAsJson = ItemUtils.toItem(item).toJSON();
-            md.update(itemAsJson.getBytes(Charset.defaultCharset()));
+            md.update(s.getBytes(Charset.defaultCharset()));
             return bytesToHex(md.digest());
         } catch (NoSuchAlgorithmException e) {
             Logger.error(e, "Failed to build hash of item");
             return null;
         }
+    }
+
+    public static String dynamodbItemToHash(Map<String, AttributeValue> item) {
+        return buildMd5Hash(ItemUtils.toItem(item).toJSON());
     }
 }

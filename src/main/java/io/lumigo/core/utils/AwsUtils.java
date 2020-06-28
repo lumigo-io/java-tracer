@@ -1,6 +1,6 @@
 package io.lumigo.core.utils;
 
-import static io.lumigo.core.utils.StringUtils.buildMd5Hash;
+import static io.lumigo.core.utils.StringUtils.dynamodbItemToHash;
 
 import com.amazonaws.services.lambda.runtime.events.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -19,6 +19,7 @@ public class AwsUtils {
 
     public static final String COLD_START_KEY = "LUMIGO_COLD_START_KEY";
     private static final String TRIGGERED_BY_FALLBACK = "No recognized trigger";
+    private static final int MAXIMAL_NUMBER_OF_MESSAGE_IDS = 50;
 
     /**
      * @param arn an arn of the with the format arn:aws:lambda:{region}:{account}:function:{name}
@@ -48,8 +49,6 @@ public class AwsUtils {
                 triggeredBy.setTriggeredBy("dynamodb");
                 if (((DynamodbEvent) event).getRecords() != null
                         && ((DynamodbEvent) event).getRecords().size() > 0) {
-                    triggeredBy.setArn(
-                            ((DynamodbEvent) event).getRecords().get(0).getEventSourceARN());
                     DynamodbEvent.DynamodbStreamRecord firstRecord =
                             ((DynamodbEvent) event).getRecords().get(0);
                     triggeredBy.setArn(firstRecord.getEventSourceARN());
@@ -66,6 +65,7 @@ public class AwsUtils {
                                     .getRecords().stream()
                                             .map(AwsUtils::extractMessageIdFromDynamodbRecord)
                                             .filter(Objects::nonNull)
+                                            .limit(MAXIMAL_NUMBER_OF_MESSAGE_IDS)
                                             .collect(Collectors.toList());
                     if (messageIds.size() > 0) triggeredBy.setMessageIds(messageIds);
                 }
@@ -264,10 +264,10 @@ public class AwsUtils {
             DynamodbEvent.DynamodbStreamRecord record) {
         if (record.getEventName() == null) return null;
         if (record.getEventName().equals("INSERT")) {
-            return buildMd5Hash(record.getDynamodb().getNewImage());
+            return dynamodbItemToHash(record.getDynamodb().getNewImage());
         } else if (record.getEventName().equals("MODIFY")
                 || record.getEventName().equals("REMOVE")) {
-            return buildMd5Hash(record.getDynamodb().getKeys());
+            return dynamodbItemToHash(record.getDynamodb().getKeys());
         }
         return null;
     }
