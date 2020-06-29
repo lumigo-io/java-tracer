@@ -1,7 +1,12 @@
 package io.lumigo.core.utils;
 
+import com.amazonaws.services.dynamodbv2.document.ItemUtils;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import java.io.*;
 import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Map;
 import java.util.Random;
 import org.pmw.tinylog.Logger;
 
@@ -53,5 +58,28 @@ public class StringUtils {
             Logger.info("Stream markSupported is false or stream is null");
         }
         return null;
+    }
+
+    private static String bytesToHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
+    }
+
+    public static String buildMd5Hash(String s) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(s.getBytes(Charset.defaultCharset()));
+            return bytesToHex(md.digest());
+        } catch (NoSuchAlgorithmException e) {
+            Logger.error(e, "Failed to build hash of item");
+            return null;
+        }
+    }
+
+    public static String dynamodbItemToHash(Map<String, AttributeValue> item) {
+        return buildMd5Hash(ItemUtils.toItem(item).toJSON());
     }
 }

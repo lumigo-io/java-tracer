@@ -114,6 +114,14 @@ public class SpansContainer {
                                                 triggeredBy != null
                                                         ? triggeredBy.getMessageId()
                                                         : null)
+                                        .messageIds(
+                                                triggeredBy != null
+                                                        ? triggeredBy.getMessageIds()
+                                                        : null)
+                                        .approxEventCreationTime(
+                                                triggeredBy != null
+                                                        ? triggeredBy.getApproxEventCreationTime()
+                                                        : 0)
                                         .logGroupName(context.getLogGroupName())
                                         .logStreamName(context.getLogStreamName())
                                         .build())

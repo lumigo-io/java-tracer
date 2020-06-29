@@ -1,10 +1,13 @@
 package io.lumigo.core.utils;
 
+import static io.lumigo.core.utils.StringUtils.dynamodbItemToHash;
+
 import com.amazonaws.services.lambda.runtime.events.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.lumigo.models.Span;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -16,6 +19,7 @@ public class AwsUtils {
 
     public static final String COLD_START_KEY = "LUMIGO_COLD_START_KEY";
     private static final String TRIGGERED_BY_FALLBACK = "No recognized trigger";
+    private static final int MAXIMAL_NUMBER_OF_MESSAGE_IDS = 50;
 
     /**
      * @param arn an arn of the with the format arn:aws:lambda:{region}:{account}:function:{name}
@@ -45,8 +49,25 @@ public class AwsUtils {
                 triggeredBy.setTriggeredBy("dynamodb");
                 if (((DynamodbEvent) event).getRecords() != null
                         && ((DynamodbEvent) event).getRecords().size() > 0) {
-                    triggeredBy.setArn(
-                            ((DynamodbEvent) event).getRecords().get(0).getEventSourceARN());
+                    DynamodbEvent.DynamodbStreamRecord firstRecord =
+                            ((DynamodbEvent) event).getRecords().get(0);
+                    triggeredBy.setArn(firstRecord.getEventSourceARN());
+                    if (firstRecord.getDynamodb() != null
+                            && firstRecord.getDynamodb().getApproximateCreationDateTime() != null) {
+                        triggeredBy.setApproxEventCreationTime(
+                                firstRecord
+                                        .getDynamodb()
+                                        .getApproximateCreationDateTime()
+                                        .getTime());
+                    }
+                    List<String> messageIds =
+                            ((DynamodbEvent) event)
+                                    .getRecords().stream()
+                                            .map(AwsUtils::extractMessageIdFromDynamodbRecord)
+                                            .filter(Objects::nonNull)
+                                            .limit(MAXIMAL_NUMBER_OF_MESSAGE_IDS)
+                                            .collect(Collectors.toList());
+                    if (messageIds.size() > 0) triggeredBy.setMessageIds(messageIds);
                 }
             } else if (event instanceof KinesisEvent) {
                 triggeredBy.setTriggeredBy("kinesis");
@@ -142,7 +163,7 @@ public class AwsUtils {
                 return triggeredBy;
             }
 
-            Logger.info("Found triggered by handler fo event {}", event.getClass().getName());
+            Logger.info("Found triggered by handler to event {}", event.getClass().getName());
             return triggeredBy;
 
         } catch (RuntimeException e) {
@@ -201,6 +222,7 @@ public class AwsUtils {
         private String stage;
         private String messageId;
         private List<String> messageIds = Collections.emptyList();
+        private long approxEventCreationTime = 0;
 
         public List<String> getMessageIds() {
             if (this.messageIds != null) return this.messageIds;
@@ -236,5 +258,17 @@ public class AwsUtils {
             c = c.getSuperclass();
         }
         return false;
+    }
+
+    private static String extractMessageIdFromDynamodbRecord(
+            DynamodbEvent.DynamodbStreamRecord record) {
+        if (record.getEventName() == null) return null;
+        if (record.getEventName().equals("INSERT")) {
+            return dynamodbItemToHash(record.getDynamodb().getNewImage());
+        } else if (record.getEventName().equals("MODIFY")
+                || record.getEventName().equals("REMOVE")) {
+            return dynamodbItemToHash(record.getDynamodb().getKeys());
+        }
+        return null;
     }
 }
