@@ -201,6 +201,7 @@ class LumigoRequestHandlerTest {
         addEnvMock("AWS_EXECUTION_ENV", "JAVA8");
         addEnvMock(Configuration.TOKEN_KEY, "test-token");
         when(envUtil.getEnv()).thenReturn(env);
+        when(envUtil.getIntegerEnv(any(), any())).thenCallRealMethod();
     }
 
     private void addEnvMock(String key, String value) {

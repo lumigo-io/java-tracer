@@ -158,6 +158,8 @@ class ConfigurationTest {
 
     @Test
     void maxSpanFieldSize() {
+        Configuration.getInstance().setEnvUtil(envUtil);
+        when(envUtil.getIntegerEnv(Configuration.LUMIGO_MAX_ENTRY_SIZE, 1024)).thenReturn(1024);
         assertEquals(1024, Configuration.getInstance().maxSpanFieldSize());
     }
 }

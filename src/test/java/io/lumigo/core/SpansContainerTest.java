@@ -1,6 +1,7 @@
 package io.lumigo.core;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.amazonaws.Request;
@@ -11,6 +12,7 @@ import com.amazonaws.util.StringInputStream;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.network.Reporter;
+import io.lumigo.core.utils.EnvUtil;
 import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.handlers.LumigoConfiguration;
 import io.lumigo.models.HttpSpan;
@@ -45,6 +47,7 @@ class SpansContainerTest {
 
     private SpansContainer spansContainer = SpansContainer.getInstance();
 
+    @Mock private EnvUtil envUtil;
     @Mock private Context context;
     @Mock Reporter reporter;
     @Mock HttpResponse httpResponse;
@@ -701,10 +704,17 @@ class SpansContainerTest {
 
     private Map<String, String> createMockedEnv() {
         Map<String, String> env = new HashMap<>();
-        env.put("AWS_EXECUTION_ENV", "JAVA8");
-        env.put("AWS_REGION", "us-west-2");
-        env.put("_X_AMZN_TRACE_ID", "Root=1-2-3;Another=456;Bla=789");
+        addEnvMock(env, "AWS_EXECUTION_ENV", "JAVA8");
+        addEnvMock(env, "AWS_REGION", "us-west-2");
+        addEnvMock(env, "_X_AMZN_TRACE_ID", "Root=1-2-3;Another=456;Bla=789");
+        when(envUtil.getEnv()).thenReturn(env);
+        when(envUtil.getIntegerEnv(any(), any())).thenCallRealMethod();
         return env;
+    }
+
+    private void addEnvMock(Map<String, String> env, String key, String value) {
+        env.put(key, value);
+        when(envUtil.getEnv(key)).thenReturn(value);
     }
 
     private void mockContext() {

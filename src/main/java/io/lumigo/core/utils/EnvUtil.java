@@ -1,6 +1,7 @@
 package io.lumigo.core.utils;
 
 import java.util.Map;
+import org.pmw.tinylog.Logger;
 
 public class EnvUtil {
     public String getEnv(String key) {
@@ -10,6 +11,16 @@ public class EnvUtil {
     public Boolean getBooleanEnv(String key, Boolean dflt) {
         String value = getEnv(key);
         return value == null ? dflt : "true".equalsIgnoreCase(value);
+    }
+
+    public Integer getIntegerEnv(String key, Integer dflt) {
+        try {
+            String value = getEnv(key);
+            return Integer.valueOf(value);
+        } catch (Exception ignored) {
+            Logger.error(ignored, "Failed to init " + key);
+        }
+        return dflt;
     }
 
     public String[] getStringArrayEnv(String key, String[] dflt) {

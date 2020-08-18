@@ -23,6 +23,7 @@ public class Configuration {
     public static final String LUMIGO_VERBOSE = "LUMIGO_VERBOSE";
     public static final String REPORTER_TIMEOUT = "LUMIGO_REPORTER_TIMEOUT";
     public static final String LUMIGO_KILL_SWITCH = "LUMIGO_SWITCH_OFF";
+    public static final String LUMIGO_MAX_ENTRY_SIZE = "LUMIGO_MAX_ENTRY_SIZE";
     public static final String LUMIGO_INSTRUMENTATION = "LUMIGO_INSTRUMENTATION";
 
     private static Configuration instance;
@@ -93,7 +94,7 @@ public class Configuration {
     }
 
     public int maxSpanFieldSize() {
-        return 1024;
+        return envUtil.getIntegerEnv(LUMIGO_MAX_ENTRY_SIZE, 1024);
     }
 
     public int maxSpanFieldSizeWhenError() {
