@@ -36,4 +36,11 @@ class EnvUtilTest {
         assertEquals(1, actual.length);
         assertEquals(arr[0], actual[0]);
     }
+
+    @Test
+    void getEnv_integer_deflt() {
+        Integer deflt = 555;
+
+        assertEquals(deflt, envUtil.getIntegerEnv("NOT_EXISTS", deflt));
+    }
 }
