@@ -2,8 +2,10 @@ package io.lumigo.core.network;
 
 import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.utils.JsonUtils;
+import io.lumigo.core.utils.StringUtils;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import okhttp3.*;
 import org.pmw.tinylog.Logger;
@@ -19,16 +21,31 @@ public class Reporter {
                         .build();
     }
 
-    public long reportSpans(Object span) throws IOException {
-        return reportSpans(Collections.singletonList(span));
+    public long reportSpans(Object span, int maxSize) throws IOException {
+        return reportSpans(Collections.singletonList(span), maxSize);
     }
 
-    public long reportSpans(List<Object> spans) throws IOException {
+    public long reportSpans(List<Object> spans, int maxSize) throws IOException {
         long time = System.currentTimeMillis();
-        String spansAsString = JsonUtils.getObjectAsJsonString(spans);
-        Logger.debug("Reporting the spans: {}", spansAsString);
+        List<String> spansAsStringList = new LinkedList<>();
+        int sizeCount = 0;
+        int handledSpans = 0;
+        for (Object span : spans) {
+            if (sizeCount >= maxSize) {
+                Logger.debug("Dropped spans by request size: {}", spans.size() - handledSpans);
+                break;
+            }
+            String spanAsString = JsonUtils.getObjectAsJsonString(span);
+            if (spanAsString != null) {
+                spansAsStringList.add(spanAsString);
+                sizeCount += StringUtils.getBase64Size(spanAsString);
+            }
+            handledSpans++;
+        }
 
-        if (Configuration.getInstance().isAwsEnvironment()) {
+        if (Configuration.getInstance().isAwsEnvironment() && spansAsStringList.size() > 0) {
+            String spansAsString = JsonUtils.getObjectAsJsonString(spansAsStringList);
+            Logger.debug("Reporting the spans: {}", spansAsString);
             RequestBody body =
                     RequestBody.create(
                             MediaType.get("application/json; charset=utf-8"), spansAsString);
@@ -42,8 +59,7 @@ public class Reporter {
             if (response.body() != null) {
                 response.body().close();
             }
-            long duration = System.currentTimeMillis() - time;
-            return duration;
+            return System.currentTimeMillis() - time;
         }
         return 0;
     }

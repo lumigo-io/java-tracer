@@ -24,6 +24,7 @@ public class Configuration {
     public static final String REPORTER_TIMEOUT = "LUMIGO_REPORTER_TIMEOUT";
     public static final String LUMIGO_KILL_SWITCH = "LUMIGO_SWITCH_OFF";
     public static final String LUMIGO_MAX_ENTRY_SIZE = "LUMIGO_MAX_ENTRY_SIZE";
+    public static final String LUMIGO_MAX_RESPONSE_SIZE = "LUMIGO_MAX_RESPONSE_SIZE";
     public static final String LUMIGO_INSTRUMENTATION = "LUMIGO_INSTRUMENTATION";
 
     private static Configuration instance;
@@ -127,5 +128,9 @@ public class Configuration {
 
     public boolean isInstrumentationEnabled() {
         return envUtil.getBooleanEnv(LUMIGO_INSTRUMENTATION, true);
+    }
+
+    public int maxRequestSize() {
+        return envUtil.getIntegerEnv(LUMIGO_MAX_RESPONSE_SIZE, 1024 * 900);
     }
 }

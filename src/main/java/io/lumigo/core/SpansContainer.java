@@ -25,6 +25,7 @@ import org.pmw.tinylog.Logger;
 public class SpansContainer {
 
     private static final int MAX_STRING_SIZE = Configuration.getInstance().maxSpanFieldSize();
+    private static final int MAX_REQUEST_SIZE = Configuration.getInstance().maxRequestSize();
     private static final int MAX_LAMBDA_TIME = 15 * 60 * 1000;
     private static final String AWS_EXECUTION_ENV = "AWS_EXECUTION_ENV";
     private static final String AWS_REGION = "AWS_REGION";
@@ -148,7 +149,8 @@ public class SpansContainer {
                         .build();
 
         try {
-            rttDuration = reporter.reportSpans(prepareToSend(startFunctionSpan, false));
+            rttDuration =
+                    reporter.reportSpans(prepareToSend(startFunctionSpan, false), MAX_REQUEST_SIZE);
         } catch (Throwable e) {
             Logger.error(e, "Failed to send start span");
         }
@@ -191,7 +193,8 @@ public class SpansContainer {
                         .id(this.baseSpan.getId())
                         .build();
         reporter.reportSpans(
-                prepareToSend(getAllCollectedSpans(), endFunctionSpan.getError() != null));
+                prepareToSend(getAllCollectedSpans(), endFunctionSpan.getError() != null),
+                MAX_REQUEST_SIZE);
     }
 
     public Span getStartFunctionSpan() {
