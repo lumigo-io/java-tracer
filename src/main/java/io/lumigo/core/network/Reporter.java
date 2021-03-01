@@ -44,7 +44,7 @@ public class Reporter {
         }
 
         if (Configuration.getInstance().isAwsEnvironment() && spansAsStringList.size() > 0) {
-            String spansAsString = JsonUtils.getObjectAsJsonString(spansAsStringList);
+            String spansAsString = "[" + String.join(",", spansAsStringList) + "]";
             Logger.debug("Reporting the spans: {}", spansAsString);
             RequestBody body =
                     RequestBody.create(
