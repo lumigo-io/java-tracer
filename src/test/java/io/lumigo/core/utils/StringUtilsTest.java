@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.io.IOUtils;
@@ -97,5 +98,13 @@ class StringUtilsTest {
                     }
                 };
         assertEquals(dynamodbItemToHash(item1), dynamodbItemToHash(item2));
+    }
+
+    @Test
+    void getBase64Size() {
+        String originalInput = "test input";
+        String encodedString = Base64.getEncoder().encodeToString(originalInput.getBytes());
+
+        assertEquals(encodedString.length(), StringUtils.getBase64Size(originalInput));
     }
 }

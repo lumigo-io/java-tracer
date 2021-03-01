@@ -18,7 +18,7 @@ public class EnvUtil {
             String value = getEnv(key);
             return Integer.valueOf(value);
         } catch (Exception ignored) {
-            Logger.error(ignored, "Failed to init " + key);
+            Logger.info("No configuration to key " + key + ", use default " + dflt);
         }
         return dflt;
     }

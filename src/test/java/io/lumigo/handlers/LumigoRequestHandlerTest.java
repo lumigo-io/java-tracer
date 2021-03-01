@@ -223,14 +223,14 @@ class LumigoRequestHandlerTest {
         handler.setEnvUtil(envUtil);
         handler.setReporter(reporter);
         Configuration.getInstance().setEnvUtil(envUtil);
-        when(reporter.reportSpans((Span) any())).thenReturn(999L);
+        when(reporter.reportSpans((Span) any(), anyInt())).thenReturn(999L);
 
         String response = handler.handleRequest(kinesisEvent, context);
 
         ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
         ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
-        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture());
-        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture(), anyInt());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture(), anyInt());
 
         assertEquals("Response", response);
         JSONAssert.assertEquals(
@@ -275,8 +275,8 @@ class LumigoRequestHandlerTest {
 
         ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
         ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
-        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture());
-        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture(), anyInt());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture(), anyInt());
 
         JSONAssert.assertEquals(
                 JsonUtils.getObjectAsJsonString(getStartSpan(true)),
@@ -319,8 +319,8 @@ class LumigoRequestHandlerTest {
 
         ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
         ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
-        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture());
-        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture(), anyInt());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture(), anyInt());
 
         JSONAssert.assertEquals(
                 JsonUtils.getObjectAsJsonString(
@@ -379,8 +379,8 @@ class LumigoRequestHandlerTest {
 
         ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
         ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
-        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture());
-        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture());
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture(), anyInt());
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture(), anyInt());
         assertEquals("Response", response);
     }
 
@@ -404,8 +404,8 @@ class LumigoRequestHandlerTest {
 
         ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
         ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
-        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture());
-        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture());
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture(), anyInt());
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture(), anyInt());
     }
 
     @DisplayName("Check the kill switch (RequestHandler)")
@@ -436,14 +436,14 @@ class LumigoRequestHandlerTest {
         handler.setEnvUtil(envUtil);
         handler.setReporter(reporter);
         Configuration.getInstance().setEnvUtil(envUtil);
-        when(reporter.reportSpans((Span) any())).thenReturn(999L);
+        when(reporter.reportSpans((Span) any(), anyInt())).thenReturn(999L);
 
         handler.handleRequest(null, null, context);
 
         ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
         ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
-        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture());
-        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture(), anyInt());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture(), anyInt());
 
         JSONAssert.assertEquals(
                 JsonUtils.getObjectAsJsonString(
@@ -486,8 +486,8 @@ class LumigoRequestHandlerTest {
 
         ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
         ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
-        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture());
-        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture(), anyInt());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture(), anyInt());
 
         JSONAssert.assertEquals(
                 JsonUtils.getObjectAsJsonString(
@@ -530,8 +530,8 @@ class LumigoRequestHandlerTest {
 
         ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
         ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
-        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture());
-        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture(), anyInt());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture(), anyInt());
 
         JSONAssert.assertEquals(
                 JsonUtils.getObjectAsJsonString(
@@ -587,8 +587,8 @@ class LumigoRequestHandlerTest {
 
         ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
         ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
-        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture());
-        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture());
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture(), anyInt());
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture(), anyInt());
     }
 
     @DisplayName(
@@ -612,8 +612,8 @@ class LumigoRequestHandlerTest {
 
         ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
         ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
-        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture());
-        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture());
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture(), anyInt());
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture(), anyInt());
     }
 
     @DisplayName("Check the kill switch (StreamHandler))")
@@ -724,14 +724,14 @@ class LumigoRequestHandlerTest {
         LumigoRequestExecutor.getInstance().setEnvUtil(envUtil);
         LumigoRequestExecutor.getInstance().setReporter(reporter);
         Configuration.getInstance().setEnvUtil(envUtil);
-        when(reporter.reportSpans((Span) any())).thenReturn(999L);
+        when(reporter.reportSpans((Span) any(), anyInt())).thenReturn(999L);
 
         String response = handler.handleRequest(kinesisEvent, context);
 
         ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
         ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
-        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture());
-        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture(), anyInt());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture(), anyInt());
 
         assertEquals("Response", response);
         JSONAssert.assertEquals(
@@ -776,8 +776,8 @@ class LumigoRequestHandlerTest {
 
         ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
         ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
-        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture());
-        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture(), anyInt());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture(), anyInt());
 
         JSONAssert.assertEquals(
                 JsonUtils.getObjectAsJsonString(getStartSpan(true)),
@@ -820,8 +820,8 @@ class LumigoRequestHandlerTest {
 
         ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
         ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
-        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture());
-        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture(), anyInt());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture(), anyInt());
 
         JSONAssert.assertEquals(
                 JsonUtils.getObjectAsJsonString(
@@ -880,8 +880,8 @@ class LumigoRequestHandlerTest {
 
         ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
         ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
-        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture());
-        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture());
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture(), anyInt());
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture(), anyInt());
         assertEquals("Response", response);
     }
 
@@ -905,8 +905,8 @@ class LumigoRequestHandlerTest {
 
         ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
         ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
-        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture());
-        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture());
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorAllSpans.capture(), anyInt());
+        verify(reporter, Mockito.times(0)).reportSpans(argumentCaptorStartSpan.capture(), anyInt());
     }
 
     @DisplayName("Check the kill switch (RequestHandler)")

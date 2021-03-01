@@ -4,6 +4,7 @@ import com.amazonaws.services.dynamodbv2.document.ItemUtils;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
@@ -81,5 +82,11 @@ public class StringUtils {
 
     public static String dynamodbItemToHash(Map<String, AttributeValue> item) {
         return buildMd5Hash(ItemUtils.toItem(item).toJSON());
+    }
+
+    public static int getBase64Size(String value) {
+        return (int)
+                Math.round(
+                        (Math.floor((value.getBytes(StandardCharsets.UTF_8).length / 3) + 1) * 4));
     }
 }
