@@ -95,7 +95,7 @@ jobs:
     steps:
       - checkout_code
       - run: ./scripts/checks.sh
-      - run: bash <(curl -s https://codecov.io/bash)
+      - run: ../utils/common_bash/defaults/code_cov.sh
 
   integration-test:
     <<: *defaults
@@ -142,5 +142,5 @@ jobs:
       - checkout_utils
       - checkout_code
       - run: mvn clean install
-      - run: bash <(curl -s https://codecov.io/bash)
+      - run: ../utils/common_bash/defaults/code_cov.sh
       - run: ./scripts/bd_to_prod.sh
