@@ -10,8 +10,8 @@ Include lumigo java tracer dependency, for [Maven](https://maven.apache.org) pro
 ```xml
 <repositories>
     <repository>
-        <id>nuiton</id>
-        <url>http://maven.nuiton.org/release/</url>
+        <id>lumigo</id>
+        <url>https://github.com/lumigo-io/java-tracer/tree/master/local-repository/</url>
     </repository>
 </repositories>
 ```
