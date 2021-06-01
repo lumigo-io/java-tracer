@@ -11,7 +11,7 @@ Include lumigo java tracer dependency, for [Maven](https://maven.apache.org) pro
 <repositories>
     <repository>
         <id>lumigo</id>
-        <url>https://github.com/lumigo-io/java-tracer/tree/master/local-repository/</url>
+        <url>https://raw.githubusercontent.com/lumigo-io/java-tracer/master/local-repository/</url>
     </repository>
 </repositories>
 ```
