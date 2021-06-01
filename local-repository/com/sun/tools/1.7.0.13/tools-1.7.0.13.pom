@@ -4,8 +4,6 @@
   <artifactId>tools</artifactId>
   <version>1.7.0.13</version>
 
-  <url>http://icedtea.classpath.org/</url>
-
   <licenses>
     <license>
       <name>GPLv2</name>
