@@ -93,6 +93,7 @@ jobs:
   test:
     <<: *defaults
     steps:
+      - checkout_utils
       - checkout_code
       - run: ./scripts/checks.sh
       - run: ../utils/common_bash/defaults/code_cov.sh
