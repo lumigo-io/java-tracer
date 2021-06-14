@@ -8,7 +8,6 @@ Supported Runtimes: Java 8
 ## Maven
 Include lumigo java tracer dependency, for [Maven](https://maven.apache.org) projects, use:
 
-
 ```xml
 <repositories>
     <repository>
