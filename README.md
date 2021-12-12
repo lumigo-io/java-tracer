@@ -87,4 +87,7 @@ class MyFunction implements RequestHandler<String, String> {
     }
 ```
 
+## Java 11 Support
+Add the environment variable `JAVA_TOOL_OPTIONS` to your Lambda functions and set it to
+`-Djdk.attach.allowAttachSelf=true` in addition to the manual code mentioned above.
 
