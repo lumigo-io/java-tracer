@@ -33,7 +33,7 @@ echo "Override maven settings"
 sudo cp -rf maven/settings.xml /usr/share/maven/conf
 echo "Import gpg key"
 export GPG_TTY=$(tty)
-echo -e "$GPG_KEY" | gpg --import --passphrase "$GPG_PASSPHRASE" --pinentry-mode loopback
+gpg --batch --passphrase "$GPG_PASSPHRASE" --import java-sign-keys/private.asc
 echo "Uploading lumigo java tracer to maven central repository"
 mvn -f agent/pom.xml clean deploy
 mvn -f agent/pom.xml nexus-staging:release

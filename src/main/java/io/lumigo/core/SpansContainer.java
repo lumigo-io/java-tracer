@@ -203,8 +203,8 @@ public class SpansContainer {
 
     public List<Object> getAllCollectedSpans() {
         List<Object> spans = new LinkedList<>();
-        spans.addAll(httpSpans);
         spans.add(endFunctionSpan);
+        spans.addAll(httpSpans);
         return spans;
     }
 
