@@ -52,7 +52,7 @@ commands:
               circleci step halt
             fi
       - run: sudo chown -R circleci:circleci /usr/local/bin
-      - run: sudo chown -R circleci:circleci /usr/local/lib/python3.7/site-packages
+      - run: sudo chown -R circleci:circleci /usr/local/lib/python3.7/site-packages  || echo "Unable to change ownership for python3.7 site-packages"
 
       # Download and cache dependencies
       - restore_cache:
@@ -136,7 +136,7 @@ jobs:
             - envs/
             - stack/
             - .aws/
-          
+
   deploy:
     <<: *defaults
     steps:
