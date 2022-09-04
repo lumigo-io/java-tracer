@@ -26,11 +26,10 @@ setup_git
 echo "Getting latest changes from git"
 changes=$(git log $(git describe --tags --abbrev=0)..HEAD --oneline)
 
-sudo pip install --upgrade bumpversion
 bumpversion patch --message "{current_version} → {new_version}. Changes: ${changes}"
 
 echo "Override maven settings"
-sudo cp -rf maven/settings.xml /usr/share/maven/conf
+cp -rf maven/settings.xml /usr/share/maven/conf
 echo "Import gpg key"
 export GPG_TTY=$(tty)
 gpg --batch --passphrase "$GPG_PASSPHRASE" --import java-sign-keys/private.asc
