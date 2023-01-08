@@ -1,4 +1,5 @@
 version: 2.1
+
 defaults: &defaults
   working_directory: ~/java-tracer
   docker:
@@ -6,6 +7,33 @@ defaults: &defaults
       auth:
         username: lumigo
         password: $DOCKERHUB_PASSWORD
+
+workflows:
+  test-deploy:
+    jobs:
+      - test:
+          context:
+            - common
+            - java
+          filters:
+            branches:
+              ignore: master
+      - integration-test:
+          context:
+            - common
+            - java
+          filters:
+            branches:
+              ignore: master
+          requires:
+            - test
+      - deploy:
+          context:
+            - common
+            - java
+          filters:
+            branches:
+              only: master
 
 commands:
   checkout_utils:
@@ -70,24 +98,6 @@ commands:
           paths:
             - ~/.m2
           key: m2-{{ checksum "pom.xml" }}
-
-workflows:
-  test-deploy:
-    jobs:
-      - test:
-          filters:
-            branches:
-              ignore: master
-      - integration-test:
-          filters:
-            branches:
-              ignore: master
-          requires:
-            - test
-      - deploy:
-          filters:
-            branches:
-              only: master
 
 jobs:
   test:
