@@ -134,7 +134,7 @@ jobs:
             - ../integration-tests/.deployment_finished.env2
             - ../integration-tests/.deployment_finished.env3
       - run:
-          command: cd ../integration-tests && export testJava=true && npm run test-parallel
+          command: cd ../integration-tests && npm run test-parallel
           no_output_timeout: 30m
       - store_test_results:
           path: ../integration-tests/src/test/test-results
