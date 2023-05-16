@@ -41,6 +41,7 @@ workflows:
           - common
           - java
         deploy_spec: java
+        install_maven_dependencies: true
         run_test_cleanup: false
         requires:
           - lumigo-orb/be-deploy
