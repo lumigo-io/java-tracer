@@ -92,6 +92,9 @@ commands:
           name: Install project dependencies of java tracer
           command: mvn dependency:go-offline
 
+      - run:
+          name: install cdk
+          command: npm install -g cdk@1.125.0
 
       - save_cache:
           paths:
