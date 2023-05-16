@@ -8,47 +8,46 @@ defaults: &defaults
         username: lumigo
         password: $DOCKERHUB_PASSWORD
 
+orbs:
+  lumigo-orb: &lumigo_orb_version lumigo/lumigo-orb@volatile
+
 workflows:
   test-deploy:
     jobs:
-      - test:
-          context:
-            - common
-            - java
-          filters:
-            branches:
-              ignore: master
-      - integration-test:
-          context:
-            - common
-            - java
-          filters:
-            branches:
-              ignore: master
-          requires:
-            - test
-      - deploy:
-          context:
-            - common
-            - java
-          filters:
-            branches:
-              only: master
+    - lumigo-orb/print_orb_versions:
+        lumigo_orb_version: *lumigo_orb_version
+
+    - test:
+        context:
+          - common
+          - java
+        filters:
+          branches:
+            ignore: master
+
+    - integration-test:
+        context:
+          - common
+          - java
+        filters:
+          branches:
+            ignore: master
+
+    - lumigo-orb/workflow-completed-successfully:
+        context: common
+        requires:
+          - test
+          - integration-test
+
+    - deploy:
+        context:
+          - common
+          - java
+        filters:
+          branches:
+            only: master
 
 commands:
-  checkout_utils:
-    description: "Checkout various utilities"
-    steps:
-      - run:
-          command: |
-            mkdir ~/.ssh/ && echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
-            cd ..
-            git clone git@github.com:lumigo-io/common-resources.git
-      - run:
-          command: |
-            cd ..
-            git clone git@github.com:lumigo-io/utils.git
-
   checkout_integration_tests:
     description: "Checkout integration tests"
     steps:
@@ -103,7 +102,7 @@ jobs:
   test:
     <<: *defaults
     steps:
-      - checkout_utils
+      - lumigo-orb/checkout_utils
       - checkout_code
       - run: ./scripts/checks.sh
       - run: ../utils/common_bash/defaults/code_cov.sh
@@ -111,7 +110,7 @@ jobs:
   integration-test:
     <<: *defaults
     steps:
-      - checkout_utils
+      - lumigo-orb/checkout_utils
       - checkout_code
       - run: ./scripts/ci_deploy.sh
       - run: cd ../integration-tests && npm i
@@ -150,7 +149,7 @@ jobs:
   deploy:
     <<: *defaults
     steps:
-      - checkout_utils
+      - lumigo-orb/checkout_utils
       - checkout_code
       - run: mvn clean install
       - run: ../utils/common_bash/defaults/code_cov.sh
