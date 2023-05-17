@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  lumigo-orb: &lumigo_orb_version lumigo/lumigo-orb@volatile
+
 defaults: &defaults
   working_directory: ~/java-tracer
   docker:
@@ -11,147 +14,98 @@ defaults: &defaults
 workflows:
   test-deploy:
     jobs:
-      - test:
-          context:
-            - common
-            - java
-          filters:
-            branches:
-              ignore: master
-      - integration-test:
-          context:
-            - common
-            - java
-          filters:
-            branches:
-              ignore: master
-          requires:
-            - test
-      - deploy:
-          context:
-            - common
-            - java
-          filters:
-            branches:
-              only: master
+    - lumigo-orb/print_orb_versions:
+        lumigo_orb_version: *lumigo_orb_version
 
-commands:
-  checkout_utils:
-    description: "Checkout various utilities"
-    steps:
-      - run:
-          command: |
-            mkdir ~/.ssh/ && echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
-            cd ..
-            git clone git@github.com:lumigo-io/common-resources.git
-      - run:
-          command: |
-            cd ..
-            git clone git@github.com:lumigo-io/utils.git
+    - test:
+        context:
+          - common
+          - java
+        filters:
+          branches:
+            ignore: master
 
-  checkout_integration_tests:
-    description: "Checkout integration tests"
-    steps:
-      - run:
-          command: |
-            cd ..
-            git clone git@github.com:lumigo-io/integration-tests.git
-  checkout_dashboard:
-    description: "Checkout Lumigo Platform (dashboard)"
-    steps:
-      - run:
-          command: |
-            cd ..
-            git clone git@github.com:lumigo-io/dashboard.git
-  checkout_code:
-    description: "Checkout code and install it"
-    steps:
-      - checkout
-      - run:
-          # Avoid annoying double runs after deploy.
-          # See https://discuss.circleci.com/t/job-runs-even-when-tags-ignore-filter-is-triggered-when-combined-with-branches-only/20664
-          name: Check if tagged
-          command: |
-            tags=$(git tag -l --points-at HEAD)
-            echo "Tags $tags"
-            if [[ ! -z "$tags" ]]
-            then
-              echo "A tagged commit, skip..."
-              circleci step halt
-            fi
-      - run: sudo chown -R circleci:circleci /usr/local/bin
-      - run: sudo chown -R circleci:circleci /usr/local/lib/python3.7/site-packages  || echo "Unable to change ownership for python3.7 site-packages"
+    - lumigo-orb/is_environment_available:
+        context: common
+        filters:
+          branches:
+            ignore: master
 
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-            - m2-{{ checksum "pom.xml" }}
-            # fallback to using the latest cache if no exact match is found
-            - m2-
+    - lumigo-orb/be-deploy:
+        context: common
+        requires:
+          - lumigo-orb/is_environment_available
 
-      - run:
-          name: Install project dependencies of java tracer
-          command: mvn dependency:go-offline
+    - lumigo-orb/integration-test-prep:
+        context:
+          - common
+          - java
+        deploy_spec: java
+        install_maven_dependencies: true
+        run_test_cleanup: false
+        requires:
+          - lumigo-orb/be-deploy
 
+    - lumigo-orb/integration-test-cleanup:
+        name: pre-test-cleanup
+        context: common
+        requires:
+          - lumigo-orb/integration-test-prep
 
-      - save_cache:
-          paths:
-            - ~/.m2
-          key: m2-{{ checksum "pom.xml" }}
+    - lumigo-orb/integration-test-limited-flows:
+        context: common
+        deploy_spec: java
+        run_test_cleanup: false
+        requires:
+          - pre-test-cleanup
+
+    - lumigo-orb/integration-test-parallel:
+        context: common
+        deploy_spec: java
+        run_test_cleanup: false
+        requires:
+          - lumigo-orb/integration-test-limited-flows
+
+    - lumigo-orb/integration-test-cleanup:
+        name: post-test-cleanup
+        context: common
+        requires:
+          - lumigo-orb/integration-test-parallel
+
+    - lumigo-orb/e2e-test:
+        context: common
+        requires:
+          - lumigo-orb/integration-test-limited-flows
+
+    - lumigo-orb/workflow-completed-successfully:
+        context: common
+        requires:
+          - test
+          - lumigo-orb/integration-test-parallel
+          - lumigo-orb/e2e-test
+
+    - deploy:
+        context:
+          - common
+          - java
+        filters:
+          branches:
+            only: master
 
 jobs:
   test:
     <<: *defaults
     steps:
-      - checkout_utils
-      - checkout_code
+      - lumigo-orb/checkout_utils
+      - lumigo-orb/checkout_code
       - run: ./scripts/checks.sh
       - run: ../utils/common_bash/defaults/code_cov.sh
-
-  integration-test:
-    <<: *defaults
-    steps:
-      - checkout_utils
-      - checkout_code
-      - run: ./scripts/ci_deploy.sh
-      - run: cd ../integration-tests && npm i
-      - run: sudo npm install -g recursive-install
-      - run: cd ../integration-tests && git rev-parse HEAD > ../commits && cd ../python_tracer && git rev-parse HEAD >> ../commits &&  cd ../lumigo-node && git rev-parse HEAD >> ../commits &&  cd ../java-tracer && git rev-parse HEAD >> ../commits
-      - restore_cache:
-          keys:
-            - IT-{{ .Branch }}-{{ checksum "../commits" }}
-      - run: cd ../integration-tests && ./scripts/parallel_prepare_env.sh
-      - run: cd ../integration-tests && ./scripts/parallel_deploy.sh --spec java
-      - save_cache:
-          key: IT-{{ .Branch }}-{{ checksum "../commits" }}
-          paths:
-            - ../integration-tests/src/e2e-test/cypress.env.json
-            - ../integration-tests/src/e2e-test/cypress/cf-stack.json
-            - ../integration-tests/.env
-            - ../integration-tests/.env2
-            - ../integration-tests/.env3
-            - ../integration-tests/.deployment_finished.env
-            - ../integration-tests/.deployment_finished.env2
-            - ../integration-tests/.deployment_finished.env3
-      - run:
-          command: cd ../integration-tests && export testJava=true && npm run test-parallel
-          no_output_timeout: 30m
-      - store_test_results:
-          path: ../integration-tests/src/test/test-results
-      - run: mkdir -p ../envs && cd ../integration-tests && cp src/e2e-test/cypress.env.json ../envs
-      - run: mkdir -p ../stack && cd ../integration-tests && cp src/e2e-test/cypress/cf-stack.json ../stack
-      - persist_to_workspace:
-          root: ../
-          paths:
-            - envs/
-            - stack/
-            - .aws/
 
   deploy:
     <<: *defaults
     steps:
-      - checkout_utils
-      - checkout_code
+      - lumigo-orb/checkout_utils
+      - lumigo-orb/checkout_code
       - run: mvn clean install
       - run: ../utils/common_bash/defaults/code_cov.sh
       - run: ./scripts/bd_to_prod.sh
