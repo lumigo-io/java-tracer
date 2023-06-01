@@ -1,7 +1,7 @@
 # Java Tracer
 
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/lumigo-io/java-tracer/tree/master.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/lumigo-io/java-tracer/tree/master)
-![Version](https://img.shields.io/badge/version-1.0.39-green.svg)
+![Version](https://img.shields.io/badge/version-1.0.40-green.svg)
 [![codecov](https://codecov.io/gh/lumigo-io/java-tracer/branch/master/graph/badge.svg?token=D3IZ5hQwaQ)](https://codecov.io/gh/lumigo-io/java-tracer)
 
 Supported Runtimes: Java 8, Java 11
@@ -25,13 +25,13 @@ Include lumigo java tracer dependency, for [Maven](https://maven.apache.org) pro
 <dependency>
   <groupId>io.lumigo</groupId>
   <artifactId>java-tracer</artifactId>
-  <version>1.0.39</version>
+  <version>1.0.40</version>
 </dependency>
 
 <dependency>
   <groupId>io.lumigo</groupId>
   <artifactId>lumigo-agent</artifactId>
-  <version>1.0.39</version>
+  <version>1.0.40</version>
 </dependency>
 ```
 
