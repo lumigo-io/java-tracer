@@ -1,0 +1,45 @@
+name: Send PR close event to the environment manager
+
+on:
+    pull_request:
+        types: [closed]
+
+jobs:
+    send-pr-close-event-to-env-manager:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Send PR Close Event To Env Manager
+              run: |
+                full_repository_name="${{github.repository}}"
+                # the repository name is everything after the slash "lumigo-io/" in the full repository name
+                repository_name="${full_repository_name#lumigo-io/}"
+
+                source_branch_name="${{github.head_ref}}"
+
+                is_merged="${{github.event.pull_request.merged}}"
+                if [ "$is_merged" = "true" ]; then
+                    event="PR_MERGED"
+                else
+                    event="PR_CLOSED"
+                fi
+
+                request_type="POST"
+                route="v1/github_actions_trigger"
+
+                body="{"
+                body+="  \"event\": \"${event}\""
+                body+="  , \"repository_name\": \"${repository_name}\""
+                body+="  , \"source_branch_name\": \"${source_branch_name}\""
+                body+="}"
+
+                params=(\
+                    -s \
+                    --header "x-api-key: ${{secrets.ENV_MANAGER_API_KEY}}" \
+                    --header "Content-Type: application/json" \
+                    --compressed \
+                    --request "$request_type" \
+                    --data "$body")
+
+                # ENV_MANAGER_API_ROOT="https://XXXX.execute-api.us-west-2.amazonaws.com/prod/env-manager/v1"
+                params+=("${{secrets.ENV_MANAGER_API_ROOT}}/${route}")
+                curl "${params[@]}" | tr -d '\r'
