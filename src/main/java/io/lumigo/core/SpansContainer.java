@@ -63,6 +63,9 @@ public class SpansContainer {
         this.clear();
         this.reporter = reporter;
         awsTracerId = env.get(AMZN_TRACE_ID);
+        if (awsTracerId == null) {
+            awsTracerId = System.getProperty("com.amazonaws.xray.traceHeader");
+        }
         AwsUtils.TriggeredBy triggeredBy = AwsUtils.extractTriggeredByFromEvent(event);
         long startTime = System.currentTimeMillis();
         this.baseSpan =
