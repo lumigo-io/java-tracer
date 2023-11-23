@@ -24,7 +24,7 @@ public class ApacheHttpInstrumentation implements LumigoInstrumentationApi {
 
     @Override
     public AgentBuilder.Transformer.ForAdvice getTransformer() {
-
+        System.out.println("ApacheHttpInstrumentation.getTransformer()");
         return new AgentBuilder.Transformer.ForAdvice()
                 .include(Loader.class.getClassLoader())
                 .advice(

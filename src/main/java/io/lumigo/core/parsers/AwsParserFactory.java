@@ -9,6 +9,7 @@ public class AwsParserFactory {
         if (serviceName == null) {
             return new DefaultParser();
         }
+        System.out.println("serviceName: " + serviceName);
         switch (serviceName) {
             case "AmazonSNS":
                 return new SnsParser();

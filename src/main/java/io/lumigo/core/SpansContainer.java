@@ -297,6 +297,7 @@ public class SpansContainer {
     }
 
     public void addHttpSpan(Long startTime, Request<?> request, Response<?> response) {
+        System.out.println("addHttpSpan");
         HttpSpan httpSpan = createBaseHttpSpan(startTime);
         String spanId = null;
         for (Map.Entry<String, String> header :
