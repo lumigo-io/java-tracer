@@ -26,12 +26,13 @@ public class AmazonHttpClientInstrumentation implements LumigoInstrumentationApi
         System.out.println("AmazonHttpClientInstrumentation.getTransformer()");
         return new AgentBuilder.Transformer.ForAdvice()
                 .include(Loader.class.getClassLoader())
-                .advice(isMethod()
-                        .and(not(isAbstract()))
-                        .and(named("doExecute"))
-                        .and(takesArgument(0, named("com.amazonaws.Request")))
-                        .and(returns(named("com.amazonaws.Response"))),
-                    AmazonHttpClientAdvice.class.getName());
+                .advice(
+                        isMethod()
+                                .and(not(isAbstract()))
+                                .and(named("doExecute"))
+                                .and(takesArgument(0, named("com.amazonaws.Request")))
+                                .and(returns(named("com.amazonaws.Response"))),
+                        AmazonHttpClientAdvice.class.getName());
     }
 
     public static class AmazonHttpClientAdvice {
