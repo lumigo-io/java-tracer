@@ -1,7 +1,6 @@
 package io.lumigo.core.instrumentation.impl;
 
-import static net.bytebuddy.matcher.ElementMatchers.isMethod;
-import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import com.amazonaws.Request;
 import com.amazonaws.Response;
@@ -27,7 +26,12 @@ public class AmazonHttpClientInstrumentation implements LumigoInstrumentationApi
         System.out.println("AmazonHttpClientInstrumentation.getTransformer()");
         return new AgentBuilder.Transformer.ForAdvice()
                 .include(Loader.class.getClassLoader())
-                .advice(isMethod().and(named("execute")), AmazonHttpClientAdvice.class.getName());
+                .advice(isMethod()
+                        .and(not(isAbstract()))
+                        .and(named("doExecute"))
+                        .and(takesArgument(0, named("com.amazonaws.Request")))
+                        .and(returns(named("com.amazonaws.Response"))),
+                    AmazonHttpClientAdvice.class.getName());
     }
 
     public static class AmazonHttpClientAdvice {
@@ -40,6 +44,7 @@ public class AmazonHttpClientInstrumentation implements LumigoInstrumentationApi
 
         @Advice.OnMethodEnter
         public static void methodEnter(@Advice.Argument(0) final Request<?> request) {
+            System.out.println("AmazonHttpClientInstrumentation.methodEnter");
             try {
                 String patchedRoot = spansContainer.getPatchedRoot();
                 request.getHeaders().put("X-Amzn-Trace-Id", patchedRoot);
@@ -53,6 +58,7 @@ public class AmazonHttpClientInstrumentation implements LumigoInstrumentationApi
         public static void methodExit(
                 @Advice.Argument(0) final Request<?> request,
                 @Advice.Return final Response<?> response) {
+            System.out.println("AmazonHttpClientInstrumentation.methodExit");
             try {
                 if (handled.get(request.hashCode()) == null) {
                     Logger.info(
