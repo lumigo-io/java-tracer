@@ -10,6 +10,7 @@ import io.lumigo.core.instrumentation.agent.Loader;
 import io.lumigo.core.utils.LRUCache;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
+import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.pmw.tinylog.Logger;
@@ -18,32 +19,22 @@ public class AmazonHttpClientInstrumentation implements LumigoInstrumentationApi
 
     @Override
     public ElementMatcher<TypeDescription> getTypeMatcher() {
-        return named("com.amazonaws.http.AmazonHttpClient");
+        return named("com.amazonaws.http.AmazonHttpClient")
+                .or(named("com.amazonaws.http.AmazonHttpClient$RequestExecutor"));
     }
 
     @Override
     public AgentBuilder.Transformer.ForAdvice getTransformer() {
         System.out.println("AmazonHttpClientInstrumentation.getTransformer()");
+        ElementMatcher.Junction<MethodDescription> java8Match = isMethod().and(named("execute"));
+        ElementMatcher.Junction<MethodDescription> java21Match =
+                isMethod()
+                        .and(named("doExecute"))
+                        .and(not(isAbstract()))
+                        .and(returns(named("com.amazonaws.Response")));
         return new AgentBuilder.Transformer.ForAdvice()
                 .include(Loader.class.getClassLoader())
-                .advice(
-                        isMethod()
-                                .and(
-                                        named("execute") // java 8
-                                                .or(
-                                                        // Java 21
-                                                        not(isAbstract())
-                                                                .and(named("doExecute"))
-                                                                .and(
-                                                                        takesArgument(
-                                                                                0,
-                                                                                named(
-                                                                                        "com.amazonaws.Request")))
-                                                                .and(
-                                                                        returns(
-                                                                                named(
-                                                                                        "com.amazonaws.Response"))))),
-                        AmazonHttpClientAdvice.class.getName());
+                .advice(java8Match.or(java21Match), AmazonHttpClientAdvice.class.getName());
     }
 
     public static class AmazonHttpClientAdvice {
