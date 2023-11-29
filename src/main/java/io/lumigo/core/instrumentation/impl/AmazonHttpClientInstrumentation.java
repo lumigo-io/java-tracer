@@ -28,10 +28,21 @@ public class AmazonHttpClientInstrumentation implements LumigoInstrumentationApi
                 .include(Loader.class.getClassLoader())
                 .advice(
                         isMethod()
-                                .and(not(isAbstract()))
-                                .and(named("doExecute"))
-                                .and(takesArgument(0, named("com.amazonaws.Request")))
-                                .and(returns(named("com.amazonaws.Response"))),
+                                .and(
+                                        named("execute") // java 8
+                                                .or(
+                                                        // Java 21
+                                                        not(isAbstract())
+                                                                .and(named("doExecute"))
+                                                                .and(
+                                                                        takesArgument(
+                                                                                0,
+                                                                                named(
+                                                                                        "com.amazonaws.Request")))
+                                                                .and(
+                                                                        returns(
+                                                                                named(
+                                                                                        "com.amazonaws.Response"))))),
                         AmazonHttpClientAdvice.class.getName());
     }
 
