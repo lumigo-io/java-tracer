@@ -1,7 +1,6 @@
 package io.lumigo.core.utils;
 
 import java.util.Map;
-import org.pmw.tinylog.Logger;
 
 public class EnvUtil {
     public String getEnv(String key) {
@@ -18,7 +17,6 @@ public class EnvUtil {
             String value = getEnv(key);
             return Integer.valueOf(value);
         } catch (Exception ignored) {
-            Logger.info("No configuration to key " + key + ", use default " + dflt);
         }
         return dflt;
     }
