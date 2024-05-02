@@ -27,18 +27,6 @@
             <organization>Lumigo</organization>
             <organizationUrl>https://lumigo.io/</organizationUrl>
         </developer>
-        <developer>
-            <name>Uri Parush</name>
-            <email>uri@lumigo.io</email>
-            <organization>Lumigo</organization>
-            <organizationUrl>https://lumigo.io</organizationUrl>
-        </developer>
-        <developer>
-            <name>Saar Tochner</name>
-            <email>saart@lumigo.io</email>
-            <organization>Lumigo</organization>
-            <organizationUrl>https://lumigo.io</organizationUrl>
-        </developer>
     </developers>
 
     <organization>
