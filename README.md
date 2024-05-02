@@ -4,7 +4,7 @@
 ![Version](https://img.shields.io/badge/version-1.0.40-green.svg)
 [![codecov](https://codecov.io/gh/lumigo-io/java-tracer/branch/master/graph/badge.svg?token=D3IZ5hQwaQ)](https://codecov.io/gh/lumigo-io/java-tracer)
 
-Supported Runtimes: Java 8, Java 11
+Supported Runtimes: Java 8, Java 11, Java 17, Java 21
 
 ## Building With Lumigo
 
@@ -98,7 +98,7 @@ class MyFunction implements RequestHandler<String, String> {
     }
 ```
 
-### Java 11 Support
+### Support Java 11 and Above 
 
 Add the environment variable `JAVA_TOOL_OPTIONS` to your Lambda functions and set it to
 `-Djdk.attach.allowAttachSelf=true` in addition to the manual code mentioned above.
