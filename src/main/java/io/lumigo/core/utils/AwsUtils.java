@@ -243,6 +243,24 @@ public class AwsUtils {
         }
     }
 
+    public static int getJavaVersion() {
+        try {
+            String version = System.getProperty("java.version");
+            if (version.startsWith("1.")) {
+                version = version.substring(2, 3);
+            } else {
+                int dot = version.indexOf(".");
+                if (dot != -1) {
+                    version = version.substring(0, dot);
+                }
+            }
+            return Integer.parseInt(version);
+        } catch (Exception e) {
+            Logger.error("Failed to parse java version", e);
+            return -1;
+        }
+    }
+
     /**
      * This function seeks for the value of className in all the super classes of the given object.
      *

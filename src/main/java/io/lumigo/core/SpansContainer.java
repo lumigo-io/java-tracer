@@ -62,9 +62,8 @@ public class SpansContainer {
     public void init(Map<String, String> env, Reporter reporter, Context context, Object event) {
         this.clear();
         this.reporter = reporter;
-        String javaVersion = System.getProperty("java.version");;
-
-        if (javaVersion.startsWith("17.") || javaVersion.startsWith("21.")) {
+        int javaVersion = AwsUtils.getJavaVersion();
+        if (javaVersion > 11) {
             awsTracerId = System.getProperty("com.amazonaws.xray.traceHeader");
         } else {
             awsTracerId = env.get(AMZN_TRACE_ID);
