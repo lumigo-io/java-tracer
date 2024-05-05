@@ -27,18 +27,6 @@
             <organization>Lumigo</organization>
             <organizationUrl>https://lumigo.io/</organizationUrl>
         </developer>
-        <developer>
-            <name>Uri Parush</name>
-            <email>uri@lumigo.io</email>
-            <organization>Lumigo</organization>
-            <organizationUrl>https://lumigo.io</organizationUrl>
-        </developer>
-        <developer>
-            <name>Saar Tochner</name>
-            <email>saart@lumigo.io</email>
-            <organization>Lumigo</organization>
-            <organizationUrl>https://lumigo.io</organizationUrl>
-        </developer>
     </developers>
 
     <organization>
@@ -161,12 +149,12 @@
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.9.10</version>
+            <version>1.14.14</version>
         </dependency>
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy-agent</artifactId>
-            <version>1.9.10</version>
+            <version>1.14.14</version>
         </dependency>
 
         <!-- Testing dependencies -->

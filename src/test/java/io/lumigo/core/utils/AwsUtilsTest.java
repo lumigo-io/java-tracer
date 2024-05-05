@@ -7,6 +7,8 @@ import infa.AwsLambdaEventGenerator;
 import org.json.JSONException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 class AwsUtilsTest {
@@ -245,5 +247,21 @@ class AwsUtilsTest {
                         AwsUtils.extractTriggeredByFromEvent(
                                 awsLambdaEventGenerator.scheduledEvent())),
                 true);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "1.5.0, 5",
+        "1.8.151_a, 8",
+        "10.0.1, 10",
+        "17.0.10, 17",
+        "21.0.3, 21",
+        "22.0.1, 22",
+        "notRealVersion, -1"
+    })
+    void test_parseJavaVersion_oldVersion(String rawVersion, int expectedVersion) throws Exception {
+        int version = AwsUtils.parseJavaVersion(rawVersion);
+
+        assertEquals(expectedVersion, version);
     }
 }

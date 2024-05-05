@@ -243,6 +243,24 @@ public class AwsUtils {
         }
     }
 
+    public static int parseJavaVersion(String version) {
+        try {
+            String[] parts = version.split("\\.");
+
+            if (parts[0].equals("1")) {
+                // For version before Java 9 the version looks like: 1.X.minor.
+                // example 1.8.0 or 1.5.0.
+                return Integer.parseInt(parts[1]);
+            }
+            // From java 9 the version looks like: 9.0.1 or 11.2.1 or 21.0.11,
+            // So we only parse the first part.
+            return Integer.parseInt(parts[0]);
+        } catch (Exception e) {
+            Logger.error("Failed to parse java version", e);
+            return -1;
+        }
+    }
+
     /**
      * This function seeks for the value of className in all the super classes of the given object.
      *

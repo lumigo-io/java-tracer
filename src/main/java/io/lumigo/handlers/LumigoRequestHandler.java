@@ -44,6 +44,7 @@ public abstract class LumigoRequestHandler<INPUT, OUTPUT> implements RequestHand
         }
         try {
             Logger.debug("Start {} Lumigo tracer", LumigoRequestHandler.class.getName());
+            Logger.debug("Envs {}", envUtil.getEnv());
             try {
                 spansContainer.init(envUtil.getEnv(), reporter, context, input);
                 Future<?> submit = executorService.submit(() -> Installer.install());
