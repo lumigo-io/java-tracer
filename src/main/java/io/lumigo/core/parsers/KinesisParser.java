@@ -10,6 +10,9 @@ import io.lumigo.models.HttpSpan;
 import java.util.LinkedList;
 import java.util.List;
 import org.pmw.tinylog.Logger;
+import software.amazon.awssdk.core.internal.http.RequestExecutionContext;
+import software.amazon.awssdk.http.SdkHttpFullRequest;
+import software.amazon.awssdk.http.SdkHttpFullResponse;
 
 public class KinesisParser implements AwsParser {
     @Override
@@ -30,6 +33,11 @@ public class KinesisParser implements AwsParser {
         } catch (Exception e) {
             Logger.error(e, "Failed to extract parse for Kinesis request");
         }
+    }
+
+    @Override
+    public void parseV2(HttpSpan span, SdkHttpFullRequest request, RequestExecutionContext context, SdkHttpFullResponse response) {
+
     }
 
     private List<String> extractMessageIds(Object response) {

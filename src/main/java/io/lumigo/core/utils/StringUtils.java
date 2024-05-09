@@ -33,7 +33,7 @@ public class StringUtils {
     }
 
     public static String extractStringForStream(InputStream inputStream, int size) {
-        if (inputStream != null && inputStream.markSupported()) {
+        if (inputStream != null) {
             try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
                 Logger.info("Stream reset supported, convert to string");
                 byte[] buffer = new byte[size];

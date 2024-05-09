@@ -6,6 +6,9 @@ import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageResult;
 import io.lumigo.models.HttpSpan;
 import org.pmw.tinylog.Logger;
+import software.amazon.awssdk.core.internal.http.RequestExecutionContext;
+import software.amazon.awssdk.http.SdkHttpFullRequest;
+import software.amazon.awssdk.http.SdkHttpFullResponse;
 
 public class SqsParser implements AwsParser {
     @Override
@@ -18,6 +21,11 @@ public class SqsParser implements AwsParser {
             Logger.error("Failed to extract queueUrl form SQS request");
         }
         span.getInfo().setMessageId(extractMessageId(response.getAwsResponse()));
+    }
+
+    @Override
+    public void parseV2(HttpSpan span, SdkHttpFullRequest request, RequestExecutionContext context, SdkHttpFullResponse response) {
+
     }
 
     private String extractMessageId(Object response) {

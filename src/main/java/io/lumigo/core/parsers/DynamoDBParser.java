@@ -10,6 +10,9 @@ import io.lumigo.models.HttpSpan;
 import java.util.List;
 import java.util.Map;
 import org.pmw.tinylog.Logger;
+import software.amazon.awssdk.core.internal.http.RequestExecutionContext;
+import software.amazon.awssdk.http.SdkHttpFullRequest;
+import software.amazon.awssdk.http.SdkHttpFullResponse;
 
 public class DynamoDBParser implements AwsParser {
     @Override
@@ -22,6 +25,10 @@ public class DynamoDBParser implements AwsParser {
         } catch (Exception e) {
             Logger.error(e, "Failed to parse for DynamoDB request");
         }
+    }
+
+    public void parseV2(HttpSpan span, SdkHttpFullRequest request, RequestExecutionContext context, SdkHttpFullResponse response) {
+
     }
 
     private String extractMessageId(AmazonWebServiceRequest request) {

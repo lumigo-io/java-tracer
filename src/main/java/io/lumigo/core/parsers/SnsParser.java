@@ -5,6 +5,9 @@ import com.amazonaws.Response;
 import com.amazonaws.services.sns.model.PublishResult;
 import io.lumigo.models.HttpSpan;
 import org.pmw.tinylog.Logger;
+import software.amazon.awssdk.core.internal.http.RequestExecutionContext;
+import software.amazon.awssdk.http.SdkHttpFullRequest;
+import software.amazon.awssdk.http.SdkHttpFullResponse;
 
 public class SnsParser implements AwsParser {
     @Override
@@ -13,6 +16,11 @@ public class SnsParser implements AwsParser {
         span.getInfo().setResourceName(topicArn);
         span.getInfo().setTargetArn(topicArn);
         span.getInfo().setMessageId(extractMessageId(response.getAwsResponse()));
+    }
+
+    @Override
+    public void parseV2(HttpSpan span, SdkHttpFullRequest request, RequestExecutionContext context, SdkHttpFullResponse response) {
+
     }
 
     private String extractMessageId(Object response) {
