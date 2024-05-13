@@ -1,6 +1,5 @@
 package io.lumigo.core.instrumentation.impl;
 
-import com.sun.tools.javac.util.List;
 import io.lumigo.core.SpansContainer;
 import io.lumigo.core.instrumentation.LumigoInstrumentationApi;
 import io.lumigo.core.instrumentation.agent.Loader;
@@ -10,78 +9,95 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.pmw.tinylog.Logger;
-import software.amazon.awssdk.core.SdkRequest;
-import software.amazon.awssdk.core.SdkResponse;
-import software.amazon.awssdk.core.client.handler.ClientExecutionParams;
-import software.amazon.awssdk.core.interceptor.ExecutionAttribute;
-import software.amazon.awssdk.core.internal.http.RequestExecutionContext;
-import software.amazon.awssdk.http.SdkHttpFullRequest;
-import software.amazon.awssdk.http.SdkHttpFullResponse;
-import software.amazon.awssdk.utils.Pair;
+import software.amazon.awssdk.core.interceptor.Context;
+import software.amazon.awssdk.core.interceptor.ExecutionAttributes;
+import software.amazon.awssdk.core.interceptor.ExecutionInterceptor;
+import software.amazon.awssdk.http.SdkHttpRequest;
+
+import java.util.List;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 public class AmazonHttpClientV2Instrumentation implements LumigoInstrumentationApi {
     @Override
     public ElementMatcher<TypeDescription> getTypeMatcher() {
-         System.out.println("successfully hooked sdk v2 matcher");
-        return named("software.amazon.awssdk.core.internal.http.pipeline.stages.MakeHttpRequestStage");
+        System.out.println("successfully hooked sdk v2 matcher v2");
+        return named("software.amazon.awssdk.core.client.builder.SdkDefaultClientBuilder");
     }
 
     @Override
     public AgentBuilder.Transformer.ForAdvice getTransformer() {
-         System.out.println("successfully hooked sdk v2 transform");
+        System.out.println("successfully hooked sdk v2 transform v2");
         return new AgentBuilder.Transformer.ForAdvice()
                 .include(Loader.class.getClassLoader())
                 .advice(
-                        isMethod()
-                                .and(isPublic())
-                                .and(named("execute"))
-                                .and(takesArgument(0, named("software.amazon.awssdk.http.SdkHttpFullRequest"))),
-                        AmazonHttpClientV2Advice.class.getName());
+                        isMethod().and(named("resolveExecutionInterceptors")),
+                        AmazonHttpClientV2Advice.class.getName()
+                );
     }
 
     public static class AmazonHttpClientV2Advice {
-
-        public static final SpansContainer spansContainer = SpansContainer.getInstance();
-
-        public static final LRUCache<Integer, Boolean> handled = new LRUCache<>(1000);
-
-        public static final LRUCache<Integer, Long> startTimeMap = new LRUCache<>(1000);
-
-        @Advice.OnMethodEnter
-        public static void methodEnter(@Advice.Argument(0) final SdkHttpFullRequest request, @Advice.Argument(1) final RequestExecutionContext context) {
-            System.out.println("successfully hooked sdk v2 enter");
-            try {
-                System.out.println(request.hashCode());
-                startTimeMap.put(request.hashCode(), System.currentTimeMillis());
-                context.executionAttributes().putAttribute(new ExecutionAttribute<>("X-Amzn-Trace-Id"), spansContainer.getPatchedRoot());
-            } catch (Exception e) {
-                Logger.error(e, "Failed to send data on http requests");
+        @Advice.OnMethodExit(suppress = Throwable.class)
+        public static void methodExit(@Advice.Return final List<ExecutionInterceptor> interceptors) {
+            System.out.println("successfully added Lumigo TracingExecutionInterceptor");
+            for (ExecutionInterceptor interceptor : interceptors) {
+                if (interceptor instanceof TracingExecutionInterceptor) {
+                    return; // list already has our interceptor, return to builder
+                }
             }
+            interceptors.add(new TracingExecutionInterceptor());
         }
 
-        @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
-        public static void methodExit(
-                @Advice.Argument(0) final SdkHttpFullRequest request, @Advice.Argument(1) final RequestExecutionContext context,
-                @Advice.Return final Pair<SdkHttpFullRequest, SdkHttpFullResponse> response) {
-            System.out.println("successfully hooked sdk v2 exit");
-            try {
-                System.out.println(request.hashCode());
-                if (handled.get(request.hashCode()) == null) {
-                    Logger.info("Handling request {} from host {}", request.hashCode());
-                    spansContainer.addHttpSpan(startTimeMap.get(request.hashCode()), request, context, response.right());
-                    handled.put(request.hashCode(), true);
-                } else {
-                    Logger.warn(
-                            "Already handle request {} for host {}",
-                            request.hashCode(),
-                            request.host());
+        public static class TracingExecutionInterceptor implements ExecutionInterceptor {
+            public static final SpansContainer spansContainer = SpansContainer.getInstance();
+            public static final LRUCache<Integer, Boolean> handled = new LRUCache<>(1000);
+            public static final LRUCache<Integer, Long> startTimeMap = new LRUCache<>(1000);
+
+            @Override
+            public void beforeExecution(
+                    final Context.BeforeExecution context, final ExecutionAttributes executionAttributes) {
+                System.out.println("Enter beforeExecution");
+                startTimeMap.put(context.request().hashCode(), System.currentTimeMillis());
+                System.out.println("added request: " + context.request().hashCode());
+            }
+
+            @Override
+            public SdkHttpRequest modifyHttpRequest(
+                    Context.ModifyHttpRequest context, ExecutionAttributes executionAttributes) {
+                try {
+                    System.out.println("Enter modifyHttpRequest");
+                    SdkHttpRequest.Builder requestBuilder = context.httpRequest().toBuilder();
+                    requestBuilder.appendHeader("X-Amzn-Trace-Id", spansContainer.getPatchedRoot());
+                    SdkHttpRequest request = requestBuilder.build();
+                    System.out.println(request.hashCode());
+                    return request;
+                } catch (Throwable e) {
+                    Logger.debug("Unable to inject trace header", e);
                 }
-            } catch (Throwable e) {
-                Logger.error(e, "Failed to send data on http response");
-            } finally {
-                startTimeMap.remove(request.hashCode());
+                return context.httpRequest();
+            }
+
+            @Override
+            public void afterExecution(
+                    final Context.AfterExecution context, final ExecutionAttributes executionAttributes) {
+                try {
+                    System.out.println("Enter afterExecution");
+                    System.out.println("request: " +  context.request().hashCode());
+                    if (handled.get(context.request().hashCode()) == null) {
+                        Logger.info("Handling request {} from host {}", context.request().hashCode());
+                        spansContainer.addHttpSpan(startTimeMap.get(context.request().hashCode()), context, executionAttributes);
+                        handled.put(context.request().hashCode(), true);
+                    } else {
+                        Logger.warn(
+                                "Already handle request {} for host {}",
+                                context.request().hashCode(),
+                                context.httpRequest().host());
+                    }
+                } catch (Throwable e) {
+                    Logger.error(e, "Failed to send data on http response");
+                } finally {
+                    startTimeMap.remove(context.request().hashCode());
+                }
             }
         }
     }

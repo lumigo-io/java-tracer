@@ -10,9 +10,9 @@ import io.lumigo.models.HttpSpan;
 import java.util.LinkedList;
 import java.util.List;
 import org.pmw.tinylog.Logger;
-import software.amazon.awssdk.core.internal.http.RequestExecutionContext;
-import software.amazon.awssdk.http.SdkHttpFullRequest;
-import software.amazon.awssdk.http.SdkHttpFullResponse;
+import software.amazon.awssdk.core.interceptor.Context;
+import software.amazon.awssdk.services.kinesis.model.PutRecordResponse;
+import software.amazon.awssdk.services.kinesis.model.PutRecordsResponse;
 
 public class KinesisParser implements AwsParser {
     @Override
@@ -29,19 +29,32 @@ public class KinesisParser implements AwsParser {
                                 ((PutRecordsRequest) request.getOriginalRequest()).getStreamName());
             }
             List<String> messageIds = extractMessageIds(response.getAwsResponse());
-            if (messageIds.size() > 0) span.getInfo().setMessageIds(messageIds);
+            if (!messageIds.isEmpty()) span.getInfo().setMessageIds(messageIds);
         } catch (Exception e) {
             Logger.error(e, "Failed to extract parse for Kinesis request");
         }
     }
 
     @Override
-    public void parseV2(HttpSpan span, SdkHttpFullRequest request, RequestExecutionContext context, SdkHttpFullResponse response) {
-
+    public void parseV2(HttpSpan span, Context.AfterExecution context) {
+        System.out.println("Inside AWS Parser Kinesis V2");
+        try {
+            if (context.request().getValueForField("StreamName", String.class).isPresent()) {
+                context.request().getValueForField("StreamName", String.class).ifPresent(
+                        streamName -> {
+                            span.getInfo().setResourceName(streamName);
+                            Logger.debug("Got StreamName : " + streamName);
+                        }
+                );
+            }
+            List<String> messageIds = extractMessageIdsV2(context.response());
+            if (!messageIds.isEmpty()) span.getInfo().setMessageIds(messageIds);
+        } catch (Exception e) {
+            Logger.error(e, "Failed to extract parse for Kinesis request");
+        }
     }
 
     private List<String> extractMessageIds(Object response) {
-
         List<String> result = new LinkedList<>();
         if (response instanceof PutRecordsResult) {
             ((PutRecordsResult) response)
@@ -57,5 +70,23 @@ public class KinesisParser implements AwsParser {
         }
         Logger.error("Failed to extract messageIds for Kinesis response");
         return result;
+    }
+
+    private List<String> extractMessageIdsV2(Object response) {
+        List<String> messageIds = new LinkedList<>();
+        if (response instanceof PutRecordsResponse) {
+            ((PutRecordsResponse) response)
+                    .records()
+                    .forEach(
+                            putRecordsResultEntry ->
+                                    messageIds.add(putRecordsResultEntry.sequenceNumber()));
+            return messageIds;
+        }
+        if (response instanceof PutRecordResponse) {
+            messageIds.add(((PutRecordResponse) response).sequenceNumber());
+            return messageIds;
+        }
+        Logger.error("Failed to extract messageIds for Kinesis response");
+        return messageIds;
     }
 }

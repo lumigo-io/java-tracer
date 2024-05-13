@@ -166,7 +166,7 @@ public class AwsUtils {
             Logger.info("Found triggered by handler to event {}", event.getClass().getName());
             return triggeredBy;
 
-        } catch (RuntimeException e) {
+        } catch (Throwable e) {
             Logger.error(e, "Failed to extract triggerBy data");
             triggeredBy.setTriggeredBy(TRIGGERED_BY_FALLBACK);
             return triggeredBy;

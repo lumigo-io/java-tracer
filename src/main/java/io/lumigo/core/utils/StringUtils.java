@@ -9,6 +9,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.Random;
+
+import com.amazonaws.util.json.Jackson;
 import org.pmw.tinylog.Logger;
 
 public class StringUtils {
@@ -83,6 +85,11 @@ public class StringUtils {
     public static String dynamodbItemToHash(Map<String, AttributeValue> item) {
         return buildMd5Hash(ItemUtils.toItem(item).toJSON());
     }
+
+    public static String dynamodbItemToHashV2(Map<String, software.amazon.awssdk.services.dynamodb.model.AttributeValue> item) {
+        return buildMd5Hash(Jackson.toJsonString(item));
+    }
+
 
     public static int getBase64Size(String value) {
         return (int)

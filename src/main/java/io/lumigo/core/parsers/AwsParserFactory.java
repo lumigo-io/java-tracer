@@ -11,10 +11,14 @@ public class AwsParserFactory {
         }
         switch (serviceName) {
             case "AmazonSNS":
+            case "SNS":
+            case "Sns":
                 return new SnsParser();
             case "AmazonSQS":
+            case "Sqs":
                 return new SqsParser();
             case "AmazonKinesis":
+            case "Kinesis":
                 return new KinesisParser();
             case "AmazonDynamoDB":
             case "AmazonDynamoDBv2":

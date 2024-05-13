@@ -27,6 +27,7 @@ import software.amazon.awssdk.awscore.AwsRequest;
 import software.amazon.awssdk.awscore.AwsResponse;
 import software.amazon.awssdk.core.SdkResponse;
 import software.amazon.awssdk.core.interceptor.ExecutionAttributes;
+import software.amazon.awssdk.core.interceptor.SdkExecutionAttribute;
 import software.amazon.awssdk.core.interceptor.SdkInternalExecutionAttribute;
 import software.amazon.awssdk.core.internal.http.RequestExecutionContext;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -370,44 +371,6 @@ public class SpansContainer {
         httpSpans.add(httpSpan);
     }
 
-    public void addHttpSpan(Long startTime, SdkHttpFullRequest request, RequestExecutionContext context, SdkHttpFullResponse response) {
-        HttpSpan httpSpan = createBaseHttpSpan(startTime);
-        String spanId = null;
-        for (Map.Entry<String, List<String>> header :
-                response.headers().entrySet()) {
-            if ("x-amzn-requestid".equalsIgnoreCase(header.getKey())
-                    || "x-amz-requestid".equalsIgnoreCase(header.getKey())) {
-                spanId = header.getValue().get(0);
-            }
-        }
-        if (spanId != null) {
-            httpSpan.setId(spanId);
-        }
-        httpSpan
-            .getInfo()
-            .setHttpInfo(
-                    HttpSpan.HttpInfo.builder()
-                            .host(request.getUri().getHost())
-                                .request(
-                                        HttpSpan.HttpData.builder()
-                                                .headers(callIfVerbose(() -> extractHeadersV2(request.headers())))
-                                                .uri(callIfVerbose(() -> request.getUri().toString()))
-                                                .method(request.method().name())
-                                                .body(callIfVerbose(() -> extractBodyFromRequest(request)))
-                                                .build())
-                                .response(
-                                        HttpSpan.HttpData.builder()
-                                                .headers(callIfVerbose(() -> extractHeadersV2(response.headers())))
-                                                .body(callIfVerbose(() -> extractBodyFromResponse(response)))
-                                                .statusCode(response.statusCode())
-                                                .build())
-                                .build());
-//        AwsParserFactory
-//                .getParser(context.executionAttributes().getAttribute(SdkInternalExecutionAttribute.SERVICE_NAME))
-//                .parse(httpSpan, request, response);  final Context.AfterExecution context, final ExecutionAttributes executionAttributes)
-        httpSpans.add(httpSpan);
-    }
-
 
     public void addHttpSpan(Long startTime, final software.amazon.awssdk.core.interceptor.Context.AfterExecution context, final ExecutionAttributes executionAttributes) {
         HttpSpan httpSpan = createBaseHttpSpan(startTime);
@@ -441,6 +404,11 @@ public class SpansContainer {
                                                 .statusCode(context.httpResponse().statusCode())
                                                 .build())
                                 .build());
+
+        System.out.println("Trying to extract aws custom properties for service: "+ executionAttributes.getAttribute(SdkExecutionAttribute.SERVICE_NAME));
+        AwsParserFactory.getParser(executionAttributes.getAttribute(SdkExecutionAttribute.SERVICE_NAME))
+                .parseV2(httpSpan, context);
+
         httpSpans.add(httpSpan);
     }
 
@@ -466,12 +434,6 @@ public class SpansContainer {
         return extractBodyFromStream(request.getContent());
     }
 
-    protected static String extractBodyFromRequest(SdkHttpFullRequest request) {
-        return request.contentStreamProvider().isPresent()
-                ? extractBodyFromStream(request.contentStreamProvider().get().newStream())
-                : null;
-    }
-
     protected static String extractBodyFromRequest(Optional<RequestBody> request) {
         return request.map(requestBody -> extractBodyFromStream(requestBody.contentStreamProvider().newStream())).orElse(null);
     }
@@ -495,12 +457,6 @@ public class SpansContainer {
     protected static String extractBodyFromResponse(Response response) {
         return response.getAwsResponse() != null
                 ? JsonUtils.getObjectAsJsonString(response.getAwsResponse())
-                : null;
-    }
-
-    protected static String extractBodyFromResponse(SdkHttpFullResponse response) {
-        return response.content().isPresent()
-                ? extractBodyFromStream(response.content().get())
                 : null;
     }
 
