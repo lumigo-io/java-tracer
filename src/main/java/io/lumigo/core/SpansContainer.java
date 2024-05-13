@@ -359,7 +359,7 @@ public class SpansContainer {
                                                         response.getHttpResponse().getStatusCode())
                                                 .build())
                                 .build());
-        AwsParserFactory.getParser(request.getServiceName()).parse(httpSpan, request, response);
+        AwsParserFactory.getParser(request.getServiceName()).safeParse(httpSpan, request, response);
         httpSpans.add(httpSpan);
     }
 
@@ -427,7 +427,7 @@ public class SpansContainer {
                         + executionAttributes.getAttribute(SdkExecutionAttribute.SERVICE_NAME));
         AwsParserFactory.getParser(
                         executionAttributes.getAttribute(SdkExecutionAttribute.SERVICE_NAME))
-                .parseV2(httpSpan, context);
+                .safeParseV2(httpSpan, context);
 
         httpSpans.add(httpSpan);
     }

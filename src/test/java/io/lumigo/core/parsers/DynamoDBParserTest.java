@@ -42,7 +42,7 @@ class DynamoDBParserTest {
     void test_parse_ddb_unknown_request() {
         when(request.getOriginalRequest()).thenReturn(AmazonWebServiceRequest.NOOP);
 
-        dynamoDBParser.parse(span, request, response);
+        dynamoDBParser.safeParse(span, request, response);
 
         HttpSpan expectedSpan = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
         assertEquals(span, expectedSpan);
@@ -53,7 +53,7 @@ class DynamoDBParserTest {
         when(getItemRequest.getTableName()).thenReturn("tableName");
         when(request.getOriginalRequest()).thenReturn(getItemRequest);
 
-        dynamoDBParser.parse(span, request, response);
+        dynamoDBParser.safeParse(span, request, response);
 
         HttpSpan expectedSpan =
                 HttpSpan.builder()
@@ -68,7 +68,7 @@ class DynamoDBParserTest {
                 .thenReturn(Collections.singletonMap("tableName", new KeysAndAttributes()));
         when(request.getOriginalRequest()).thenReturn(batchGetItemRequest);
 
-        dynamoDBParser.parse(span, request, response);
+        dynamoDBParser.safeParse(span, request, response);
 
         HttpSpan expectedSpan =
                 HttpSpan.builder()
@@ -83,7 +83,7 @@ class DynamoDBParserTest {
         when(putItemRequest.getItem()).thenReturn(item);
         when(request.getOriginalRequest()).thenReturn(putItemRequest);
 
-        dynamoDBParser.parse(span, request, response);
+        dynamoDBParser.safeParse(span, request, response);
 
         HttpSpan expectedSpan =
                 HttpSpan.builder()
@@ -102,7 +102,7 @@ class DynamoDBParserTest {
         when(updateItemRequest.getKey()).thenReturn(item);
         when(request.getOriginalRequest()).thenReturn(updateItemRequest);
 
-        dynamoDBParser.parse(span, request, response);
+        dynamoDBParser.safeParse(span, request, response);
 
         HttpSpan expectedSpan =
                 HttpSpan.builder()
@@ -121,7 +121,7 @@ class DynamoDBParserTest {
         when(deleteItemRequest.getKey()).thenReturn(item);
         when(request.getOriginalRequest()).thenReturn(deleteItemRequest);
 
-        dynamoDBParser.parse(span, request, response);
+        dynamoDBParser.safeParse(span, request, response);
 
         HttpSpan expectedSpan =
                 HttpSpan.builder()
@@ -142,7 +142,7 @@ class DynamoDBParserTest {
                                 "tableName", List.of(new WriteRequest(new PutRequest(item)))));
         when(request.getOriginalRequest()).thenReturn(batchWriteItemRequest);
 
-        dynamoDBParser.parse(span, request, response);
+        dynamoDBParser.safeParse(span, request, response);
 
         HttpSpan expectedSpan =
                 HttpSpan.builder()
@@ -163,7 +163,7 @@ class DynamoDBParserTest {
                                 "tableName", List.of(new WriteRequest(new DeleteRequest(item)))));
         when(request.getOriginalRequest()).thenReturn(batchWriteItemRequest);
 
-        dynamoDBParser.parse(span, request, response);
+        dynamoDBParser.safeParse(span, request, response);
 
         HttpSpan expectedSpan =
                 HttpSpan.builder()

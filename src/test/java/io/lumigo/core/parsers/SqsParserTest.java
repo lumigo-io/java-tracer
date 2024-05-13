@@ -38,7 +38,7 @@ class SqsParserTest {
         when(sqsRequest.getQueueUrl()).thenReturn("queueUrl");
         when(request.getOriginalRequest()).thenReturn(sqsRequest);
 
-        sqsParser.parse(span, request, response);
+        sqsParser.safeParse(span, request, response);
 
         assertEquals("queueUrl", span.getInfo().getResourceName());
         assertEquals("fee47356-6f6a-58c8-96dc-26d8aaa4631a", span.getInfo().getMessageId());
@@ -48,7 +48,7 @@ class SqsParserTest {
     void test_parse_sqs_with_no_data() {
         when(request.getParameters()).thenReturn(new HashMap<>());
 
-        sqsParser.parse(span, request, new Response(null, httpResponse));
+        sqsParser.safeParse(span, request, new Response(null, httpResponse));
 
         assertNull(span.getInfo().getResourceName());
         assertNull(span.getInfo().getMessageId());
@@ -59,7 +59,7 @@ class SqsParserTest {
         when(sqsResult.getMessageId()).thenThrow(new RuntimeException());
         when(request.getParameters()).thenReturn(new HashMap<>());
 
-        sqsParser.parse(span, request, response);
+        sqsParser.safeParse(span, request, response);
 
         assertNull(span.getInfo().getResourceName());
         assertNull(span.getInfo().getMessageId());

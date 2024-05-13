@@ -12,6 +12,10 @@ import software.amazon.awssdk.services.sqs.model.SendMessageResponse;
 
 public class SqsParser implements AwsParser {
     @Override
+    public String getParserType() {
+        return SqsParser.class.getName();
+    }
+    @Override
     public void parse(HttpSpan span, Request request, Response response) {
         if (request.getOriginalRequest() instanceof SendMessageRequest) {
             String queueUrl = ((SendMessageRequest) request.getOriginalRequest()).getQueueUrl();

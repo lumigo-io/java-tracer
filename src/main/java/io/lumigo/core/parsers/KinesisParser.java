@@ -16,42 +16,38 @@ import software.amazon.awssdk.services.kinesis.model.PutRecordsResponse;
 
 public class KinesisParser implements AwsParser {
     @Override
+    public String getParserType() {
+        return KinesisParser.class.getName();
+    }
+    @Override
     public void parse(HttpSpan span, Request request, Response response) {
-        try {
-            if (request.getOriginalRequest() instanceof PutRecordRequest) {
-                span.getInfo()
-                        .setResourceName(
-                                ((PutRecordRequest) request.getOriginalRequest()).getStreamName());
-            }
-            if (request.getOriginalRequest() instanceof PutRecordsRequest) {
-                span.getInfo()
-                        .setResourceName(
-                                ((PutRecordsRequest) request.getOriginalRequest()).getStreamName());
-            }
-            List<String> messageIds = extractMessageIds(response.getAwsResponse());
-            if (!messageIds.isEmpty()) span.getInfo().setMessageIds(messageIds);
-        } catch (Exception e) {
-            Logger.error(e, "Failed to extract parse for Kinesis request");
+        if (request.getOriginalRequest() instanceof PutRecordRequest) {
+            span.getInfo()
+                    .setResourceName(
+                            ((PutRecordRequest) request.getOriginalRequest()).getStreamName());
         }
+        if (request.getOriginalRequest() instanceof PutRecordsRequest) {
+            span.getInfo()
+                    .setResourceName(
+                            ((PutRecordsRequest) request.getOriginalRequest()).getStreamName());
+        }
+        List<String> messageIds = extractMessageIds(response.getAwsResponse());
+        if (!messageIds.isEmpty()) span.getInfo().setMessageIds(messageIds);
     }
 
     @Override
     public void parseV2(HttpSpan span, Context.AfterExecution context) {
-        try {
-            if (context.request().getValueForField("StreamName", String.class).isPresent()) {
-                context.request()
-                        .getValueForField("StreamName", String.class)
-                        .ifPresent(
-                                streamName -> {
-                                    span.getInfo().setResourceName(streamName);
-                                    Logger.debug("Parsed StreamName : " + streamName);
-                                });
-            }
-            List<String> messageIds = extractMessageIdsV2(context.response());
-            if (!messageIds.isEmpty()) span.getInfo().setMessageIds(messageIds);
-        } catch (Exception e) {
-            Logger.error(e, "Failed to extract parse for Kinesis request");
+        if (context.request().getValueForField("StreamName", String.class).isPresent()) {
+            context.request()
+                    .getValueForField("StreamName", String.class)
+                    .ifPresent(
+                            streamName -> {
+                                span.getInfo().setResourceName(streamName);
+                                Logger.debug("Parsed StreamName : " + streamName);
+                            });
         }
+        List<String> messageIds = extractMessageIdsV2(context.response());
+        if (!messageIds.isEmpty()) span.getInfo().setMessageIds(messageIds);
     }
 
     private List<String> extractMessageIds(Object response) {

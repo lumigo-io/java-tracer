@@ -18,34 +18,31 @@ import software.amazon.awssdk.core.interceptor.Context;
 
 public class DynamoDBParser implements AwsParser {
     @Override
+    public String getParserType() {
+        return DynamoDBParser.class.getName();
+    }
+
+    @Override
     public void parse(HttpSpan span, Request request, Response response) {
-        try {
-            String messageId = extractMessageId(request.getOriginalRequest());
-            if (messageId != null) span.getInfo().setMessageId(messageId);
-            String tableName = extractTableName(request.getOriginalRequest());
-            if (tableName != null) span.getInfo().setResourceName(tableName);
-        } catch (Exception e) {
-            Logger.error(e, "Failed to parse for DynamoDB request");
-        }
+        String messageId = extractMessageId(request.getOriginalRequest());
+        if (messageId != null) span.getInfo().setMessageId(messageId);
+        String tableName = extractTableName(request.getOriginalRequest());
+        if (tableName != null) span.getInfo().setResourceName(tableName);
     }
 
     public void parseV2(HttpSpan span, Context.AfterExecution context) {
-        try {
-            if (context.request().getValueForField("TableName", String.class).isPresent()) {
-                context.request()
-                        .getValueForField("TableName", String.class)
-                        .ifPresent(
-                                tableName -> {
-                                    span.getInfo().setResourceName(tableName);
-                                    Logger.debug("Parsed TableName : " + tableName);
-                                });
-            } else {
-                Logger.warn("Failed to extract queueUrl form SQS request");
-            }
-            span.getInfo().setMessageId(extractMessageIdV2(context.request()));
-        } catch (Exception e) {
-            Logger.error(e, "Failed to parse for DynamoDB request");
+        if (context.request().getValueForField("TableName", String.class).isPresent()) {
+            context.request()
+                    .getValueForField("TableName", String.class)
+                    .ifPresent(
+                            tableName -> {
+                                span.getInfo().setResourceName(tableName);
+                                Logger.debug("Parsed TableName : " + tableName);
+                            });
+        } else {
+            Logger.warn("Failed to extract TableName form DynamoDB request");
         }
+        span.getInfo().setMessageId(extractMessageIdV2(context.request()));
     }
 
     private String extractMessageId(AmazonWebServiceRequest request) {

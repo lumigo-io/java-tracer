@@ -11,6 +11,11 @@ import software.amazon.awssdk.services.sns.model.PublishResponse;
 
 public class SnsParser implements AwsParser {
     @Override
+    public String getParserType() {
+        return SnsParser.class.getName();
+    }
+
+    @Override
     public void parse(HttpSpan span, Request request, Response response) {
         String topicArn = getParameter(request, "TopicArn");
         span.getInfo().setResourceName(topicArn);

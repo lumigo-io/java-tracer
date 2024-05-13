@@ -22,8 +22,18 @@ class AwsParserFactoryTest {
     }
 
     @Test
+    public void test_check_sns_value_v2() {
+        assertEquals(SnsParser.class, AwsParserFactory.getParser("Sns").getClass());
+    }
+
+    @Test
     public void test_check_sqs_value() {
         assertEquals(SqsParser.class, AwsParserFactory.getParser("AmazonSQS").getClass());
+    }
+
+    @Test
+    public void test_check_sqs_value_v2() {
+        assertEquals(SqsParser.class, AwsParserFactory.getParser("Sqs").getClass());
     }
 
     @Test
@@ -32,7 +42,17 @@ class AwsParserFactoryTest {
     }
 
     @Test
+    public void test_check_kinesis_value_v2() {
+        assertEquals(KinesisParser.class, AwsParserFactory.getParser("Kinesis").getClass());
+    }
+
+    @Test
     public void test_check_dynamodb_value() {
         assertEquals(DynamoDBParser.class, AwsParserFactory.getParser("AmazonDynamoDB").getClass());
+    }
+
+    @Test
+    public void test_check_dynamodb_value_v2() {
+        assertEquals(DynamoDBParser.class, AwsParserFactory.getParser("DynamoDb").getClass());
     }
 }

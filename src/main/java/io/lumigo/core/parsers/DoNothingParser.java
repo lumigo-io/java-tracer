@@ -7,6 +7,11 @@ import software.amazon.awssdk.core.interceptor.Context;
 
 public class DoNothingParser implements AwsParser {
     @Override
+    public String getParserType() {
+        return DoNothingParser.class.getName();
+    }
+
+    @Override
     public void parse(HttpSpan span, Request request, Response response) {}
 
     @Override
