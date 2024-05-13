@@ -40,12 +40,13 @@ public class KinesisParser implements AwsParser {
         System.out.println("Inside AWS Parser Kinesis V2");
         try {
             if (context.request().getValueForField("StreamName", String.class).isPresent()) {
-                context.request().getValueForField("StreamName", String.class).ifPresent(
-                        streamName -> {
-                            span.getInfo().setResourceName(streamName);
-                            Logger.debug("Got StreamName : " + streamName);
-                        }
-                );
+                context.request()
+                        .getValueForField("StreamName", String.class)
+                        .ifPresent(
+                                streamName -> {
+                                    span.getInfo().setResourceName(streamName);
+                                    Logger.debug("Got StreamName : " + streamName);
+                                });
             }
             List<String> messageIds = extractMessageIdsV2(context.response());
             if (!messageIds.isEmpty()) span.getInfo().setMessageIds(messageIds);

@@ -19,13 +19,13 @@ public class AmazonHttpClientInstrumentation implements LumigoInstrumentationApi
 
     @Override
     public ElementMatcher<TypeDescription> getTypeMatcher() {
-         System.out.println("successfully hooked sdk v1 matcher");
+        System.out.println("successfully hooked sdk v1 matcher");
         return named("com.amazonaws.http.AmazonHttpClient");
     }
 
     @Override
     public AgentBuilder.Transformer.ForAdvice getTransformer() {
-         System.out.println("successfully hooked sdk v1 transform");
+        System.out.println("successfully hooked sdk v1 transform");
         return new AgentBuilder.Transformer.ForAdvice()
                 .include(Loader.class.getClassLoader())
                 .advice(isMethod().and(named("execute")), AmazonHttpClientAdvice.class.getName());

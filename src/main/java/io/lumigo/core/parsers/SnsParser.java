@@ -7,9 +7,6 @@ import io.lumigo.models.HttpSpan;
 import org.pmw.tinylog.Logger;
 import software.amazon.awssdk.core.SdkResponse;
 import software.amazon.awssdk.core.interceptor.Context;
-import software.amazon.awssdk.core.internal.http.RequestExecutionContext;
-import software.amazon.awssdk.http.SdkHttpFullRequest;
-import software.amazon.awssdk.http.SdkHttpFullResponse;
 import software.amazon.awssdk.services.sns.model.PublishResponse;
 
 public class SnsParser implements AwsParser {
@@ -24,13 +21,14 @@ public class SnsParser implements AwsParser {
     @Override
     public void parseV2(HttpSpan span, Context.AfterExecution context) {
         if (context.request().getValueForField("TopicArn", String.class).isPresent()) {
-            context.request().getValueForField("TopicArn", String.class).ifPresent(
-                    topicArn -> {
-                        Logger.debug("Got topicArn : " + topicArn);
-                        span.getInfo().setResourceName(topicArn);
-                        span.getInfo().setTargetArn(topicArn);
-                    }
-            );
+            context.request()
+                    .getValueForField("TopicArn", String.class)
+                    .ifPresent(
+                            topicArn -> {
+                                Logger.debug("Got topicArn : " + topicArn);
+                                span.getInfo().setResourceName(topicArn);
+                                span.getInfo().setTargetArn(topicArn);
+                            });
         } else {
             Logger.warn("Failed to extract topicArn");
         }

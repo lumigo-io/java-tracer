@@ -1,9 +1,12 @@
 package io.lumigo.core.instrumentation.impl;
 
+import static net.bytebuddy.matcher.ElementMatchers.*;
+
 import io.lumigo.core.SpansContainer;
 import io.lumigo.core.instrumentation.LumigoInstrumentationApi;
 import io.lumigo.core.instrumentation.agent.Loader;
 import io.lumigo.core.utils.LRUCache;
+import java.util.List;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -13,10 +16,6 @@ import software.amazon.awssdk.core.interceptor.Context;
 import software.amazon.awssdk.core.interceptor.ExecutionAttributes;
 import software.amazon.awssdk.core.interceptor.ExecutionInterceptor;
 import software.amazon.awssdk.http.SdkHttpRequest;
-
-import java.util.List;
-
-import static net.bytebuddy.matcher.ElementMatchers.*;
 
 public class AmazonHttpClientV2Instrumentation implements LumigoInstrumentationApi {
     @Override
@@ -32,13 +31,13 @@ public class AmazonHttpClientV2Instrumentation implements LumigoInstrumentationA
                 .include(Loader.class.getClassLoader())
                 .advice(
                         isMethod().and(named("resolveExecutionInterceptors")),
-                        AmazonHttpClientV2Advice.class.getName()
-                );
+                        AmazonHttpClientV2Advice.class.getName());
     }
 
     public static class AmazonHttpClientV2Advice {
         @Advice.OnMethodExit(suppress = Throwable.class)
-        public static void methodExit(@Advice.Return final List<ExecutionInterceptor> interceptors) {
+        public static void methodExit(
+                @Advice.Return final List<ExecutionInterceptor> interceptors) {
             System.out.println("successfully added Lumigo TracingExecutionInterceptor");
             for (ExecutionInterceptor interceptor : interceptors) {
                 if (interceptor instanceof TracingExecutionInterceptor) {
@@ -55,7 +54,8 @@ public class AmazonHttpClientV2Instrumentation implements LumigoInstrumentationA
 
             @Override
             public void beforeExecution(
-                    final Context.BeforeExecution context, final ExecutionAttributes executionAttributes) {
+                    final Context.BeforeExecution context,
+                    final ExecutionAttributes executionAttributes) {
                 System.out.println("Enter beforeExecution");
                 startTimeMap.put(context.request().hashCode(), System.currentTimeMillis());
                 System.out.println("added request: " + context.request().hashCode());
@@ -79,13 +79,18 @@ public class AmazonHttpClientV2Instrumentation implements LumigoInstrumentationA
 
             @Override
             public void afterExecution(
-                    final Context.AfterExecution context, final ExecutionAttributes executionAttributes) {
+                    final Context.AfterExecution context,
+                    final ExecutionAttributes executionAttributes) {
                 try {
                     System.out.println("Enter afterExecution");
-                    System.out.println("request: " +  context.request().hashCode());
+                    System.out.println("request: " + context.request().hashCode());
                     if (handled.get(context.request().hashCode()) == null) {
-                        Logger.info("Handling request {} from host {}", context.request().hashCode());
-                        spansContainer.addHttpSpan(startTimeMap.get(context.request().hashCode()), context, executionAttributes);
+                        Logger.info(
+                                "Handling request {} from host {}", context.request().hashCode());
+                        spansContainer.addHttpSpan(
+                                startTimeMap.get(context.request().hashCode()),
+                                context,
+                                executionAttributes);
                         handled.put(context.request().hashCode(), true);
                     } else {
                         Logger.warn(

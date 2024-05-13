@@ -15,25 +15,17 @@ import io.lumigo.models.Span;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.Callable;
-
-import net.bytebuddy.asm.Advice;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.pmw.tinylog.Logger;
-import software.amazon.awssdk.awscore.AwsRequest;
 import software.amazon.awssdk.awscore.AwsResponse;
 import software.amazon.awssdk.core.SdkResponse;
 import software.amazon.awssdk.core.interceptor.ExecutionAttributes;
 import software.amazon.awssdk.core.interceptor.SdkExecutionAttribute;
-import software.amazon.awssdk.core.interceptor.SdkInternalExecutionAttribute;
-import software.amazon.awssdk.core.internal.http.RequestExecutionContext;
 import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.http.SdkHttpFullRequest;
-import software.amazon.awssdk.http.SdkHttpFullResponse;
-import software.amazon.awssdk.utils.Pair;
 
 public class SpansContainer {
 
@@ -371,12 +363,13 @@ public class SpansContainer {
         httpSpans.add(httpSpan);
     }
 
-
-    public void addHttpSpan(Long startTime, final software.amazon.awssdk.core.interceptor.Context.AfterExecution context, final ExecutionAttributes executionAttributes) {
+    public void addHttpSpan(
+            Long startTime,
+            final software.amazon.awssdk.core.interceptor.Context.AfterExecution context,
+            final ExecutionAttributes executionAttributes) {
         HttpSpan httpSpan = createBaseHttpSpan(startTime);
         String spanId = null;
-        for (Map.Entry<String, List<String>> header :
-                context.httpResponse().headers().entrySet()) {
+        for (Map.Entry<String, List<String>> header : context.httpResponse().headers().entrySet()) {
             if ("x-amzn-requestid".equalsIgnoreCase(header.getKey())
                     || "x-amz-requestid".equalsIgnoreCase(header.getKey())) {
                 spanId = header.getValue().get(0);
@@ -385,28 +378,55 @@ public class SpansContainer {
         if (spanId != null) {
             httpSpan.setId(spanId);
         }
-        httpSpan
-                .getInfo()
+        httpSpan.getInfo()
                 .setHttpInfo(
                         HttpSpan.HttpInfo.builder()
                                 .host(context.httpRequest().getUri().getHost())
                                 .request(
                                         HttpSpan.HttpData.builder()
-                                                .headers(callIfVerbose(() -> extractHeadersV2(context.httpRequest().headers())))
-                                                .uri(callIfVerbose(() -> context.httpRequest().getUri().toString()))
+                                                .headers(
+                                                        callIfVerbose(
+                                                                () ->
+                                                                        extractHeadersV2(
+                                                                                context.httpRequest()
+                                                                                        .headers())))
+                                                .uri(
+                                                        callIfVerbose(
+                                                                () ->
+                                                                        context.httpRequest()
+                                                                                .getUri()
+                                                                                .toString()))
                                                 .method(context.httpRequest().method().name())
-                                                .body(callIfVerbose(() -> extractBodyFromRequest(context.requestBody())))
+                                                .body(
+                                                        callIfVerbose(
+                                                                () ->
+                                                                        extractBodyFromRequest(
+                                                                                context
+                                                                                        .requestBody())))
                                                 .build())
                                 .response(
                                         HttpSpan.HttpData.builder()
-                                                .headers(callIfVerbose(() -> extractHeadersV2(context.httpResponse().headers())))
-                                                .body(callIfVerbose(() -> extractBodyFromResponse(context.response())))
+                                                .headers(
+                                                        callIfVerbose(
+                                                                () ->
+                                                                        extractHeadersV2(
+                                                                                context.httpResponse()
+                                                                                        .headers())))
+                                                .body(
+                                                        callIfVerbose(
+                                                                () ->
+                                                                        extractBodyFromResponse(
+                                                                                context
+                                                                                        .response())))
                                                 .statusCode(context.httpResponse().statusCode())
                                                 .build())
                                 .build());
 
-        System.out.println("Trying to extract aws custom properties for service: "+ executionAttributes.getAttribute(SdkExecutionAttribute.SERVICE_NAME));
-        AwsParserFactory.getParser(executionAttributes.getAttribute(SdkExecutionAttribute.SERVICE_NAME))
+        System.out.println(
+                "Trying to extract aws custom properties for service: "
+                        + executionAttributes.getAttribute(SdkExecutionAttribute.SERVICE_NAME));
+        AwsParserFactory.getParser(
+                        executionAttributes.getAttribute(SdkExecutionAttribute.SERVICE_NAME))
                 .parseV2(httpSpan, context);
 
         httpSpans.add(httpSpan);
@@ -435,7 +455,11 @@ public class SpansContainer {
     }
 
     protected static String extractBodyFromRequest(Optional<RequestBody> request) {
-        return request.map(requestBody -> extractBodyFromStream(requestBody.contentStreamProvider().newStream())).orElse(null);
+        return request.map(
+                        requestBody ->
+                                extractBodyFromStream(
+                                        requestBody.contentStreamProvider().newStream()))
+                .orElse(null);
     }
 
     protected static String extractBodyFromRequest(HttpUriRequest request) throws Exception {
@@ -449,8 +473,8 @@ public class SpansContainer {
     }
 
     protected static String extractBodyFromResponse(HttpResponse response) throws IOException {
-        return response.getEntity() != null ?
-                extractBodyFromStream(response.getEntity().getContent())
+        return response.getEntity() != null
+                ? extractBodyFromStream(response.getEntity().getContent())
                 : null;
     }
 

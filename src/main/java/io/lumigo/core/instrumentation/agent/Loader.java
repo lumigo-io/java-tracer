@@ -10,11 +10,12 @@ import net.bytebuddy.agent.builder.AgentBuilder;
 
 public class Loader {
     public static void instrument(java.lang.instrument.Instrumentation inst) {
-         System.out.println("Start Instrumentation");
+        System.out.println("Start Instrumentation");
         ApacheHttpInstrumentation apacheHttpInstrumentation = new ApacheHttpInstrumentation();
         AmazonHttpClientInstrumentation amazonHttpClientInstrumentation =
                 new AmazonHttpClientInstrumentation();
-        AmazonHttpClientV2Instrumentation amazonHttpClientV2Instrumentation = new AmazonHttpClientV2Instrumentation();
+        AmazonHttpClientV2Instrumentation amazonHttpClientV2Instrumentation =
+                new AmazonHttpClientV2Instrumentation();
         AgentBuilder builder =
                 new AgentBuilder.Default()
                         .disableClassFormatChanges()
@@ -22,7 +23,10 @@ public class Loader {
                         .ignore(
                                 not(nameStartsWith("com.amazonaws.http.AmazonHttpClient"))
                                         .and(not(nameStartsWith("org.apache.http.impl.client")))
-                                        .and(not(nameStartsWith("software.amazon.awssdk.core.client.builder.SdkDefaultClientBuilder"))))
+                                        .and(
+                                                not(
+                                                        nameStartsWith(
+                                                                "software.amazon.awssdk.core.client.builder.SdkDefaultClientBuilder"))))
                         .type(apacheHttpInstrumentation.getTypeMatcher())
                         .transform(apacheHttpInstrumentation.getTransformer())
                         .type(amazonHttpClientInstrumentation.getTypeMatcher())
@@ -31,6 +35,6 @@ public class Loader {
                         .transform(amazonHttpClientV2Instrumentation.getTransformer());
 
         builder.installOn(inst);
-         System.out.println("Finish Instrumentation");
+        System.out.println("Finish Instrumentation");
     }
 }

@@ -3,12 +3,8 @@ package io.lumigo.core.parsers;
 import com.amazonaws.Request;
 import com.amazonaws.Response;
 import io.lumigo.models.HttpSpan;
-import software.amazon.awssdk.core.interceptor.Context;
-import software.amazon.awssdk.core.internal.http.RequestExecutionContext;
-import software.amazon.awssdk.http.SdkHttpFullRequest;
-import software.amazon.awssdk.http.SdkHttpFullResponse;
-
 import java.util.List;
+import software.amazon.awssdk.core.interceptor.Context;
 
 public interface AwsParser {
     void parse(HttpSpan span, Request request, Response response);
