@@ -1,19 +1,20 @@
 package io.lumigo.core.utils;
 
-import lombok.experimental.UtilityClass;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.experimental.UtilityClass;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 @UtilityClass
 public class AwsSdkV2Utils {
 
-    public static Map<String, Object> convertAttributeMapToSimpleMap(Map<String, AttributeValue> attributeValueMap) {
+    public static Map<String, Object> convertAttributeMapToSimpleMap(
+            Map<String, AttributeValue> attributeValueMap) {
         Map<String, Object> simpleMap = new HashMap<>();
-        attributeValueMap.forEach((key, value) -> simpleMap.put(key, attributeValueToObject(value)));
+        attributeValueMap.forEach(
+                (key, value) -> simpleMap.put(key, attributeValueToObject(value)));
         return simpleMap;
     }
 

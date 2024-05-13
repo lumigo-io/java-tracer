@@ -10,7 +10,6 @@ import io.lumigo.core.utils.AwsSdkV2Utils;
 import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.core.utils.StringUtils;
 import io.lumigo.models.HttpSpan;
-
 import java.util.List;
 import java.util.Map;
 import org.pmw.tinylog.Logger;
@@ -90,7 +89,6 @@ public class DynamoDBParser implements AwsParser {
         return null;
     }
 
-
     private String extractMessageIdV2(SdkRequest request) {
         if (request instanceof software.amazon.awssdk.services.dynamodb.model.PutItemRequest) {
             return calculateV2ItemHash(
@@ -110,9 +108,9 @@ public class DynamoDBParser implements AwsParser {
                 instanceof software.amazon.awssdk.services.dynamodb.model.BatchWriteItemRequest) {
             Map<String, List<software.amazon.awssdk.services.dynamodb.model.WriteRequest>>
                     requests =
-                    ((software.amazon.awssdk.services.dynamodb.model.BatchWriteItemRequest)
-                            request)
-                            .requestItems();
+                            ((software.amazon.awssdk.services.dynamodb.model.BatchWriteItemRequest)
+                                            request)
+                                    .requestItems();
             software.amazon.awssdk.services.dynamodb.model.WriteRequest firstRequest =
                     requests.entrySet().iterator().next().getValue().get(0);
             if (firstRequest.putRequest() != null) {
@@ -124,9 +122,9 @@ public class DynamoDBParser implements AwsParser {
         return null;
     }
 
-    private String calculateV2ItemHash(Map<String, software.amazon.awssdk.services.dynamodb.model.AttributeValue> item) {
+    private String calculateV2ItemHash(
+            Map<String, software.amazon.awssdk.services.dynamodb.model.AttributeValue> item) {
         Map<String, Object> simpleMap = AwsSdkV2Utils.convertAttributeMapToSimpleMap(item);
         return StringUtils.buildMd5Hash(JsonUtils.getObjectAsJsonString(simpleMap));
     }
-
 }

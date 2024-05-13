@@ -2,7 +2,6 @@ package io.lumigo.core.utils;
 
 import com.amazonaws.services.dynamodbv2.document.ItemUtils;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.amazonaws.util.json.Jackson;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -34,7 +33,7 @@ public class StringUtils {
     }
 
     public static String extractStringForStream(InputStream inputStream, int size) {
-        if (inputStream != null) {
+        if (inputStream != null && inputStream.markSupported()) {
             try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
                 Logger.info("Stream reset supported, convert to string");
                 byte[] buffer = new byte[size];
