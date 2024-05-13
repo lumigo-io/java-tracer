@@ -5,7 +5,7 @@ import com.amazonaws.Response;
 import io.lumigo.models.HttpSpan;
 import software.amazon.awssdk.core.interceptor.Context;
 
-public class DefaultParser implements AwsParser {
+public class DoNothingParser implements AwsParser {
     @Override
     public void parse(HttpSpan span, Request request, Response response) {}
 

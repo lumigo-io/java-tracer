@@ -20,13 +20,11 @@ import software.amazon.awssdk.http.SdkHttpRequest;
 public class AmazonHttpClientV2Instrumentation implements LumigoInstrumentationApi {
     @Override
     public ElementMatcher<TypeDescription> getTypeMatcher() {
-        System.out.println("successfully hooked sdk v2 matcher v2");
         return named("software.amazon.awssdk.core.client.builder.SdkDefaultClientBuilder");
     }
 
     @Override
     public AgentBuilder.Transformer.ForAdvice getTransformer() {
-        System.out.println("successfully hooked sdk v2 transform v2");
         return new AgentBuilder.Transformer.ForAdvice()
                 .include(Loader.class.getClassLoader())
                 .advice(
@@ -38,7 +36,7 @@ public class AmazonHttpClientV2Instrumentation implements LumigoInstrumentationA
         @Advice.OnMethodExit(suppress = Throwable.class)
         public static void methodExit(
                 @Advice.Return final List<ExecutionInterceptor> interceptors) {
-            System.out.println("successfully added Lumigo TracingExecutionInterceptor");
+            Logger.debug("Added Lumigo TracingExecutionInterceptor");
             for (ExecutionInterceptor interceptor : interceptors) {
                 if (interceptor instanceof TracingExecutionInterceptor) {
                     return; // list already has our interceptor, return to builder
@@ -56,21 +54,16 @@ public class AmazonHttpClientV2Instrumentation implements LumigoInstrumentationA
             public void beforeExecution(
                     final Context.BeforeExecution context,
                     final ExecutionAttributes executionAttributes) {
-                System.out.println("Enter beforeExecution");
                 startTimeMap.put(context.request().hashCode(), System.currentTimeMillis());
-                System.out.println("added request: " + context.request().hashCode());
             }
 
             @Override
             public SdkHttpRequest modifyHttpRequest(
                     Context.ModifyHttpRequest context, ExecutionAttributes executionAttributes) {
                 try {
-                    System.out.println("Enter modifyHttpRequest");
                     SdkHttpRequest.Builder requestBuilder = context.httpRequest().toBuilder();
                     requestBuilder.appendHeader("X-Amzn-Trace-Id", spansContainer.getPatchedRoot());
-                    SdkHttpRequest request = requestBuilder.build();
-                    System.out.println(request.hashCode());
-                    return request;
+                    return requestBuilder.build();
                 } catch (Throwable e) {
                     Logger.debug("Unable to inject trace header", e);
                 }
@@ -82,8 +75,6 @@ public class AmazonHttpClientV2Instrumentation implements LumigoInstrumentationA
                     final Context.AfterExecution context,
                     final ExecutionAttributes executionAttributes) {
                 try {
-                    System.out.println("Enter afterExecution");
-                    System.out.println("request: " + context.request().hashCode());
                     if (handled.get(context.request().hashCode()) == null) {
                         Logger.info(
                                 "Handling request {} from host {}", context.request().hashCode());

@@ -37,7 +37,6 @@ public class KinesisParser implements AwsParser {
 
     @Override
     public void parseV2(HttpSpan span, Context.AfterExecution context) {
-        System.out.println("Inside AWS Parser Kinesis V2");
         try {
             if (context.request().getValueForField("StreamName", String.class).isPresent()) {
                 context.request()
@@ -45,7 +44,7 @@ public class KinesisParser implements AwsParser {
                         .ifPresent(
                                 streamName -> {
                                     span.getInfo().setResourceName(streamName);
-                                    Logger.debug("Got StreamName : " + streamName);
+                                    Logger.debug("Parsed StreamName : " + streamName);
                                 });
             }
             List<String> messageIds = extractMessageIdsV2(context.response());

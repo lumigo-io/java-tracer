@@ -7,7 +7,7 @@ public class AwsParserFactory {
      */
     public static AwsParser getParser(String serviceName) {
         if (serviceName == null) {
-            return new DefaultParser();
+            return new DoNothingParser();
         }
         switch (serviceName) {
             case "AmazonSNS":
@@ -25,7 +25,7 @@ public class AwsParserFactory {
             case "DynamoDb":
                 return new DynamoDBParser();
             default:
-                return new DefaultParser();
+                return new DoNothingParser();
         }
     }
 }

@@ -25,14 +25,13 @@ public class SqsParser implements AwsParser {
 
     @Override
     public void parseV2(HttpSpan span, Context.AfterExecution context) {
-        System.out.println("Inside AWS Parser SQS V2");
         if (context.request().getValueForField("QueueUrl", String.class).isPresent()) {
             context.request()
                     .getValueForField("QueueUrl", String.class)
                     .ifPresent(
                             queueUrl -> {
                                 span.getInfo().setResourceName(queueUrl);
-                                Logger.debug("Got queueUrl : " + queueUrl);
+                                Logger.debug("Parsed queueUrl : " + queueUrl);
                             });
         } else {
             Logger.warn("Failed to extract queueUrl form SQS request");
@@ -59,9 +58,7 @@ public class SqsParser implements AwsParser {
     private String extractMessageIdV2(SdkResponse response) {
         try {
             if (response instanceof SendMessageResponse) {
-                String messageId = ((SendMessageResponse) response).messageId();
-                Logger.debug("Got messageId : " + messageId);
-                return messageId;
+                return ((SendMessageResponse) response).messageId();
             } else {
                 Logger.error("Failed to extract messageId for SQS response");
                 return null;

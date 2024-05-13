@@ -422,7 +422,7 @@ public class SpansContainer {
                                                 .build())
                                 .build());
 
-        System.out.println(
+        Logger.debug(
                 "Trying to extract aws custom properties for service: "
                         + executionAttributes.getAttribute(SdkExecutionAttribute.SERVICE_NAME));
         AwsParserFactory.getParser(
@@ -485,19 +485,14 @@ public class SpansContainer {
     }
 
     protected static String extractBodyFromResponse(SdkResponse response) {
-        System.out.println("Enter sdkResponse");
         if (response instanceof AwsResponse) {
             return JsonUtils.getObjectAsJsonString(response.toBuilder());
         }
-        System.out.println("Null Result");
         return null;
     }
 
     protected static String extractBodyFromStream(InputStream stream) {
-        String result = StringUtils.extractStringForStream(stream, MAX_STRING_SIZE);
-        System.out.println("Extracted result");
-        System.out.println(result);
-        return result;
+        return StringUtils.extractStringForStream(stream, MAX_STRING_SIZE);
     }
 
     public String getPatchedRoot() {

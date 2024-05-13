@@ -6,12 +6,11 @@ import com.amazonaws.AmazonWebServiceRequest;
 import com.amazonaws.Request;
 import com.amazonaws.Response;
 import com.amazonaws.services.dynamodbv2.model.*;
+import io.lumigo.core.utils.AwsSdkV2Utils;
 import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.core.utils.StringUtils;
 import io.lumigo.models.HttpSpan;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.pmw.tinylog.Logger;
@@ -33,14 +32,13 @@ public class DynamoDBParser implements AwsParser {
 
     public void parseV2(HttpSpan span, Context.AfterExecution context) {
         try {
-            System.out.println("Inside AWS Parser Dynamodb V2");
             if (context.request().getValueForField("TableName", String.class).isPresent()) {
                 context.request()
                         .getValueForField("TableName", String.class)
                         .ifPresent(
                                 tableName -> {
                                     span.getInfo().setResourceName(tableName);
-                                    Logger.debug("Got TableName : " + tableName);
+                                    Logger.debug("Parsed TableName : " + tableName);
                                 });
             } else {
                 Logger.warn("Failed to extract queueUrl form SQS request");
@@ -71,79 +69,6 @@ public class DynamoDBParser implements AwsParser {
         return null;
     }
 
-    private String extractMessageIdV2(SdkRequest request) {
-        if (request.getValueForField("Key", String.class).isPresent()) {
-            String key = request.getValueForField("Key", String.class).get();
-            System.out.println("Extracted key: " + key);
-            return key;
-        }
-
-        if (request instanceof software.amazon.awssdk.services.dynamodb.model.PutItemRequest) {
-            return calculateItemHash(
-                    ((software.amazon.awssdk.services.dynamodb.model.PutItemRequest) request)
-                            .item());
-        } else if (request
-                instanceof software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest) {
-            return calculateItemHash(
-                    ((software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest) request)
-                            .key());
-        } else if (request
-                instanceof software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest) {
-            return calculateItemHash(
-                    ((software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest) request)
-                            .key());
-        } else if (request
-                instanceof software.amazon.awssdk.services.dynamodb.model.BatchWriteItemRequest) {
-            Map<String, List<software.amazon.awssdk.services.dynamodb.model.WriteRequest>>
-                    requests =
-                            ((software.amazon.awssdk.services.dynamodb.model.BatchWriteItemRequest)
-                                            request)
-                                    .requestItems();
-            software.amazon.awssdk.services.dynamodb.model.WriteRequest firstRequest =
-                    requests.entrySet().iterator().next().getValue().get(0);
-            if (firstRequest.putRequest() != null) {
-                return calculateItemHash(firstRequest.putRequest().item());
-            } else if (firstRequest.deleteRequest() != null) {
-                return calculateItemHash(firstRequest.deleteRequest().key());
-            }
-        }
-        return null;
-    }
-
-    private String calculateItemHash(Map<String, software.amazon.awssdk.services.dynamodb.model.AttributeValue> item) {
-        String calculatedHash = StringUtils.buildMd5Hash(JsonUtils.getObjectAsJsonString(convertToSimpleMap(item)));
-        System.out.println("calculated hash: " + calculatedHash);
-        return calculatedHash;
-    }
-
-    // Helper method to convert from Map<String, AttributeValue> to a Map<String, Object>
-    private static Map<String, Object> convertToSimpleMap(Map<String, software.amazon.awssdk.services.dynamodb.model.AttributeValue> attributeValueMap) {
-        Map<String, Object> simpleMap = new HashMap<>();
-        attributeValueMap.forEach((key, value) -> simpleMap.put(key, attributeValueToObject(value)));
-        return simpleMap;
-    }
-
-    // Convert AttributeValue to Object
-    private static Object attributeValueToObject(software.amazon.awssdk.services.dynamodb.model.AttributeValue value) {
-        // Handle each type accordingly
-        if (value.s() != null) {
-            return value.s();
-        } else if (value.n() != null) {
-            return value.n();
-        } else if (value.bool() != null) {
-            return value.bool();
-        } else if (value.m() != null) {
-            return convertToSimpleMap(value.m());
-        } else if (value.l() != null) {
-            List<Object> list = new ArrayList<>();
-            for (software.amazon.awssdk.services.dynamodb.model.AttributeValue v : value.l()) {
-                list.add(attributeValueToObject(v));
-            }
-            return list;
-        }
-        return null;
-    }
-
     private String extractTableName(AmazonWebServiceRequest request) {
         if (request instanceof PutItemRequest) {
             return ((PutItemRequest) request).getTableName();
@@ -164,4 +89,44 @@ public class DynamoDBParser implements AwsParser {
         }
         return null;
     }
+
+
+    private String extractMessageIdV2(SdkRequest request) {
+        if (request instanceof software.amazon.awssdk.services.dynamodb.model.PutItemRequest) {
+            return calculateV2ItemHash(
+                    ((software.amazon.awssdk.services.dynamodb.model.PutItemRequest) request)
+                            .item());
+        } else if (request
+                instanceof software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest) {
+            return calculateV2ItemHash(
+                    ((software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest) request)
+                            .key());
+        } else if (request
+                instanceof software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest) {
+            return calculateV2ItemHash(
+                    ((software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest) request)
+                            .key());
+        } else if (request
+                instanceof software.amazon.awssdk.services.dynamodb.model.BatchWriteItemRequest) {
+            Map<String, List<software.amazon.awssdk.services.dynamodb.model.WriteRequest>>
+                    requests =
+                    ((software.amazon.awssdk.services.dynamodb.model.BatchWriteItemRequest)
+                            request)
+                            .requestItems();
+            software.amazon.awssdk.services.dynamodb.model.WriteRequest firstRequest =
+                    requests.entrySet().iterator().next().getValue().get(0);
+            if (firstRequest.putRequest() != null) {
+                return calculateV2ItemHash(firstRequest.putRequest().item());
+            } else if (firstRequest.deleteRequest() != null) {
+                return calculateV2ItemHash(firstRequest.deleteRequest().key());
+            }
+        }
+        return null;
+    }
+
+    private String calculateV2ItemHash(Map<String, software.amazon.awssdk.services.dynamodb.model.AttributeValue> item) {
+        Map<String, Object> simpleMap = AwsSdkV2Utils.convertAttributeMapToSimpleMap(item);
+        return StringUtils.buildMd5Hash(JsonUtils.getObjectAsJsonString(simpleMap));
+    }
+
 }

@@ -7,10 +7,11 @@ import io.lumigo.core.instrumentation.impl.AmazonHttpClientInstrumentation;
 import io.lumigo.core.instrumentation.impl.AmazonHttpClientV2Instrumentation;
 import io.lumigo.core.instrumentation.impl.ApacheHttpInstrumentation;
 import net.bytebuddy.agent.builder.AgentBuilder;
+import org.pmw.tinylog.Logger;
 
 public class Loader {
     public static void instrument(java.lang.instrument.Instrumentation inst) {
-        System.out.println("Start Instrumentation");
+        Logger.debug("Start Instrumentation");
         ApacheHttpInstrumentation apacheHttpInstrumentation = new ApacheHttpInstrumentation();
         AmazonHttpClientInstrumentation amazonHttpClientInstrumentation =
                 new AmazonHttpClientInstrumentation();
@@ -35,6 +36,6 @@ public class Loader {
                         .transform(amazonHttpClientV2Instrumentation.getTransformer());
 
         builder.installOn(inst);
-        System.out.println("Finish Instrumentation");
+        Logger.debug("Finish Instrumentation");
     }
 }

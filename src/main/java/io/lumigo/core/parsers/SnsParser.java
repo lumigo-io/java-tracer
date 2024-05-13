@@ -25,7 +25,7 @@ public class SnsParser implements AwsParser {
                     .getValueForField("TopicArn", String.class)
                     .ifPresent(
                             topicArn -> {
-                                Logger.debug("Got topicArn : " + topicArn);
+                                Logger.debug("Parsed topicArn : " + topicArn);
                                 span.getInfo().setResourceName(topicArn);
                                 span.getInfo().setTargetArn(topicArn);
                             });
