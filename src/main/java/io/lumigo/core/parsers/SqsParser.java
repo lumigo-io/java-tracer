@@ -15,6 +15,7 @@ public class SqsParser implements AwsParser {
     public String getParserType() {
         return SqsParser.class.getName();
     }
+
     @Override
     public void parse(HttpSpan span, Request request, Response response) {
         if (request.getOriginalRequest() instanceof SendMessageRequest) {

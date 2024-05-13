@@ -19,6 +19,7 @@ public class KinesisParser implements AwsParser {
     public String getParserType() {
         return KinesisParser.class.getName();
     }
+
     @Override
     public void parse(HttpSpan span, Request request, Response response) {
         if (request.getOriginalRequest() instanceof PutRecordRequest) {

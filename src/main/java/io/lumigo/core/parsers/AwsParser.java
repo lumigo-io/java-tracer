@@ -4,7 +4,6 @@ import com.amazonaws.Request;
 import com.amazonaws.Response;
 import io.lumigo.models.HttpSpan;
 import java.util.List;
-
 import org.pmw.tinylog.Logger;
 import software.amazon.awssdk.core.interceptor.Context;
 
@@ -15,9 +14,11 @@ public interface AwsParser {
 
     default void safeParse(HttpSpan span, Request request, Response response) {
         try {
+            Logger.debug("Start parsing aws v1 request using: " + getParserType());
             parse(span, request, response);
+            Logger.debug("Finish parsing aws v1 request using: " + getParserType());
         } catch (Throwable e) {
-            Logger.error("Failed to parse extra aws sdk v1 data using parser: " + getParserType(), e);
+            Logger.error("Failed to parse extra aws v1 data using parser: " + getParserType(), e);
         }
     }
 
@@ -25,9 +26,12 @@ public interface AwsParser {
 
     default void safeParseV2(HttpSpan span, Context.AfterExecution context) {
         try {
+            Logger.debug("Start parsing aws v2 request using: " + getParserType());
             parseV2(span, context);
+            Logger.debug("Finish parsing aws v2 request using: " + getParserType());
         } catch (Throwable e) {
-            Logger.error("Failed to parse extra aws sdk v2 data using parser: " + getParserType(), e);
+            Logger.error(
+                    "Failed to parse extra aws sdk v2 data using parser: " + getParserType(), e);
         }
     }
 
