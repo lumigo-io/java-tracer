@@ -5,8 +5,9 @@ import com.amazonaws.Response;
 import com.amazonaws.services.lambda.runtime.Context;
 import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.network.Reporter;
-import io.lumigo.core.parsers.AwsParserFactory;
 import io.lumigo.core.parsers.event.EventParserFactory;
+import io.lumigo.core.parsers.v1.AwsSdkV1ParserFactory;
+import io.lumigo.core.parsers.v2.AwsSdkV2ParserFactory;
 import io.lumigo.core.utils.AwsUtils;
 import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.core.utils.StringUtils;
@@ -359,7 +360,8 @@ public class SpansContainer {
                                                         response.getHttpResponse().getStatusCode())
                                                 .build())
                                 .build());
-        AwsParserFactory.getParser(request.getServiceName()).safeParse(httpSpan, request, response);
+        AwsSdkV1ParserFactory.getParser(request.getServiceName())
+                .safeParse(httpSpan, request, response);
         httpSpans.add(httpSpan);
     }
 
@@ -425,9 +427,9 @@ public class SpansContainer {
         Logger.debug(
                 "Trying to extract aws custom properties for service: "
                         + executionAttributes.getAttribute(SdkExecutionAttribute.SERVICE_NAME));
-        AwsParserFactory.getParser(
+        AwsSdkV2ParserFactory.getParser(
                         executionAttributes.getAttribute(SdkExecutionAttribute.SERVICE_NAME))
-                .safeParseV2(httpSpan, context);
+                .safeParse(httpSpan, context);
 
         httpSpans.add(httpSpan);
     }

@@ -1,4 +1,4 @@
-package io.lumigo.core.parsers;
+package io.lumigo.core.parsers.v1;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
@@ -16,10 +16,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-class DynamoDBParserTest {
+class DynamoDBV1ParserTest {
 
     private HttpSpan span = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
-    private DynamoDBParser dynamoDBParser = new DynamoDBParser();
+    private DynamoDBV1Parser dynamoDBParser = new DynamoDBV1Parser();
     @Mock Request request;
     @Mock GetItemRequest getItemRequest;
     @Mock BatchGetItemRequest batchGetItemRequest;

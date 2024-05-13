@@ -1,4 +1,4 @@
-package io.lumigo.core.parsers;
+package io.lumigo.core.parsers.v1;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -15,14 +15,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import software.amazon.awssdk.core.interceptor.Context;
-import software.amazon.awssdk.core.interceptor.InterceptorContext;
-import software.amazon.awssdk.services.kinesis.model.PutRecordsResponse;
 
-class KinesisParserTest {
+class KinesisV1ParserTest {
 
     private HttpSpan span = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
-    KinesisParser kinesisParser = new KinesisParser();
+    KinesisV1Parser kinesisParser = new KinesisV1Parser();
     @Mock Request request;
     @Mock HttpResponse httpResponse;
     @Mock PutRecordsRequest putRecordsRequest;
@@ -57,35 +54,6 @@ class KinesisParserTest {
         when(request.getOriginalRequest()).thenReturn(putRecordRequest);
 
         kinesisParser.safeParse(span, request, response);
-
-        HttpSpan expectedSpan = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
-        expectedSpan.getInfo().setResourceName("streamName");
-        expectedSpan.getInfo().setMessageIds(Arrays.asList("fee47356-6f6a-58c8-96dc-26d8aaa4631a"));
-        assertEquals(span, expectedSpan);
-    }
-
-    @Test
-    void test_parse_kinesis_put_record_simple_flow_v2() {
-        software.amazon.awssdk.services.kinesis.model.PutRecordsRequest putRequest =
-                software.amazon.awssdk.services.kinesis.model.PutRecordsRequest.builder()
-                        .records(
-                                software.amazon.awssdk.services.kinesis.model.PutRecordsRequestEntry
-                                        .builder()
-                                        .build())
-                        .streamName("streamName")
-                        .build();
-        PutRecordsResponse putResponse =
-                PutRecordsResponse.builder()
-                        .records(
-                                software.amazon.awssdk.services.kinesis.model.PutRecordsResultEntry
-                                        .builder()
-                                        .sequenceNumber("fee47356-6f6a-58c8-96dc-26d8aaa4631a")
-                                        .build())
-                        .build();
-        Context.AfterExecution context =
-                InterceptorContext.builder().request(putRequest).response(putResponse).build();
-
-        kinesisParser.parseV2(span, context);
 
         HttpSpan expectedSpan = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
         expectedSpan.getInfo().setResourceName("streamName");

@@ -1,4 +1,4 @@
-package io.lumigo.core.parsers;
+package io.lumigo.core.parsers.v1;
 
 import com.amazonaws.Request;
 import com.amazonaws.Response;
@@ -10,14 +10,11 @@ import io.lumigo.models.HttpSpan;
 import java.util.LinkedList;
 import java.util.List;
 import org.pmw.tinylog.Logger;
-import software.amazon.awssdk.core.interceptor.Context;
-import software.amazon.awssdk.services.kinesis.model.PutRecordResponse;
-import software.amazon.awssdk.services.kinesis.model.PutRecordsResponse;
 
-public class KinesisParser implements AwsParser {
+public class KinesisV1Parser implements AwsSdkV1Parser {
     @Override
     public String getParserType() {
-        return KinesisParser.class.getName();
+        return KinesisV1Parser.class.getName();
     }
 
     @Override
@@ -33,21 +30,6 @@ public class KinesisParser implements AwsParser {
                             ((PutRecordsRequest) request.getOriginalRequest()).getStreamName());
         }
         List<String> messageIds = extractMessageIds(response.getAwsResponse());
-        if (!messageIds.isEmpty()) span.getInfo().setMessageIds(messageIds);
-    }
-
-    @Override
-    public void parseV2(HttpSpan span, Context.AfterExecution context) {
-        if (context.request().getValueForField("StreamName", String.class).isPresent()) {
-            context.request()
-                    .getValueForField("StreamName", String.class)
-                    .ifPresent(
-                            streamName -> {
-                                span.getInfo().setResourceName(streamName);
-                                Logger.debug("Parsed StreamName : " + streamName);
-                            });
-        }
-        List<String> messageIds = extractMessageIdsV2(context.response());
         if (!messageIds.isEmpty()) span.getInfo().setMessageIds(messageIds);
     }
 
@@ -67,23 +49,5 @@ public class KinesisParser implements AwsParser {
         }
         Logger.error("Failed to extract messageIds for Kinesis response");
         return result;
-    }
-
-    private List<String> extractMessageIdsV2(Object response) {
-        List<String> messageIds = new LinkedList<>();
-        if (response instanceof PutRecordsResponse) {
-            ((PutRecordsResponse) response)
-                    .records()
-                    .forEach(
-                            putRecordsResultEntry ->
-                                    messageIds.add(putRecordsResultEntry.sequenceNumber()));
-            return messageIds;
-        }
-        if (response instanceof PutRecordResponse) {
-            messageIds.add(((PutRecordResponse) response).sequenceNumber());
-            return messageIds;
-        }
-        Logger.error("Failed to extract messageIds for Kinesis response");
-        return messageIds;
     }
 }
