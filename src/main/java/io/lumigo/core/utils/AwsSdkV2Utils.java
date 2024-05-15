@@ -25,20 +25,22 @@ public class AwsSdkV2Utils {
     }
 
     private static Object attributeValueToObject(AttributeValue value) {
-        if (value.s() != null) {
+        if (value == null) {
+            return null;
+        } else if (value.s() != null) {
             return value.s();
         } else if (value.n() != null) {
             return value.n();
         } else if (value.bool() != null) {
             return value.bool();
-        } else if (value.m() != null) {
-            return convertAttributeMapToSimpleMap(value.m());
-        } else if (value.l() != null) {
+        } else if (value.l() != null && !value.l().isEmpty()) {
             List<Object> list = new ArrayList<>();
             for (AttributeValue v : value.l()) {
                 list.add(attributeValueToObject(v));
             }
             return list;
+        } else if (value.m() != null && !value.m().isEmpty()) {
+            return convertAttributeMapToSimpleMap(value.m());
         }
         return null;
     }
