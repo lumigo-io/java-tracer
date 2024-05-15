@@ -22,9 +22,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -41,6 +39,14 @@ import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
+import software.amazon.awssdk.core.interceptor.ExecutionAttributes;
+import software.amazon.awssdk.core.interceptor.InterceptorContext;
+import software.amazon.awssdk.core.interceptor.SdkExecutionAttribute;
+import software.amazon.awssdk.http.SdkHttpMethod;
+import software.amazon.awssdk.http.SdkHttpRequest;
+import software.amazon.awssdk.http.SdkHttpResponse;
+import software.amazon.awssdk.services.sns.model.PublishRequest;
+import software.amazon.awssdk.services.sns.model.PublishResponse;
 
 class SpansContainerTest {
     private static final char ch = '*';
@@ -378,7 +384,9 @@ class SpansContainerTest {
                 "{\n"
                         + "   \"started\":1559127760071,\n"
                         + "   \"ended\":1559127760085,\n"
-                        + "   \"id\":\"cc9ceb9c-dad2-4762-8f0c-147408bdc063\",\n"
+                        + "   \"id\":"
+                        + actualSpan.getId()
+                        + ",\n"
                         + "   \"type\":\"http\",\n"
                         + "   \"transactionId\":\"3\",\n"
                         + "   \"account\":\"1111\",\n"
@@ -489,17 +497,39 @@ class SpansContainerTest {
     @DisplayName("AWS SDK V2 request")
     @Test
     void add_aws_sdk_v2_http_span() throws Exception {
-        Map<String, String> headers = new HashMap<>();
-        headers.put("x-amz-requestid", "id123");
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("x-amz-requestid", Collections.singletonList("id123"));
+
+        PublishRequest request = PublishRequest.builder().topicArn("topic").build();
+        PublishResponse response =
+                PublishResponse.builder().messageId("fee47356-6f6a-58c8-96dc-26d8aaa4631a").build();
+
+        SdkHttpRequest sdkHttpRequest =
+                SdkHttpRequest.builder()
+                        .uri(new URI("https://sns.amazonaws.com"))
+                        .headers(headers)
+                        .method(SdkHttpMethod.GET)
+                        .build();
+
+        SdkHttpResponse sdkHttpResponse =
+                SdkHttpResponse.builder().headers(headers).statusCode(200).build();
+
+        software.amazon.awssdk.core.interceptor.Context.AfterExecution requestContext =
+                InterceptorContext.builder()
+                        .request(request)
+                        .httpRequest(sdkHttpRequest)
+                        .response(response)
+                        .httpResponse(sdkHttpResponse)
+                        .build();
+        ExecutionAttributes executionAttributes =
+                ExecutionAttributes.builder()
+                        .put(SdkExecutionAttribute.SERVICE_NAME, "Sns")
+                        .build();
 
         spansContainer.init(createMockedEnv(), reporter, context, null);
-        when(awsRequest.getEndpoint()).thenReturn(URI.create("https://sns.amazonaws.com"));
-        when(awsRequest.getHttpMethod()).thenReturn(HttpMethodName.GET);
-        when(awsHttpResponse.getStatusCode()).thenReturn(200);
-        when(awsHttpResponse.getHeaders()).thenReturn(headers);
-        Response<String> awsResponse = new Response<>("awsResponse", awsHttpResponse);
         long startTime = System.currentTimeMillis();
-        spansContainer.addHttpSpan(startTime, awsRequest, awsResponse);
+
+        spansContainer.addHttpSpan(startTime, requestContext, executionAttributes);
 
         HttpSpan actualSpan = spansContainer.getHttpSpans().get(0);
         String expectedSpan =
@@ -522,15 +552,15 @@ class SpansContainerTest {
                         + "      \"httpInfo\":{\n"
                         + "         \"host\":\"sns.amazonaws.com\",\n"
                         + "         \"request\":{\n"
-                        + "            \"headers\":\"{}\",\n"
+                        + "            \"headers\":\"{\\\"x-amz-requestid\\\":[\\\"id123\\\"]}\",\n"
                         + "            \"body\":null,\n"
                         + "            \"uri\":\"https://sns.amazonaws.com\",\n"
                         + "            \"statusCode\":null,\n"
                         + "            \"method\":GET\n"
                         + "         },\n"
                         + "         \"response\":{\n"
-                        + "            \"headers\":\"{\\\"x-amz-requestid\\\":\\\"id123\\\"}\",\n"
-                        + "            \"body\":\"awsResponse\",\n"
+                        + "            \"headers\":\"{\\\"x-amz-requestid\\\":[\\\"id123\\\"]}\",\n"
+                        + "            \"body\":\"{\\\"messageId\\\":\\\"fee47356-6f6a-58c8-96dc-26d8aaa4631a\\\",\\\"sequenceNumber\\\":null}\", \n"
                         + "            \"uri\":null,\n"
                         + "            \"statusCode\":200,\n"
                         + "            \"method\":null\n"
@@ -539,6 +569,7 @@ class SpansContainerTest {
                         + "   },\n"
                         + "   \"parentId\":\"3n2783hf7823hdui32\"\n"
                         + "}";
+
         JSONAssert.assertEquals(
                 expectedSpan,
                 JsonUtils.getObjectAsJsonString(actualSpan),
