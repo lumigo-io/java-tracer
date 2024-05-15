@@ -10,6 +10,12 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 @UtilityClass
 public class AwsSdkV2Utils {
 
+    public String calculateItemHash(
+            Map<String, software.amazon.awssdk.services.dynamodb.model.AttributeValue> item) {
+        Map<String, Object> simpleMap = AwsSdkV2Utils.convertAttributeMapToSimpleMap(item);
+        return StringUtils.buildMd5Hash(JsonUtils.getObjectAsJsonString(simpleMap));
+    }
+
     public static Map<String, Object> convertAttributeMapToSimpleMap(
             Map<String, AttributeValue> attributeValueMap) {
         Map<String, Object> simpleMap = new HashMap<>();
