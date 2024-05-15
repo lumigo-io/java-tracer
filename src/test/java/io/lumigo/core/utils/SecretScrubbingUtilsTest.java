@@ -15,8 +15,21 @@ class SecretScrubbingUtilsTest {
 
   @Test
   @DisplayName("scrubs the body using LUMIGO_SECRET_MASKING_REGEX")
-  @SetEnvironmentVariable(key = "LUMIGO_SECRET_MASKING_REGEX", value = "['.*topsecret.*']")
-  void testSecretScrubbingUtils_scrubs_json_payloads() {
-    assertEquals("{\"topsecret\":\"***\"}", SecretScrubbingUtils.scrubBody("{\"topsecret\":\"stuff\"}"));
+  @SetEnvironmentVariable(key = "LUMIGO_SECRET_MASKING_REGEX", value = "[\".*topsecret.*\"]")
+  void testSecretScrubbingUtils_scrubs_json_payload_top_level_key() {
+    String actual = SecretScrubbingUtils.scrubBody("{\"topsecret\":\"stuff\"}");
+    String expected = "{\"topsecret\":\"****\"}";
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  @DisplayName("scrubs a nested body value using LUMIGO_SECRET_MASKING_REGEX")
+  @SetEnvironmentVariable(key = "LUMIGO_SECRET_MASKING_REGEX", value = "[\".*topsecret.*\"]")
+  void testSecretScrubbingUtils_scrubs_json_payload_nested_key() {
+    String actual = SecretScrubbingUtils.scrubBody("{\"some\": {\"topsecret\":\"stuff\"}, \"a\": 1}");
+    String expected = "{\"some\":{\"topsecret\":\"****\"},\"a\":1}";
+
+    assertEquals(expected, actual);
   }
 }
