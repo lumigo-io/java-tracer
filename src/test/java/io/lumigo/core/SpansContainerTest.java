@@ -1,6 +1,7 @@
 package io.lumigo.core;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -17,6 +18,7 @@ import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.handlers.LumigoConfiguration;
 import io.lumigo.models.HttpSpan;
 import io.lumigo.models.Span;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,6 +31,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.message.BasicHeader;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -56,9 +59,15 @@ class SpansContainerTest {
     @Mock private EnvUtil envUtil;
     @Mock private Context context;
     @Mock Reporter reporter;
-    @Mock HttpResponse httpResponse;
+
+    @Mock(answer = RETURNS_DEEP_STUBS)
+    HttpResponse httpResponse;
+
     @Mock StatusLine statusLine;
-    @Mock HttpUriRequest httpRequest;
+
+    @Mock(answer = RETURNS_DEEP_STUBS)
+    HttpEntityEnclosingRequestBase httpRequest;
+
     @Mock Request awsRequest;
     @Mock com.amazonaws.http.HttpResponse awsHttpResponse;
 
@@ -83,7 +92,10 @@ class SpansContainerTest {
     @DisplayName("Check that start span include all relevant data")
     @Test
     void createStartSpan() throws Exception {
-        spansContainer.init(createMockedEnv(), reporter, context, "{\"secret\":\"stuff\"}");
+        Map<String, String> env = createMockedEnv();
+        env.put("SOME_KEY", "s0m3t0k3y");
+
+        spansContainer.init(env, reporter, context, "{\"secret\":\"stuff\"}");
         spansContainer.start();
 
         Span actualSpan = spansContainer.getStartFunctionSpan();
@@ -101,7 +113,7 @@ class SpansContainerTest {
                         + "  \"account\": \"1111\",\n"
                         + "  \"maxFinishTime\": 100,\n"
                         + "  \"event\": \"{\\\"secret\\\":\\\"****\\\"}\",\n"
-                        + "  \"envs\": \"{\\\"AWS_REGION\\\":\\\"us-west-2\\\",\\\"_X_AMZN_TRACE_ID\\\":\\\"Root=1-2-3;Another=456;Bla=789\\\",\\\"AWS_EXECUTION_ENV\\\":\\\"JAVA8\\\"}\",\n"
+                        + "  \"envs\": \"{\\\"AWS_REGION\\\":\\\"us-west-2\\\",\\\"_X_AMZN_TRACE_ID\\\":\\\"Root=1-2-3;Another=456;Bla=789\\\",\\\"AWS_EXECUTION_ENV\\\":\\\"JAVA8\\\",\\\"SOME_KEY\\\":\\\"****\\\"}\",\n"
                         + "  \"region\": \"us-west-2\",\n"
                         + "  \"reporter_rtt\": null,\n"
                         + "  \"error\": null,\n"
@@ -308,8 +320,23 @@ class SpansContainerTest {
     void add_http_span() throws Exception {
         spansContainer.init(createMockedEnv(), reporter, context, null);
         when(httpRequest.getURI()).thenReturn(URI.create("https://google.com"));
+        when(httpRequest.getEntity().getContent())
+                .thenReturn(new ByteArrayInputStream("{\"passphrase\":\"value\"}".getBytes()));
+        when(httpRequest.getAllHeaders())
+                .thenReturn(
+                        new Header[] {
+                            new BasicHeader("authorization", "token"),
+                            new BasicHeader("x-some-thing", "sent")
+                        });
         when(httpResponse.getStatusLine()).thenReturn(statusLine);
-        when(httpResponse.getAllHeaders()).thenReturn(new Header[0]);
+        when(httpResponse.getAllHeaders())
+                .thenReturn(
+                        new Header[] {
+                            new BasicHeader("credentials", "user:pazzword"),
+                            new BasicHeader("x-some-stuff", "returned")
+                        });
+        when(httpResponse.getEntity().getContent())
+                .thenReturn(new ByteArrayInputStream("{\"password\":\"value\"}".getBytes()));
         when(statusLine.getStatusCode()).thenReturn(200);
 
         long startTime = System.currentTimeMillis();
@@ -336,15 +363,15 @@ class SpansContainerTest {
                         + "      \"httpInfo\":{\n"
                         + "         \"host\":\"google.com\",\n"
                         + "         \"request\":{\n"
-                        + "            \"headers\":\"{}\",\n"
-                        + "            \"body\":null,\n"
+                        + "            \"headers\":\"{\\\"authorization\\\":\\\"****\\\",\\\"x-some-thing\\\":\\\"sent\\\"}\",\n"
+                        + "            \"body\":\"{\\\"passphrase\\\":\\\"****\\\"}\",\n"
                         + "            \"uri\":\"https://google.com\",\n"
                         + "            \"statusCode\":null,\n"
                         + "            \"method\":null\n"
                         + "         },\n"
                         + "         \"response\":{\n"
-                        + "            \"headers\":\"{}\",\n"
-                        + "            \"body\":null,\n"
+                        + "            \"headers\":\"{\\\"credentials\\\":\\\"****\\\",\\\"x-some-stuff\\\":\\\"returned\\\"}\",\n"
+                        + "            \"body\":\"{\\\"password\\\":\\\"****\\\"}\",\n"
                         + "            \"uri\":null,\n"
                         + "            \"statusCode\":200,\n"
                         + "            \"method\":null\n"

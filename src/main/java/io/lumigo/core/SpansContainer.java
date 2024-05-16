@@ -46,6 +46,7 @@ public class SpansContainer {
     private Span endFunctionSpan;
     private Reporter reporter;
     private List<HttpSpan> httpSpans = new LinkedList<>();
+    private Map<String, String> env;
 
     private static final SpansContainer ourInstance = new SpansContainer();
 
@@ -69,6 +70,7 @@ public class SpansContainer {
     public void init(Map<String, String> env, Reporter reporter, Context context, Object event) {
         this.clear();
         this.reporter = reporter;
+        this.env = env;
         int javaVersion = AwsUtils.parseJavaVersion(System.getProperty("java.version"));
         if (javaVersion > 11) {
             awsTracerId = System.getProperty("com.amazonaws.xray.traceHeader");
@@ -144,7 +146,8 @@ public class SpansContainer {
                         .readiness(AwsUtils.getFunctionReadiness().toString())
                         .envs(
                                 Configuration.getInstance().isLumigoVerboseMode()
-                                        ? JsonUtils.getObjectAsJsonString(env)
+                                        ? JsonUtils.getObjectAsJsonString(
+                                                SecretScrubber.getInstance().scrubEnv(env))
                                         : null)
                         .event(
                                 Configuration.getInstance().isLumigoVerboseMode()
@@ -279,8 +282,13 @@ public class SpansContainer {
                                                         callIfVerbose(
                                                                 () ->
                                                                         extractHeaders(
-                                                                                request
-                                                                                        .getAllHeaders())))
+                                                                                SecretScrubber
+                                                                                        .getInstance()
+                                                                                        .scrubHeaders(
+                                                                                                request
+                                                                                                        .getAllHeaders(),
+                                                                                                this
+                                                                                                        .env))))
                                                 .uri(
                                                         callIfVerbose(
                                                                 () -> request.getURI().toString()))
@@ -288,8 +296,11 @@ public class SpansContainer {
                                                 .body(
                                                         callIfVerbose(
                                                                 () ->
-                                                                        extractBodyFromRequest(
-                                                                                request)))
+                                                                        SecretScrubber.getInstance()
+                                                                                .scrubBody(
+                                                                                        extractBodyFromRequest(
+                                                                                                request),
+                                                                                        this.env)))
                                                 .build())
                                 .response(
                                         HttpSpan.HttpData.builder()
@@ -297,13 +308,21 @@ public class SpansContainer {
                                                         callIfVerbose(
                                                                 () ->
                                                                         extractHeaders(
-                                                                                response
-                                                                                        .getAllHeaders())))
+                                                                                SecretScrubber
+                                                                                        .getInstance()
+                                                                                        .scrubHeaders(
+                                                                                                response
+                                                                                                        .getAllHeaders(),
+                                                                                                this
+                                                                                                        .env))))
                                                 .body(
                                                         callIfVerbose(
                                                                 () ->
-                                                                        extractBodyFromResponse(
-                                                                                response)))
+                                                                        SecretScrubber.getInstance()
+                                                                                .scrubBody(
+                                                                                        extractBodyFromResponse(
+                                                                                                response),
+                                                                                        this.env)))
                                                 .statusCode(
                                                         response.getStatusLine().getStatusCode())
                                                 .build())

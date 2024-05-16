@@ -1,8 +1,11 @@
 package io.lumigo.core.utils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import org.apache.http.Header;
+import org.apache.http.message.BasicHeader;
 import org.json.JSONObject;
 
 public class SecretScrubber {
@@ -20,6 +23,30 @@ public class SecretScrubber {
         } catch (Exception e) {
             return body;
         }
+    }
+
+    public Header[] scrubHeaders(Header[] headers, Map<String, String> env) {
+        ArrayList<Header> scrubbedHeaders = new ArrayList<>();
+
+        for (Header header : headers) {
+            if (isSecret(header.getName(), secretScrubbingUtils.getBodyScrubbingPatterns(env))) {
+                scrubbedHeaders.add(new BasicHeader(header.getName(), SECRET_PLACEHOLDER));
+            } else {
+                scrubbedHeaders.add(header);
+            }
+        }
+
+        return scrubbedHeaders.toArray(new Header[0]);
+    }
+
+    public Map<String, String> scrubEnv(Map<String, String> env) {
+        for (String key : env.keySet()) {
+            if (isSecret(key, secretScrubbingUtils.getBodyScrubbingPatterns(env))) {
+                env.put(key, SECRET_PLACEHOLDER);
+            }
+        }
+
+        return env;
     }
 
     private JSONObject scrubJsonObject(JSONObject jsonObject, List<Pattern> patterns) {
