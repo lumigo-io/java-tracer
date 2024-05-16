@@ -54,17 +54,17 @@ public class SecretScrubbingPatternProvider {
         }
     }
 
-    public List<Pattern> getBodyScrubbingPatterns() {
-        String regexStringifiedList = System.getenv("LUMIGO_SECRET_MASKING_REGEX");
+    public List<Pattern> getBodyScrubbingPatterns(EnvUtil env) {
+        String regexStringifiedList = env.getEnv("LUMIGO_SECRET_MASKING_REGEX");
 
         if (Strings.isBlank(regexStringifiedList)) {
             return DEFAULT_PATTERNS;
-        } else {
-            try {
-                return jsonListToPatternList(regexStringifiedList);
-            } catch (IOException e) {
-                return DEFAULT_PATTERNS;
-            }
+        }
+
+        try {
+            return jsonListToPatternList(regexStringifiedList);
+        } catch (IOException e) {
+            return DEFAULT_PATTERNS;
         }
     }
 }

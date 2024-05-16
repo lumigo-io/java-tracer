@@ -5,16 +5,16 @@ import java.util.regex.Pattern;
 import org.json.JSONObject;
 
 public class SecretScrubber {
-    private static SecretScrubbingPatternProvider secretScrubbingUtils =
+    private static final SecretScrubbingPatternProvider secretScrubbingUtils =
             new SecretScrubbingPatternProvider();
     private static final String SECRET_PLACEHOLDER = "****";
 
     private SecretScrubber() {}
 
-    String scrubBody(String body) {
+    String scrubBody(String body, EnvUtil env) {
         try {
             JSONObject jsonObject = new JSONObject(body);
-            return scrubJsonObject(jsonObject, secretScrubbingUtils.getBodyScrubbingPatterns())
+            return scrubJsonObject(jsonObject, secretScrubbingUtils.getBodyScrubbingPatterns(env))
                     .toString();
         } catch (Exception e) {
             return body;
