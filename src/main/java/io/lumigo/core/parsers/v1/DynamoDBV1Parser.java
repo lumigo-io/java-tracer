@@ -1,4 +1,4 @@
-package io.lumigo.core.parsers;
+package io.lumigo.core.parsers.v1;
 
 import static io.lumigo.core.utils.StringUtils.dynamodbItemToHash;
 
@@ -9,23 +9,22 @@ import com.amazonaws.services.dynamodbv2.model.*;
 import io.lumigo.models.HttpSpan;
 import java.util.List;
 import java.util.Map;
-import org.pmw.tinylog.Logger;
 
-public class DynamoDBParser implements AwsParser {
+public class DynamoDBV1Parser implements AwsSdkV1Parser {
+    @Override
+    public String getParserType() {
+        return DynamoDBV1Parser.class.getName();
+    }
+
     @Override
     public void parse(HttpSpan span, Request request, Response response) {
-        try {
-            String messageId = extractMessageId(request.getOriginalRequest());
-            if (messageId != null) span.getInfo().setMessageId(messageId);
-            String tableName = extractTableName(request.getOriginalRequest());
-            if (tableName != null) span.getInfo().setResourceName(tableName);
-        } catch (Exception e) {
-            Logger.error(e, "Failed to parse for DynamoDB request");
-        }
+        String messageId = extractMessageId(request.getOriginalRequest());
+        if (messageId != null) span.getInfo().setMessageId(messageId);
+        String tableName = extractTableName(request.getOriginalRequest());
+        if (tableName != null) span.getInfo().setResourceName(tableName);
     }
 
     private String extractMessageId(AmazonWebServiceRequest request) {
-
         if (request instanceof PutItemRequest) {
             return dynamodbItemToHash(((PutItemRequest) request).getItem());
         } else if (request instanceof UpdateItemRequest) {
@@ -46,7 +45,6 @@ public class DynamoDBParser implements AwsParser {
     }
 
     private String extractTableName(AmazonWebServiceRequest request) {
-
         if (request instanceof PutItemRequest) {
             return ((PutItemRequest) request).getTableName();
         } else if (request instanceof UpdateItemRequest) {

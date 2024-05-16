@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.lumigo</groupId>
     <artifactId>java-tracer</artifactId>
-    <version>1.0.41</version>
+    <version>1.0.42</version>
     <packaging>jar</packaging>
     <name>Lumigo java tracer</name>
     <description>The Lumigo java tracer for serverless functions</description>
@@ -12,7 +12,7 @@
         <url>https://github.com/lumigo-io/java-tracer</url>
         <connection>scm:git:https://github.com:lumigo-io/java-tracer.git</connection>
         <developerConnection>scm:git:https://github.com:lumigo-io/java-tracer.git</developerConnection>
-        <tag>1.0.41</tag>
+        <tag>1.0.42</tag>
     </scm>
     <developers>
         <developer>
@@ -50,7 +50,7 @@
         <jackson.version>2.9.8</jackson.version>
         <httpcomponents.httpclient.version>4.5.6</httpcomponents.httpclient.version>
         <httpcomponents.httpcore.version>4.4.10</httpcomponents.httpcore.version>
-        <junit.version>5.7.0</junit.version>
+        <junit.version>5.10.2</junit.version>
     </properties>
     <repositories>
         <repository>
@@ -84,7 +84,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
-            <version>1.11.505</version>
+            <version>1.12.261</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -104,6 +104,35 @@
             <artifactId>okhttp</artifactId>
             <version>3.14.2</version>
         </dependency>
+
+        <!-- AWS sdk V2 dependencies -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>core</artifactId>
+            <version>2.25.45</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>dynamodb</artifactId>
+            <version>2.25.45</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sqs</artifactId>
+            <version>2.25.45</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sns</artifactId>
+            <version>2.25.45</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>kinesis</artifactId>
+            <version>2.25.45</version>
+        </dependency>
+
         <!-- Tracer dependencies -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

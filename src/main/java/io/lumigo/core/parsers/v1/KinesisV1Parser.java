@@ -1,4 +1,4 @@
-package io.lumigo.core.parsers;
+package io.lumigo.core.parsers.v1;
 
 import com.amazonaws.Request;
 import com.amazonaws.Response;
@@ -11,29 +11,29 @@ import java.util.LinkedList;
 import java.util.List;
 import org.pmw.tinylog.Logger;
 
-public class KinesisParser implements AwsParser {
+public class KinesisV1Parser implements AwsSdkV1Parser {
+    @Override
+    public String getParserType() {
+        return KinesisV1Parser.class.getName();
+    }
+
     @Override
     public void parse(HttpSpan span, Request request, Response response) {
-        try {
-            if (request.getOriginalRequest() instanceof PutRecordRequest) {
-                span.getInfo()
-                        .setResourceName(
-                                ((PutRecordRequest) request.getOriginalRequest()).getStreamName());
-            }
-            if (request.getOriginalRequest() instanceof PutRecordsRequest) {
-                span.getInfo()
-                        .setResourceName(
-                                ((PutRecordsRequest) request.getOriginalRequest()).getStreamName());
-            }
-            List<String> messageIds = extractMessageIds(response.getAwsResponse());
-            if (messageIds.size() > 0) span.getInfo().setMessageIds(messageIds);
-        } catch (Exception e) {
-            Logger.error(e, "Failed to extract parse for Kinesis request");
+        if (request.getOriginalRequest() instanceof PutRecordRequest) {
+            span.getInfo()
+                    .setResourceName(
+                            ((PutRecordRequest) request.getOriginalRequest()).getStreamName());
         }
+        if (request.getOriginalRequest() instanceof PutRecordsRequest) {
+            span.getInfo()
+                    .setResourceName(
+                            ((PutRecordsRequest) request.getOriginalRequest()).getStreamName());
+        }
+        List<String> messageIds = extractMessageIds(response.getAwsResponse());
+        if (!messageIds.isEmpty()) span.getInfo().setMessageIds(messageIds);
     }
 
     private List<String> extractMessageIds(Object response) {
-
         List<String> result = new LinkedList<>();
         if (response instanceof PutRecordsResult) {
             ((PutRecordsResult) response)

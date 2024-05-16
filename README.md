@@ -1,7 +1,7 @@
 # Java Tracer
 
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/lumigo-io/java-tracer/tree/master.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/lumigo-io/java-tracer/tree/master)
-![Version](https://img.shields.io/badge/version-1.0.41-green.svg)
+![Version](https://img.shields.io/badge/version-1.0.42-green.svg)
 [![codecov](https://codecov.io/gh/lumigo-io/java-tracer/branch/master/graph/badge.svg?token=D3IZ5hQwaQ)](https://codecov.io/gh/lumigo-io/java-tracer)
 
 Supported Runtimes: Java 8, Java 11, Java 17, Java 21
@@ -24,13 +24,13 @@ Include lumigo java tracer dependency, for [Maven](https://maven.apache.org) pro
 <dependency>
   <groupId>io.lumigo</groupId>
   <artifactId>java-tracer</artifactId>
-  <version>1.0.41</version>
+  <version>1.0.42</version>
 </dependency>
 
 <dependency>
   <groupId>io.lumigo</groupId>
   <artifactId>lumigo-agent</artifactId>
-  <version>1.0.41</version>
+  <version>1.0.42</version>
 </dependency>
 ```
 
@@ -102,3 +102,9 @@ class MyFunction implements RequestHandler<String, String> {
 
 Add the environment variable `JAVA_TOOL_OPTIONS` to your Lambda functions and set it to
 `-Djdk.attach.allowAttachSelf=true` in addition to the manual code mentioned above.
+
+### Supported Instrumentation Libraries
+
+- Aws SDK V1 
+- Aws SDK V2
+- Apache HTTP Client
