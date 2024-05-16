@@ -10,6 +10,7 @@ import io.lumigo.core.parsers.v1.AwsSdkV1ParserFactory;
 import io.lumigo.core.parsers.v2.AwsSdkV2ParserFactory;
 import io.lumigo.core.utils.AwsUtils;
 import io.lumigo.core.utils.JsonUtils;
+import io.lumigo.core.utils.SecretScrubber;
 import io.lumigo.core.utils.StringUtils;
 import io.lumigo.models.HttpSpan;
 import io.lumigo.models.Span;
@@ -147,8 +148,12 @@ public class SpansContainer {
                                         : null)
                         .event(
                                 Configuration.getInstance().isLumigoVerboseMode()
-                                        ? JsonUtils.getObjectAsJsonString(
-                                                EventParserFactory.parseEvent(event))
+                                        ? SecretScrubber.getInstance()
+                                                .scrubBody(
+                                                        JsonUtils.getObjectAsJsonString(
+                                                                EventParserFactory.parseEvent(
+                                                                        event)),
+                                                        env)
                                         : null)
                         .build();
     }

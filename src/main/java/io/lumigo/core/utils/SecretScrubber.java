@@ -1,6 +1,7 @@
 package io.lumigo.core.utils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import org.json.JSONObject;
 
@@ -11,7 +12,7 @@ public class SecretScrubber {
 
     private SecretScrubber() {}
 
-    String scrubBody(String body, EnvUtil env) {
+    public String scrubBody(String body, Map<String, String> env) {
         try {
             JSONObject jsonObject = new JSONObject(body);
             return scrubJsonObject(jsonObject, secretScrubbingUtils.getBodyScrubbingPatterns(env))

@@ -1,27 +1,20 @@
 package io.lumigo.core.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
 
 import io.lumigo.core.configuration.Configuration;
-import org.junit.jupiter.api.BeforeEach;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 class SecretScrubberTest {
-    @Mock public EnvUtil envUtil;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.initMocks(this);
-    }
-
     @Test
     @DisplayName("does not modify non-json payloads")
     void testSecretScrubbingUtils_does_not_scrub_non_json_payloads() {
-        assertEquals("123", SecretScrubber.getInstance().scrubBody("123", new EnvUtil()));
+        assertEquals(
+                "123",
+                SecretScrubber.getInstance().scrubBody("123", new HashMap<String, String>()));
     }
 
     @Test
@@ -31,7 +24,7 @@ class SecretScrubberTest {
                 SecretScrubber.getInstance()
                         .scrubBody(
                                 "{\"pass\":\"word\",\"key\":\"value\",\"secret\":\"stuff\",\"credential\":\"admin:admin\",\"passphrase\":\"SesameOpen\",\"SessionToken\":\"XyZ012x=\",\"x-amz-security-token\":\"amzToken123\",\"Signature\":\"yours truly\",\"authorization\":\"Bearer 123\"}",
-                                envUtil);
+                                new HashMap<>());
         String expected =
                 "{\"authorization\":\"****\",\"credential\":\"****\",\"pass\":\"****\",\"SessionToken\":\"****\",\"Signature\":\"****\",\"passphrase\":\"****\",\"secret\":\"****\",\"x-amz-security-token\":\"****\",\"key\":\"****\"}";
 
@@ -47,7 +40,7 @@ class SecretScrubberTest {
                 SecretScrubber.getInstance()
                         .scrubBody(
                                 "{\"pass\":\"word\",\"key\":\"value\",\"secret\":\"stuff\",\"credential\":\"admin:admin\",\"passphrase\":\"SesameOpen\",\"SessionToken\":\"XyZ012x=\",\"x-amz-security-token\":\"amzToken123\",\"Signature\":\"yours truly\",\"authorization\":\"Bearer 123\"}",
-                                withMaskingRegexEnvVar("[THIS IS NOT A VALID JSON ARRAY]"));
+                                envWithMaskingRegex("[THIS IS NOT A VALID JSON ARRAY]"));
         String expected =
                 "{\"authorization\":\"****\",\"credential\":\"****\",\"pass\":\"****\",\"SessionToken\":\"****\",\"Signature\":\"****\",\"passphrase\":\"****\",\"secret\":\"****\",\"x-amz-security-token\":\"****\",\"key\":\"****\"}";
 
@@ -61,7 +54,7 @@ class SecretScrubberTest {
                 SecretScrubber.getInstance()
                         .scrubBody(
                                 "{\"pAss\":\"word\",\"KeY\":\"value\",\"seCRet\":\"stuff\",\"CrEdEntial\":\"admin:admin\",\"paSSPhrase\":\"SesameOpen\",\"seSSIOntOkEn\":\"XyZ012x=\",\"X-AMZ-security-token\":\"amzToken123\",\"SIGnatUre\":\"yours truly\",\"AuTHOrization\":\"Bearer 123\"}",
-                                envUtil);
+                                new HashMap<String, String>());
         String expected =
                 "{\"pAss\":\"****\",\"CrEdEntial\":\"****\",\"paSSPhrase\":\"****\",\"seSSIOntOkEn\":\"****\",\"SIGnatUre\":\"****\",\"seCRet\":\"****\",\"X-AMZ-security-token\":\"****\",\"KeY\":\"****\",\"AuTHOrization\":\"****\"}";
 
@@ -75,7 +68,7 @@ class SecretScrubberTest {
                 SecretScrubber.getInstance()
                         .scrubBody(
                                 "{\"topsecret\":\"stuff\"}",
-                                withMaskingRegexEnvVar("[\".*topsecret.*\"]"));
+                                envWithMaskingRegex("[\".*topsecret.*\"]"));
         String expected = "{\"topsecret\":\"****\"}";
 
         assertEquals(expected, actual);
@@ -88,14 +81,17 @@ class SecretScrubberTest {
                 SecretScrubber.getInstance()
                         .scrubBody(
                                 "{\"some\": {\"topsecret\":\"stuff\"}, \"a\": 1}",
-                                withMaskingRegexEnvVar("[\".*topsecret.*\"]"));
+                                envWithMaskingRegex("[\".*topsecret.*\"]"));
         String expected = "{\"some\":{\"topsecret\":\"****\"},\"a\":1}";
 
         assertEquals(expected, actual);
     }
 
-    private EnvUtil withMaskingRegexEnvVar(String maskingRegex) {
-        when(envUtil.getEnv(Configuration.LUMIGO_SECRET_MASKING_REGEX)).thenReturn(maskingRegex);
-        return envUtil;
+    private Map<String, String> envWithMaskingRegex(String maskingRegex) {
+        return new HashMap<String, String>() {
+            {
+                put(Configuration.LUMIGO_SECRET_MASKING_REGEX, maskingRegex);
+            }
+        };
     }
 }

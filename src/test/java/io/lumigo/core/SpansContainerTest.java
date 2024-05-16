@@ -83,7 +83,7 @@ class SpansContainerTest {
     @DisplayName("Check that start span include all relevant data")
     @Test
     void createStartSpan() throws Exception {
-        spansContainer.init(createMockedEnv(), reporter, context, null);
+        spansContainer.init(createMockedEnv(), reporter, context, "{\"secret\":\"stuff\"}");
         spansContainer.start();
 
         Span actualSpan = spansContainer.getStartFunctionSpan();
@@ -94,13 +94,13 @@ class SpansContainerTest {
                         + "  \"ended\": 1557823871416,\n"
                         + "  \"runtime\": \"JAVA8\",\n"
                         + "  \"id\": \"3n2783hf7823hdui32_started\",\n"
-                        + "  \"type\": function,\n"
+                        + "  \"type\": \"function\",\n"
                         + "  \"memoryAllocated\": \"100\",\n"
                         + "  \"transactionId\": \"3\",\n"
                         + "  \"requestId\": \"3n2783hf7823hdui32\",\n"
                         + "  \"account\": \"1111\",\n"
                         + "  \"maxFinishTime\": 100,\n"
-                        + "  \"event\": null,\n"
+                        + "  \"event\": \"{\\\"secret\\\":\\\"****\\\"}\",\n"
                         + "  \"envs\": \"{\\\"AWS_REGION\\\":\\\"us-west-2\\\",\\\"_X_AMZN_TRACE_ID\\\":\\\"Root=1-2-3;Another=456;Bla=789\\\",\\\"AWS_EXECUTION_ENV\\\":\\\"JAVA8\\\"}\",\n"
                         + "  \"region\": \"us-west-2\",\n"
                         + "  \"reporter_rtt\": null,\n"
@@ -116,7 +116,7 @@ class SpansContainerTest {
                         + "    },\n"
                         + "  \"logStreamName\": \"2019/05/12/[$LATEST]7f67fc1238a941749d8126be19f0cdc6\",\n"
                         + "  \"logGroupName\": \"/aws/lambda/mocked_function_name\",\n"
-                        + "    \"triggeredBy\": null\n"
+                        + "    \"triggeredBy\": \"No recognized trigger\"\n"
                         + "  }\n"
                         + "}";
         long started = actualSpan.getStarted();

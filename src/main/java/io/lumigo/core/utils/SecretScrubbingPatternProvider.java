@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public class SecretScrubbingPatternProvider {
@@ -54,8 +55,8 @@ public class SecretScrubbingPatternProvider {
         }
     }
 
-    public List<Pattern> getBodyScrubbingPatterns(EnvUtil env) {
-        String regexStringifiedList = env.getEnv("LUMIGO_SECRET_MASKING_REGEX");
+    public List<Pattern> getBodyScrubbingPatterns(Map<String, String> env) {
+        String regexStringifiedList = env.get("LUMIGO_SECRET_MASKING_REGEX");
 
         if (Strings.isBlank(regexStringifiedList)) {
             return DEFAULT_PATTERNS;
