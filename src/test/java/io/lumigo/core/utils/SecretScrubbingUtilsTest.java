@@ -14,6 +14,16 @@ class SecretScrubbingUtilsTest {
   }
 
   @Test
+  @DisplayName("scrubs a nested body value using LUMIGO_SECRET_MASKING_REGEX")
+  void testSecretScrubbingUtils_scrubs_json_payload_default() {
+    String actual = SecretScrubbingUtils.scrubBody(
+        "{\"pass\":\"word\",\"key\":\"value\",\"secret\":\"stuff\",\"credential\":\"admin:admin\",\"passphrase\":\"SesameOpen\",\"SessionToken\":\"XyZ012x=\",\"x-amz-security-token\":\"amzToken123\",\"Signature\":\"yours truly\",\"authorization\":\"Bearer 123\"}");
+    String expected = "{\"authorization\":\"****\",\"credential\":\"****\",\"pass\":\"****\",\"SessionToken\":\"****\",\"Signature\":\"****\",\"passphrase\":\"****\",\"secret\":\"****\",\"x-amz-security-token\":\"****\",\"key\":\"****\"}";
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
   @DisplayName("scrubs the body using LUMIGO_SECRET_MASKING_REGEX")
   @SetEnvironmentVariable(key = "LUMIGO_SECRET_MASKING_REGEX", value = "[\".*topsecret.*\"]")
   void testSecretScrubbingUtils_scrubs_json_payload_top_level_key() {

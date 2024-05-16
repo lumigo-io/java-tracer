@@ -9,39 +9,53 @@ import org.json.JSONObject;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SecretScrubbingUtils {
   protected static final JsonFactory JSON_FACTORY = new JsonFactory();
+  protected static final String[] DEFAULT_PATTERNS = {
+      ".*pass.*",
+      ".*key.*",
+      ".*secret.*",
+      ".*credential.*",
+      ".*passphrase.*",
+      "SessionToken",
+      "x-amz-security-token",
+      "Signature",
+      "Authorization"
+  };
+
+  static Pattern[] jsonListToPatternList(String jsonList) {
+    List<Pattern> patternList = new ArrayList<>();
+    try (JsonParser parser = JSON_FACTORY.createParser(jsonList)) {
+      if (!JsonToken.START_ARRAY.equals(parser.nextToken())) {
+        throw new IllegalArgumentException();
+      }
+      while (!JsonToken.END_ARRAY.equals(parser.nextToken())) {
+        if (parser.currentToken().equals(JsonToken.VALUE_STRING)) {
+          patternList.add(Pattern.compile(parser.getText(), Pattern.CASE_INSENSITIVE));
+        } else {
+          throw new IllegalArgumentException();
+        }
+      }
+      return patternList.toArray(new Pattern[0]);
+    } catch (Exception e) {
+      return patternList.toArray(new Pattern[0]);
+    }
+  }
 
   static String scrubBody(String body) {
     try {
       JSONObject jsonObject = new JSONObject(body);
-      String regExps = System.getenv("LUMIGO_SECRET_MASKING_REGEX");
-      final List<Pattern> patternList;
+      String regexStringifiedList = System.getenv("LUMIGO_SECRET_MASKING_REGEX");
 
-      if (Strings.isBlank(regExps)) {
-        return body;
+      if (Strings.isBlank(regexStringifiedList)) {
+        regexStringifiedList = new ObjectMapper().writeValueAsString(DEFAULT_PATTERNS);
       }
 
-      patternList = new ArrayList<>();
-      try (JsonParser parser = JSON_FACTORY.createParser(regExps)) {
-        if (!JsonToken.START_ARRAY.equals(parser.nextToken())) {
-          throw new IllegalArgumentException();
-        }
-        while (!JsonToken.END_ARRAY.equals(parser.nextToken())) {
-          if (parser.currentToken().equals(JsonToken.VALUE_STRING)) {
-            patternList.add(Pattern.compile(parser.getText(), Pattern.CASE_INSENSITIVE));
-          } else {
-            throw new IllegalArgumentException();
-          }
-        }
-
-        Pattern[] patterns = patternList.toArray(new Pattern[0]);
-        return scrubJsonObject(jsonObject, patterns).toString();
-      } catch (Exception e1) {
-        return body;
-      }
-    } catch (Exception e2) {
+      Pattern[] patterns = jsonListToPatternList(regexStringifiedList);
+      return scrubJsonObject(jsonObject, patterns).toString();
+    } catch (Exception e1) {
       return body;
     }
   }
