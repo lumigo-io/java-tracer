@@ -5,8 +5,9 @@ import com.amazonaws.Response;
 import com.amazonaws.services.lambda.runtime.Context;
 import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.network.Reporter;
-import io.lumigo.core.parsers.AwsParserFactory;
 import io.lumigo.core.parsers.event.EventParserFactory;
+import io.lumigo.core.parsers.v1.AwsSdkV1ParserFactory;
+import io.lumigo.core.parsers.v2.AwsSdkV2ParserFactory;
 import io.lumigo.core.utils.AwsUtils;
 import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.core.utils.StringUtils;
@@ -21,6 +22,11 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.pmw.tinylog.Logger;
+import software.amazon.awssdk.awscore.AwsResponse;
+import software.amazon.awssdk.core.SdkResponse;
+import software.amazon.awssdk.core.interceptor.ExecutionAttributes;
+import software.amazon.awssdk.core.interceptor.SdkExecutionAttribute;
+import software.amazon.awssdk.core.sync.RequestBody;
 
 public class SpansContainer {
 
@@ -354,11 +360,85 @@ public class SpansContainer {
                                                         response.getHttpResponse().getStatusCode())
                                                 .build())
                                 .build());
-        AwsParserFactory.getParser(request.getServiceName()).parse(httpSpan, request, response);
+        AwsSdkV1ParserFactory.getParser(request.getServiceName())
+                .safeParse(httpSpan, request, response);
+        httpSpans.add(httpSpan);
+    }
+
+    public void addHttpSpan(
+            Long startTime,
+            final software.amazon.awssdk.core.interceptor.Context.AfterExecution context,
+            final ExecutionAttributes executionAttributes) {
+        HttpSpan httpSpan = createBaseHttpSpan(startTime);
+        String spanId = null;
+        for (Map.Entry<String, List<String>> header : context.httpResponse().headers().entrySet()) {
+            if ("x-amzn-requestid".equalsIgnoreCase(header.getKey())
+                    || "x-amz-requestid".equalsIgnoreCase(header.getKey())) {
+                spanId = header.getValue().get(0);
+            }
+        }
+        if (spanId != null) {
+            httpSpan.setId(spanId);
+        }
+        httpSpan.getInfo()
+                .setHttpInfo(
+                        HttpSpan.HttpInfo.builder()
+                                .host(context.httpRequest().getUri().getHost())
+                                .request(
+                                        HttpSpan.HttpData.builder()
+                                                .headers(
+                                                        callIfVerbose(
+                                                                () ->
+                                                                        extractHeadersV2(
+                                                                                context.httpRequest()
+                                                                                        .headers())))
+                                                .uri(
+                                                        callIfVerbose(
+                                                                () ->
+                                                                        context.httpRequest()
+                                                                                .getUri()
+                                                                                .toString()))
+                                                .method(context.httpRequest().method().name())
+                                                .body(
+                                                        callIfVerbose(
+                                                                () ->
+                                                                        extractBodyFromRequest(
+                                                                                context
+                                                                                        .requestBody())))
+                                                .build())
+                                .response(
+                                        HttpSpan.HttpData.builder()
+                                                .headers(
+                                                        callIfVerbose(
+                                                                () ->
+                                                                        extractHeadersV2(
+                                                                                context.httpResponse()
+                                                                                        .headers())))
+                                                .body(
+                                                        callIfVerbose(
+                                                                () ->
+                                                                        extractBodyFromResponse(
+                                                                                context
+                                                                                        .response())))
+                                                .statusCode(context.httpResponse().statusCode())
+                                                .build())
+                                .build());
+
+        Logger.debug(
+                "Trying to extract aws custom properties for service: "
+                        + executionAttributes.getAttribute(SdkExecutionAttribute.SERVICE_NAME));
+        AwsSdkV2ParserFactory.getParser(
+                        executionAttributes.getAttribute(SdkExecutionAttribute.SERVICE_NAME))
+                .safeParse(httpSpan, context);
+
         httpSpans.add(httpSpan);
     }
 
     private static String extractHeaders(Map<String, String> headers) {
+        return JsonUtils.getObjectAsJsonString(headers);
+    }
+
+    private static String extractHeadersV2(Map<String, List<String>> headers) {
         return JsonUtils.getObjectAsJsonString(headers);
     }
 
@@ -373,33 +453,48 @@ public class SpansContainer {
     }
 
     protected static String extractBodyFromRequest(Request<?> request) {
-        return extractBodyFromRequest(request.getContent());
+        return extractBodyFromStream(request.getContent());
+    }
+
+    protected static String extractBodyFromRequest(Optional<RequestBody> request) {
+        return request.map(
+                        requestBody ->
+                                extractBodyFromStream(
+                                        requestBody.contentStreamProvider().newStream()))
+                .orElse(null);
     }
 
     protected static String extractBodyFromRequest(HttpUriRequest request) throws Exception {
         if (request instanceof HttpEntityEnclosingRequestBase) {
             HttpEntity entity = ((HttpEntityEnclosingRequestBase) request).getEntity();
             if (entity != null) {
-                return extractBodyFromRequest(entity.getContent());
+                return extractBodyFromStream(entity.getContent());
             }
         }
         return null;
     }
 
-    protected static String extractBodyFromRequest(InputStream stream) {
-        return StringUtils.extractStringForStream(stream, MAX_STRING_SIZE);
-    }
-
     protected static String extractBodyFromResponse(HttpResponse response) throws IOException {
-        return StringUtils.extractStringForStream(
-                response.getEntity() != null ? response.getEntity().getContent() : null,
-                MAX_STRING_SIZE);
+        return response.getEntity() != null
+                ? extractBodyFromStream(response.getEntity().getContent())
+                : null;
     }
 
     protected static String extractBodyFromResponse(Response response) {
         return response.getAwsResponse() != null
                 ? JsonUtils.getObjectAsJsonString(response.getAwsResponse())
                 : null;
+    }
+
+    protected static String extractBodyFromResponse(SdkResponse response) {
+        if (response instanceof AwsResponse) {
+            return JsonUtils.getObjectAsJsonString(response.toBuilder());
+        }
+        return null;
+    }
+
+    protected static String extractBodyFromStream(InputStream stream) {
+        return StringUtils.extractStringForStream(stream, MAX_STRING_SIZE);
     }
 
     public String getPatchedRoot() {

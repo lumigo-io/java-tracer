@@ -1,4 +1,4 @@
-package io.lumigo.core.parsers;
+package io.lumigo.core.parsers.v1;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -16,10 +16,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-class KinesisParserTest {
+class KinesisV1ParserTest {
 
     private HttpSpan span = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
-    KinesisParser kinesisParser = new KinesisParser();
+    KinesisV1Parser kinesisParser = new KinesisV1Parser();
     @Mock Request request;
     @Mock HttpResponse httpResponse;
     @Mock PutRecordsRequest putRecordsRequest;
@@ -37,7 +37,7 @@ class KinesisParserTest {
     void test_parse_kinesis_parser_with_no_data() {
         when(request.getParameters()).thenReturn(new HashMap<>());
 
-        kinesisParser.parse(span, request, new Response(null, httpResponse));
+        kinesisParser.safeParse(span, request, new Response(null, httpResponse));
 
         assertNull(span.getInfo().getResourceName());
         assertNull(span.getInfo().getTargetArn());
@@ -53,7 +53,7 @@ class KinesisParserTest {
         when(putRecordRequest.getStreamName()).thenReturn("streamName");
         when(request.getOriginalRequest()).thenReturn(putRecordRequest);
 
-        kinesisParser.parse(span, request, response);
+        kinesisParser.safeParse(span, request, response);
 
         HttpSpan expectedSpan = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
         expectedSpan.getInfo().setResourceName("streamName");
@@ -67,7 +67,7 @@ class KinesisParserTest {
         when(putRecordResult.getSequenceNumber()).thenThrow(new RuntimeException());
         when(request.getParameters()).thenReturn(new HashMap<>());
 
-        kinesisParser.parse(span, request, response);
+        kinesisParser.safeParse(span, request, response);
 
         HttpSpan expectedSpan = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
         assertEquals(span, expectedSpan);
@@ -85,7 +85,7 @@ class KinesisParserTest {
         when(putRecordsRequest.getStreamName()).thenReturn("streamName");
         when(request.getOriginalRequest()).thenReturn(putRecordsRequest);
 
-        kinesisParser.parse(span, request, response);
+        kinesisParser.safeParse(span, request, response);
 
         HttpSpan expectedSpan = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
         expectedSpan.getInfo().setResourceName("streamName");
@@ -98,7 +98,7 @@ class KinesisParserTest {
         response = new Response(putRecordsResult, httpResponse);
         when(request.getOriginalRequest()).thenThrow(new RuntimeException());
 
-        kinesisParser.parse(span, request, response);
+        kinesisParser.safeParse(span, request, response);
 
         HttpSpan expectedSpan = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
         assertEquals(span, expectedSpan);
@@ -110,7 +110,7 @@ class KinesisParserTest {
         when(putRecordsResult.getRecords()).thenThrow(new RuntimeException());
         when(request.getParameters()).thenReturn(new HashMap<>());
 
-        kinesisParser.parse(span, request, response);
+        kinesisParser.safeParse(span, request, response);
 
         HttpSpan expectedSpan = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
         assertEquals(span, expectedSpan);

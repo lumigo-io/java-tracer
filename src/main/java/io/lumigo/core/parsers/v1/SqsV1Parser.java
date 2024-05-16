@@ -1,4 +1,4 @@
-package io.lumigo.core.parsers;
+package io.lumigo.core.parsers.v1;
 
 import com.amazonaws.Request;
 import com.amazonaws.Response;
@@ -7,7 +7,12 @@ import com.amazonaws.services.sqs.model.SendMessageResult;
 import io.lumigo.models.HttpSpan;
 import org.pmw.tinylog.Logger;
 
-public class SqsParser implements AwsParser {
+public class SqsV1Parser implements AwsSdkV1Parser {
+    @Override
+    public String getParserType() {
+        return SqsV1Parser.class.getName();
+    }
+
     @Override
     public void parse(HttpSpan span, Request request, Response response) {
         if (request.getOriginalRequest() instanceof SendMessageRequest) {
@@ -24,7 +29,7 @@ public class SqsParser implements AwsParser {
         try {
             if (response instanceof SendMessageResult) {
                 String messageId = ((SendMessageResult) response).getMessageId();
-                Logger.debug("Got getMessageId : " + messageId);
+                Logger.debug("Got messageId : " + messageId);
                 return messageId;
             } else {
                 Logger.error("Failed to extract messageId for SQS response");

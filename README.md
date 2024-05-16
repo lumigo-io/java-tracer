@@ -102,3 +102,9 @@ class MyFunction implements RequestHandler<String, String> {
 
 Add the environment variable `JAVA_TOOL_OPTIONS` to your Lambda functions and set it to
 `-Djdk.attach.allowAttachSelf=true` in addition to the manual code mentioned above.
+
+### Supported Instrumentation Libraries
+
+- Aws SDK V1 
+- Aws SDK V2
+- Apache HTTP Client

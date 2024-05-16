@@ -24,7 +24,6 @@ public class AmazonHttpClientInstrumentation implements LumigoInstrumentationApi
 
     @Override
     public AgentBuilder.Transformer.ForAdvice getTransformer() {
-
         return new AgentBuilder.Transformer.ForAdvice()
                 .include(Loader.class.getClassLoader())
                 .advice(isMethod().and(named("execute")), AmazonHttpClientAdvice.class.getName());

@@ -1,4 +1,4 @@
-package io.lumigo.core.parsers;
+package io.lumigo.core.parsers.v1;
 
 import com.amazonaws.Request;
 import com.amazonaws.Response;
@@ -6,7 +6,12 @@ import com.amazonaws.services.sns.model.PublishResult;
 import io.lumigo.models.HttpSpan;
 import org.pmw.tinylog.Logger;
 
-public class SnsParser implements AwsParser {
+public class SnsV1Parser implements AwsSdkV1Parser {
+    @Override
+    public String getParserType() {
+        return SnsV1Parser.class.getName();
+    }
+
     @Override
     public void parse(HttpSpan span, Request request, Response response) {
         String topicArn = getParameter(request, "TopicArn");

@@ -1,6 +1,7 @@
-package io.lumigo.core.parsers;
+package io.lumigo.core.parsers.v1;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
 
 import com.amazonaws.Request;
@@ -17,10 +18,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-class SnsParserTest {
+class SnsV1ParserTest {
 
     private HttpSpan span = HttpSpan.builder().info(HttpSpan.Info.builder().build()).build();
-    SnsParser SnsParser = new SnsParser();
+    SnsV1Parser SnsParser = new SnsV1Parser();
     @Mock Request request;
     @Mock HttpResponse httpResponse;
     @Mock PublishResult snsResult;
@@ -39,7 +40,7 @@ class SnsParserTest {
         parameters.put("TopicArn", Arrays.asList("topic"));
         when(request.getParameters()).thenReturn(parameters);
 
-        SnsParser.parse(span, request, response);
+        SnsParser.safeParse(span, request, response);
 
         assertEquals("topic", span.getInfo().getResourceName());
         assertEquals("topic", span.getInfo().getTargetArn());
@@ -50,7 +51,7 @@ class SnsParserTest {
     void test_parse_sns_with_no_data() {
         when(request.getParameters()).thenReturn(new HashMap<>());
 
-        SnsParser.parse(span, request, new Response(null, httpResponse));
+        SnsParser.safeParse(span, request, new Response(null, httpResponse));
 
         assertNull(span.getInfo().getResourceName());
         assertNull(span.getInfo().getTargetArn());
@@ -62,7 +63,7 @@ class SnsParserTest {
         when(snsResult.getMessageId()).thenThrow(new RuntimeException());
         when(request.getParameters()).thenReturn(new HashMap<>());
 
-        SnsParser.parse(span, request, response);
+        SnsParser.safeParse(span, request, response);
 
         assertNull(span.getInfo().getResourceName());
         assertNull(span.getInfo().getTargetArn());
