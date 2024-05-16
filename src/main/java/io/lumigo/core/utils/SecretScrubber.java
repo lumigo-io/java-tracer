@@ -1,5 +1,6 @@
 package io.lumigo.core.utils;
 
+import java.util.List;
 import java.util.regex.Pattern;
 import org.json.JSONObject;
 
@@ -20,7 +21,7 @@ public class SecretScrubber {
         }
     }
 
-    private JSONObject scrubJsonObject(JSONObject jsonObject, Pattern[] patterns) {
+    private JSONObject scrubJsonObject(JSONObject jsonObject, List<Pattern> patterns) {
         for (String key : jsonObject.keySet()) {
             Object value = jsonObject.get(key);
 
@@ -34,7 +35,7 @@ public class SecretScrubber {
         return jsonObject;
     }
 
-    private boolean isSecret(String value, Pattern[] patterns) {
+    private boolean isSecret(String value, List<Pattern> patterns) {
         for (Pattern pattern : patterns) {
             if (pattern.matcher(value).matches()) {
                 return true;

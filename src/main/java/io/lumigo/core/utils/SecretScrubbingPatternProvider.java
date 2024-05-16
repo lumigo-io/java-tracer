@@ -5,34 +5,35 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
 public class SecretScrubbingPatternProvider {
-    private static final JsonFactory JSON_FACTORY = new JsonFactory();
-    private static final String[] DEFAULT_PATTERN_STRINGS = {
-        ".*pass.*",
-        ".*key.*",
-        ".*secret.*",
-        ".*credential.*",
-        ".*passphrase.*",
-        "SessionToken",
-        "x-amz-security-token",
-        "Signature",
-        "Authorization"
-    };
-    private static final Pattern[] DEFAULT_PATTERNS = stringListToPatterns(DEFAULT_PATTERN_STRINGS);
 
-    private static Pattern[] stringListToPatterns(String[] patternStrings) {
+    private static final JsonFactory JSON_FACTORY = new JsonFactory();
+    private static final List<String> DEFAULT_PATTERN_STRINGS = Arrays.asList(
+            ".*pass.*",
+            ".*key.*",
+            ".*secret.*",
+            ".*credential.*",
+            ".*passphrase.*",
+            "SessionToken",
+            "x-amz-security-token",
+            "Signature",
+            "Authorization");
+    private static final List<Pattern> DEFAULT_PATTERNS = stringListToPatterns(DEFAULT_PATTERN_STRINGS);
+
+    private static List<Pattern> stringListToPatterns(List<String> patternStrings) {
         ArrayList<Pattern> patterns = new ArrayList<>();
         for (String patternString : patternStrings) {
             patterns.add(Pattern.compile(patternString, Pattern.CASE_INSENSITIVE));
         }
 
-        return patterns.toArray(new Pattern[0]);
+        return patterns;
     }
 
-    private Pattern[] jsonListToPatternList(String jsonList) throws IOException {
+    private List<Pattern> jsonListToPatternList(String jsonList) throws IOException {
         List<String> patternStrings = new ArrayList<String>();
 
         try (JsonParser parser = JSON_FACTORY.createParser(jsonList)) {
@@ -47,11 +48,11 @@ public class SecretScrubbingPatternProvider {
                 }
             }
 
-            return stringListToPatterns(patternStrings.toArray(new String[0]));
+            return stringListToPatterns(patternStrings);
         }
     }
 
-    public Pattern[] getBodyScrubbingPatterns() {
+    public List<Pattern> getBodyScrubbingPatterns() {
         String regexStringifiedList = System.getenv("LUMIGO_SECRET_MASKING_REGEX");
 
         if (Strings.isBlank(regexStringifiedList)) {
