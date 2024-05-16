@@ -12,17 +12,19 @@ import java.util.regex.Pattern;
 public class SecretScrubbingPatternProvider {
 
     private static final JsonFactory JSON_FACTORY = new JsonFactory();
-    private static final List<String> DEFAULT_PATTERN_STRINGS = Arrays.asList(
-            ".*pass.*",
-            ".*key.*",
-            ".*secret.*",
-            ".*credential.*",
-            ".*passphrase.*",
-            "SessionToken",
-            "x-amz-security-token",
-            "Signature",
-            "Authorization");
-    private static final List<Pattern> DEFAULT_PATTERNS = stringListToPatterns(DEFAULT_PATTERN_STRINGS);
+    private static final List<String> DEFAULT_PATTERN_STRINGS =
+            Arrays.asList(
+                    ".*pass.*",
+                    ".*key.*",
+                    ".*secret.*",
+                    ".*credential.*",
+                    ".*passphrase.*",
+                    "SessionToken",
+                    "x-amz-security-token",
+                    "Signature",
+                    "Authorization");
+    private static final List<Pattern> DEFAULT_PATTERNS =
+            stringListToPatterns(DEFAULT_PATTERN_STRINGS);
 
     private static List<Pattern> stringListToPatterns(List<String> patternStrings) {
         ArrayList<Pattern> patterns = new ArrayList<>();
