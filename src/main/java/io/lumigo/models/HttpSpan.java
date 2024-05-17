@@ -12,7 +12,7 @@ import lombok.Data;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Data(staticConstructor = "of")
-public class HttpSpan implements Reportable {
+public class HttpSpan implements BaseSpan {
     private Long started;
     private Long ended;
     private String id;

@@ -3,9 +3,7 @@ package io.lumigo.core.instrumentation.agent;
 import static net.bytebuddy.matcher.ElementMatchers.nameStartsWith;
 import static net.bytebuddy.matcher.ElementMatchers.not;
 
-import io.lumigo.core.instrumentation.impl.AmazonHttpClientInstrumentation;
-import io.lumigo.core.instrumentation.impl.AmazonHttpClientV2Instrumentation;
-import io.lumigo.core.instrumentation.impl.ApacheHttpInstrumentation;
+import io.lumigo.core.instrumentation.impl.*;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import org.pmw.tinylog.Logger;
 
@@ -17,6 +15,10 @@ public class Loader {
                 new AmazonHttpClientInstrumentation();
         AmazonHttpClientV2Instrumentation amazonHttpClientV2Instrumentation =
                 new AmazonHttpClientV2Instrumentation();
+        ApacheKafkaProducerInstrumentation apacheKafkaInstrumentation =
+                new ApacheKafkaProducerInstrumentation();
+        ApacheKafkaConsumerInstrumentation apacheKafkaConsumerInstrumentation =
+                new ApacheKafkaConsumerInstrumentation();
         AgentBuilder builder =
                 new AgentBuilder.Default()
                         .disableClassFormatChanges()
@@ -27,13 +29,28 @@ public class Loader {
                                         .and(
                                                 not(
                                                         nameStartsWith(
-                                                                "software.amazon.awssdk.core.client.builder.SdkDefaultClientBuilder"))))
+                                                                AmazonHttpClientV2Instrumentation
+                                                                        .INSTRUMENTATION_PACKAGE_PREFIX)))
+                                        .and(
+                                                not(
+                                                        nameStartsWith(
+                                                                ApacheKafkaProducerInstrumentation
+                                                                        .INSTRUMENTATION_PACKAGE_PREFIX)))
+                                        .and(
+                                                not(
+                                                        nameStartsWith(
+                                                                ApacheKafkaConsumerInstrumentation
+                                                                        .INSTRUMENTATION_PACKAGE_PREFIX))))
                         .type(apacheHttpInstrumentation.getTypeMatcher())
                         .transform(apacheHttpInstrumentation.getTransformer())
                         .type(amazonHttpClientInstrumentation.getTypeMatcher())
                         .transform(amazonHttpClientInstrumentation.getTransformer())
                         .type(amazonHttpClientV2Instrumentation.getTypeMatcher())
-                        .transform(amazonHttpClientV2Instrumentation.getTransformer());
+                        .transform(amazonHttpClientV2Instrumentation.getTransformer())
+                        .type(apacheKafkaInstrumentation.getTypeMatcher())
+                        .transform(apacheKafkaInstrumentation.getTransformer())
+                        .type(apacheKafkaConsumerInstrumentation.getTypeMatcher())
+                        .transform(apacheKafkaConsumerInstrumentation.getTransformer());
 
         builder.installOn(inst);
         Logger.debug("Finish Instrumentation");

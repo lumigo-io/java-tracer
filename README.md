@@ -108,3 +108,4 @@ Add the environment variable `JAVA_TOOL_OPTIONS` to your Lambda functions and se
 - Aws SDK V1 
 - Aws SDK V2
 - Apache HTTP Client
+- Apache Kafka

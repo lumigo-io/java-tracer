@@ -1,13 +1,13 @@
 package io.lumigo.core.utils;
 
-import static io.lumigo.core.utils.StringUtils.dynamodbItemToHash;
-
 import com.amazonaws.services.lambda.runtime.events.*;
+import com.amazonaws.services.lambda.runtime.events.models.dynamodb.AttributeValue;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.lumigo.core.configuration.Configuration;
+import io.lumigo.models.KafkaSpan;
 import io.lumigo.models.Span;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -155,6 +155,37 @@ public class AwsUtils {
                 triggeredBy.setTriggeredBy("lex");
             } else if (event instanceof CognitoEvent) {
                 triggeredBy.setTriggeredBy("cognito");
+            } else if (event instanceof KafkaEvent) {
+                triggeredBy.setTriggeredBy("kafka");
+                triggeredBy.setArn(((KafkaEvent) event).getEventSourceArn());
+                String topic = null;
+                List<String> messageIds = new ArrayList<>();
+                if (((KafkaEvent) event).getRecords() != null) {
+                    for (Map.Entry<String, List<KafkaEvent.KafkaEventRecord>> entry :
+                            ((KafkaEvent) event).getRecords().entrySet()) {
+                        for (KafkaEvent.KafkaEventRecord record : entry.getValue()) {
+                            if (topic == null) {
+                                topic = record.getTopic();
+                            }
+                            for (Map<String, byte[]> headers : record.getHeaders()) {
+                                if (headers.containsKey(KafkaSpan.LUMIGO_MESSAGE_ID_KEY)) {
+                                    messageIds.add(
+                                            new String(
+                                                    headers.get(KafkaSpan.LUMIGO_MESSAGE_ID_KEY),
+                                                    StandardCharsets.UTF_8));
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                triggeredBy.setResource(topic);
+                triggeredBy.setMessageIds(
+                        messageIds.subList(
+                                0,
+                                Math.min(
+                                        messageIds.size(),
+                                        Configuration.getInstance().maxBatchMessageIds())));
             } else {
                 Logger.info(
                         "Failed to found relevant triggered by found for event {} ",
@@ -282,10 +313,44 @@ public class AwsUtils {
             DynamodbEvent.DynamodbStreamRecord record) {
         if (record.getEventName() == null) return null;
         if (record.getEventName().equals("INSERT")) {
-            return dynamodbItemToHash(record.getDynamodb().getNewImage());
+            return calculateItemHash(record.getDynamodb().getNewImage());
         } else if (record.getEventName().equals("MODIFY")
                 || record.getEventName().equals("REMOVE")) {
-            return dynamodbItemToHash(record.getDynamodb().getKeys());
+            return calculateItemHash(record.getDynamodb().getKeys());
+        }
+        return null;
+    }
+
+    private static String calculateItemHash(Map<String, AttributeValue> item) {
+        Map<String, Object> simpleMap = convertAttributeMapToSimpleMap(item);
+        return StringUtils.buildMd5Hash(JsonUtils.getObjectAsJsonString(simpleMap));
+    }
+
+    private static Map<String, Object> convertAttributeMapToSimpleMap(
+            Map<String, AttributeValue> attributeValueMap) {
+        Map<String, Object> simpleMap = new HashMap<>();
+        attributeValueMap.forEach(
+                (key, value) -> simpleMap.put(key, attributeValueToObject(value)));
+        return simpleMap;
+    }
+
+    private static Object attributeValueToObject(AttributeValue value) {
+        if (value == null) {
+            return null;
+        } else if (value.getS() != null) {
+            return value.getS();
+        } else if (value.getN() != null) {
+            return value.getN();
+        } else if (value.getBOOL() != null) {
+            return value.getBOOL();
+        } else if (value.getL() != null && !value.getL().isEmpty()) {
+            List<Object> list = new ArrayList<>();
+            for (AttributeValue v : value.getL()) {
+                list.add(attributeValueToObject(v));
+            }
+            return list;
+        } else if (value.getM() != null && !value.getM().isEmpty()) {
+            return convertAttributeMapToSimpleMap(value.getM());
         }
         return null;
     }

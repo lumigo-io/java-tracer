@@ -353,7 +353,7 @@ class SpansContainerTest {
         // Trigger scrubbing
         spansContainer.end();
 
-        HttpSpan actualSpan = spansContainer.getHttpSpans().get(0);
+        HttpSpan actualSpan = (HttpSpan) spansContainer.getSpans().get(0);
         String expectedSpan =
                 "{\n"
                         + "   \"started\":1559127760071,\n"
@@ -421,7 +421,7 @@ class SpansContainerTest {
         // Applies scrubbing
         spansContainer.end();
 
-        HttpSpan actualSpan = spansContainer.getHttpSpans().get(0);
+        HttpSpan actualSpan = (HttpSpan) spansContainer.getSpans().get(0);
         String expectedSpan =
                 "{\n"
                         + "   \"started\":1559127760071,\n"
@@ -487,7 +487,7 @@ class SpansContainerTest {
         long startTime = System.currentTimeMillis();
         spansContainer.addHttpSpan(startTime, awsRequest, awsResponse);
 
-        HttpSpan actualSpan = spansContainer.getHttpSpans().get(0);
+        HttpSpan actualSpan = (HttpSpan) spansContainer.getSpans().get(0);
         String expectedSpan =
                 "{\n"
                         + "   \"started\":1559127760071,\n"
@@ -577,7 +577,7 @@ class SpansContainerTest {
         // Triggers scrubbing
         spansContainer.end();
 
-        HttpSpan actualSpan = spansContainer.getHttpSpans().get(0);
+        HttpSpan actualSpan = (HttpSpan) spansContainer.getSpans().get(0);
         String expectedSpan =
                 "{\n"
                         + "   \"started\":1559127760071,\n"

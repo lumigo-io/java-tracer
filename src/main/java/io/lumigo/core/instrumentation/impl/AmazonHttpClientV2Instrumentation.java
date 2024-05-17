@@ -18,9 +18,13 @@ import software.amazon.awssdk.core.interceptor.ExecutionInterceptor;
 import software.amazon.awssdk.http.SdkHttpRequest;
 
 public class AmazonHttpClientV2Instrumentation implements LumigoInstrumentationApi {
+
+    public static final String INSTRUMENTATION_PACKAGE_PREFIX =
+            "software.amazon.awssdk.core.client.builder.SdkDefaultClientBuilder";
+
     @Override
     public ElementMatcher<TypeDescription> getTypeMatcher() {
-        return named("software.amazon.awssdk.core.client.builder.SdkDefaultClientBuilder");
+        return named(INSTRUMENTATION_PACKAGE_PREFIX);
     }
 
     @Override
