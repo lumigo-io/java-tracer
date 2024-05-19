@@ -267,7 +267,6 @@
                 <configuration>
                     <useSystemClassLoader>false</useSystemClassLoader>
                     <runOrder>alphabetical</runOrder>
-                    <argLine>--add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED -Xmx1024m -XX:MaxPermSize=256m</argLine>
                 </configuration>
             </plugin>
             <plugin>
