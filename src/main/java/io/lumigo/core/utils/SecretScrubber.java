@@ -51,7 +51,7 @@ public class SecretScrubber {
             }
         }
 
-        return env;
+        return scrubbedEnv;
     }
 
     private JSONObject scrubJsonObject(JSONObject jsonObject, List<Pattern> patterns) {
