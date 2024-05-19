@@ -180,7 +180,8 @@ public class SpansContainer {
                         .toBuilder()
                         .return_value(
                                 Configuration.getInstance().isLumigoVerboseMode()
-                                        ? JsonUtils.getObjectAsJsonString(response)
+                                        ? this.secretScrubber.scrubBody(
+                                                JsonUtils.getObjectAsJsonString(response))
                                         : null)
                         .build());
     }

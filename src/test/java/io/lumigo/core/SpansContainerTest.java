@@ -264,7 +264,7 @@ class SpansContainerTest {
     @Test
     void end_with_return_value() throws Exception {
         spansContainer.init(createMockedEnv(), reporter, context, null);
-        spansContainer.end("RESULT");
+        spansContainer.end("{\"credentials\":\"user:password\"}");
 
         Span actualSpan = spansContainer.getEndSpan();
         String expectedSpan =
@@ -281,12 +281,12 @@ class SpansContainerTest {
                         + "  \"account\": \"1111\",\n"
                         + "  \"maxFinishTime\": 100,\n"
                         + "  \"event\": null,\n"
-                        + "  \"envs\": \"{\\\"AWS_REGION\\\":\\\"us-west-2\\\",\\\"_X_AMZN_TRACE_ID\\\":\\\"Root=1-2-3;Another=456;Bla=789\\\",\\\"AWS_EXECUTION_ENV\\\":\\\"JAVA8\\\"}\",\n"
+                        + "  \"envs\": \"{\\\"AWS_EXECUTION_ENV\\\":\\\"JAVA8\\\",\\\"AWS_REGION\\\":\\\"us-west-2\\\",\\\"_X_AMZN_TRACE_ID\\\":\\\"Root=1-2-3;Another=456;Bla=789\\\"}\",\n"
                         + "  \"region\": \"us-west-2\",\n"
                         + "  \"reporter_rtt\": null,\n"
                         + "  \"error\": null,\n"
                         + "  \"token\": null,\n"
-                        + "  \"return_value\": \"RESULT\",\n"
+                        + "  \"return_value\": \"{\\\"credentials\\\":\\\"****\\\"}\",\n"
                         + "  \"info\": {\n"
                         + "    \"tracer\": {\n"
                         + "      \"version\": \"1.0\"\n"
