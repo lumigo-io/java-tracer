@@ -18,6 +18,7 @@ import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.handlers.LumigoConfiguration;
 import io.lumigo.models.HttpSpan;
 import io.lumigo.models.Span;
+import io.lumigo.testUtils.JsonTestUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -143,7 +144,8 @@ class SpansContainerTest {
                         new Customization(
                                 "maxFinishTime",
                                 (o1, o2) -> started + 100 == Long.valueOf(o1.toString())),
-                        new Customization("ended", (o1, o2) -> o2 != null)));
+                        new Customization("ended", (o1, o2) -> o2 != null),
+                        new Customization("envs", JsonTestUtils::compareJsonStrings)));
     }
 
     @DisplayName("End span which contains error")
@@ -202,6 +204,7 @@ class SpansContainerTest {
                         new Customization(
                                 "maxFinishTime",
                                 (o1, o2) -> started + 100 == Long.valueOf(o1.toString())),
+                        new Customization("envs", JsonTestUtils::compareJsonStrings),
                         new Customization("error.stacktrace", (o1, o2) -> o1 != null)));
     }
 
@@ -257,6 +260,7 @@ class SpansContainerTest {
                                 "maxFinishTime",
                                 (o1, o2) -> started + 100 == Long.valueOf(o1.toString())),
                         new Customization("token", (o1, o2) -> o1 != null),
+                        new Customization("envs", JsonTestUtils::compareJsonStrings),
                         new Customization("error.stacktrace", (o1, o2) -> o1 != null)));
     }
 
