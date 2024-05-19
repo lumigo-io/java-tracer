@@ -1,6 +1,7 @@
 package io.lumigo.core.utils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -9,27 +10,29 @@ import org.apache.http.message.BasicHeader;
 import org.json.JSONObject;
 
 public class SecretScrubber {
-    private static final SecretScrubbingPatternProvider secretScrubbingUtils =
-            new SecretScrubbingPatternProvider();
+    private SecretScrubbingPatternProvider secretScrubbingUtils;
+
     private static final String SECRET_PLACEHOLDER = "****";
 
-    private SecretScrubber() {}
+    public SecretScrubber(Map<String, String> env) {
+        this.secretScrubbingUtils = new SecretScrubbingPatternProvider(env);
+    }
 
-    public String scrubBody(String body, Map<String, String> env) {
+    public String scrubBody(String body) {
         try {
             JSONObject jsonObject = new JSONObject(body);
-            return scrubJsonObject(jsonObject, secretScrubbingUtils.getBodyScrubbingPatterns(env))
+            return scrubJsonObject(jsonObject, secretScrubbingUtils.getBodyScrubbingPatterns())
                     .toString();
         } catch (Exception e) {
             return body;
         }
     }
 
-    public Header[] scrubHeaders(Header[] headers, Map<String, String> env) {
+    public Header[] scrubHeaders(Header[] headers) {
         ArrayList<Header> scrubbedHeaders = new ArrayList<>();
 
         for (Header header : headers) {
-            if (isSecret(header.getName(), secretScrubbingUtils.getBodyScrubbingPatterns(env))) {
+            if (isSecret(header.getName(), secretScrubbingUtils.getBodyScrubbingPatterns())) {
                 scrubbedHeaders.add(new BasicHeader(header.getName(), SECRET_PLACEHOLDER));
             } else {
                 scrubbedHeaders.add(header);
@@ -40,9 +43,11 @@ public class SecretScrubber {
     }
 
     public Map<String, String> scrubEnv(Map<String, String> env) {
+        Map<String, String> scrubbedEnv = new HashMap<>(env);
+
         for (String key : env.keySet()) {
-            if (isSecret(key, secretScrubbingUtils.getBodyScrubbingPatterns(env))) {
-                env.put(key, SECRET_PLACEHOLDER);
+            if (isSecret(key, secretScrubbingUtils.getBodyScrubbingPatterns())) {
+                scrubbedEnv.put(key, SECRET_PLACEHOLDER);
             }
         }
 
@@ -71,9 +76,5 @@ public class SecretScrubber {
         }
 
         return false;
-    }
-
-    public static SecretScrubber getInstance() {
-        return new SecretScrubber();
     }
 }

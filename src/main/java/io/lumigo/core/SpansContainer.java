@@ -46,8 +46,7 @@ public class SpansContainer {
     private Span endFunctionSpan;
     private Reporter reporter;
     private List<HttpSpan> httpSpans = new LinkedList<>();
-    private Map<String, String> env;
-
+    private SecretScrubber secretScrubber;
     private static final SpansContainer ourInstance = new SpansContainer();
 
     public static SpansContainer getInstance() {
@@ -70,7 +69,8 @@ public class SpansContainer {
     public void init(Map<String, String> env, Reporter reporter, Context context, Object event) {
         this.clear();
         this.reporter = reporter;
-        this.env = env;
+        this.secretScrubber = new SecretScrubber(env);
+
         int javaVersion = AwsUtils.parseJavaVersion(System.getProperty("java.version"));
         if (javaVersion > 11) {
             awsTracerId = System.getProperty("com.amazonaws.xray.traceHeader");
@@ -147,16 +147,13 @@ public class SpansContainer {
                         .envs(
                                 Configuration.getInstance().isLumigoVerboseMode()
                                         ? JsonUtils.getObjectAsJsonString(
-                                                SecretScrubber.getInstance().scrubEnv(env))
+                                                this.secretScrubber.scrubEnv(env))
                                         : null)
                         .event(
                                 Configuration.getInstance().isLumigoVerboseMode()
-                                        ? SecretScrubber.getInstance()
-                                                .scrubBody(
-                                                        JsonUtils.getObjectAsJsonString(
-                                                                EventParserFactory.parseEvent(
-                                                                        event)),
-                                                        env)
+                                        ? this.secretScrubber.scrubBody(
+                                                JsonUtils.getObjectAsJsonString(
+                                                        EventParserFactory.parseEvent(event)))
                                         : null)
                         .build();
     }
@@ -282,13 +279,10 @@ public class SpansContainer {
                                                         callIfVerbose(
                                                                 () ->
                                                                         extractHeaders(
-                                                                                SecretScrubber
-                                                                                        .getInstance()
+                                                                                this.secretScrubber
                                                                                         .scrubHeaders(
                                                                                                 request
-                                                                                                        .getAllHeaders(),
-                                                                                                this
-                                                                                                        .env))))
+                                                                                                        .getAllHeaders()))))
                                                 .uri(
                                                         callIfVerbose(
                                                                 () -> request.getURI().toString()))
@@ -296,11 +290,10 @@ public class SpansContainer {
                                                 .body(
                                                         callIfVerbose(
                                                                 () ->
-                                                                        SecretScrubber.getInstance()
+                                                                        this.secretScrubber
                                                                                 .scrubBody(
                                                                                         extractBodyFromRequest(
-                                                                                                request),
-                                                                                        this.env)))
+                                                                                                request))))
                                                 .build())
                                 .response(
                                         HttpSpan.HttpData.builder()
@@ -308,21 +301,17 @@ public class SpansContainer {
                                                         callIfVerbose(
                                                                 () ->
                                                                         extractHeaders(
-                                                                                SecretScrubber
-                                                                                        .getInstance()
+                                                                                this.secretScrubber
                                                                                         .scrubHeaders(
                                                                                                 response
-                                                                                                        .getAllHeaders(),
-                                                                                                this
-                                                                                                        .env))))
+                                                                                                        .getAllHeaders()))))
                                                 .body(
                                                         callIfVerbose(
                                                                 () ->
-                                                                        SecretScrubber.getInstance()
+                                                                        this.secretScrubber
                                                                                 .scrubBody(
                                                                                         extractBodyFromResponse(
-                                                                                                response),
-                                                                                        this.env)))
+                                                                                                response))))
                                                 .statusCode(
                                                         response.getStatusLine().getStatusCode())
                                                 .build())
