@@ -9,6 +9,7 @@ import io.lumigo.core.parsers.event.EventParserFactory;
 import io.lumigo.core.parsers.v1.AwsSdkV1ParserFactory;
 import io.lumigo.core.parsers.v2.AwsSdkV2ParserFactory;
 import io.lumigo.core.utils.AwsUtils;
+import io.lumigo.core.utils.EnvUtil;
 import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.core.utils.SecretScrubber;
 import io.lumigo.core.utils.StringUtils;
@@ -39,6 +40,7 @@ public class SpansContainer {
     private static final String AMZN_TRACE_ID = "_X_AMZN_TRACE_ID";
     private static final String FUNCTION_SPAN_TYPE = "function";
     private static final String HTTP_SPAN_TYPE = "http";
+    private static final SecretScrubber secretScrubber = new SecretScrubber(new EnvUtil().getEnv());
 
     private Span baseSpan;
     private Span startFunctionSpan;
@@ -46,7 +48,6 @@ public class SpansContainer {
     private Span endFunctionSpan;
     private Reporter reporter;
     private List<HttpSpan> httpSpans = new LinkedList<>();
-    private SecretScrubber secretScrubber;
     private static final SpansContainer ourInstance = new SpansContainer();
 
     public static SpansContainer getInstance() {
@@ -69,7 +70,6 @@ public class SpansContainer {
     public void init(Map<String, String> env, Reporter reporter, Context context, Object event) {
         this.clear();
         this.reporter = reporter;
-        this.secretScrubber = new SecretScrubber(env);
 
         int javaVersion = AwsUtils.parseJavaVersion(System.getProperty("java.version"));
         if (javaVersion > 11) {
@@ -147,11 +147,11 @@ public class SpansContainer {
                         .envs(
                                 Configuration.getInstance().isLumigoVerboseMode()
                                         ? JsonUtils.getObjectAsJsonString(
-                                                this.secretScrubber.scrubEnv(env))
+                                                SpansContainer.secretScrubber.scrubEnv(env))
                                         : null)
                         .event(
                                 Configuration.getInstance().isLumigoVerboseMode()
-                                        ? this.secretScrubber.scrubBody(
+                                        ? SpansContainer.secretScrubber.scrubBody(
                                                 JsonUtils.getObjectAsJsonString(
                                                         EventParserFactory.parseEvent(event)))
                                         : null)
@@ -180,7 +180,7 @@ public class SpansContainer {
                         .toBuilder()
                         .return_value(
                                 Configuration.getInstance().isLumigoVerboseMode()
-                                        ? this.secretScrubber.scrubBody(
+                                        ? SpansContainer.secretScrubber.scrubBody(
                                                 JsonUtils.getObjectAsJsonString(response))
                                         : null)
                         .build());
@@ -280,7 +280,8 @@ public class SpansContainer {
                                                         callIfVerbose(
                                                                 () ->
                                                                         extractHeaders(
-                                                                                this.secretScrubber
+                                                                                SpansContainer
+                                                                                        .secretScrubber
                                                                                         .scrubHeaders(
                                                                                                 request
                                                                                                         .getAllHeaders()))))
@@ -291,7 +292,8 @@ public class SpansContainer {
                                                 .body(
                                                         callIfVerbose(
                                                                 () ->
-                                                                        this.secretScrubber
+                                                                        SpansContainer
+                                                                                .secretScrubber
                                                                                 .scrubBody(
                                                                                         extractBodyFromRequest(
                                                                                                 request))))
@@ -302,14 +304,16 @@ public class SpansContainer {
                                                         callIfVerbose(
                                                                 () ->
                                                                         extractHeaders(
-                                                                                this.secretScrubber
+                                                                                SpansContainer
+                                                                                        .secretScrubber
                                                                                         .scrubHeaders(
                                                                                                 response
                                                                                                         .getAllHeaders()))))
                                                 .body(
                                                         callIfVerbose(
                                                                 () ->
-                                                                        this.secretScrubber
+                                                                        SpansContainer
+                                                                                .secretScrubber
                                                                                 .scrubBody(
                                                                                         extractBodyFromResponse(
                                                                                                 response))))
