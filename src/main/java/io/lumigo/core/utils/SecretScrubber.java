@@ -36,7 +36,7 @@ public class SecretScrubber {
                 ArrayList<Object> scrubbedArray = new ArrayList<>();
 
                 for (Object item : (JSONArray) value) {
-                    if (item instanceof String) {
+                    if (item instanceof String && isSecret(key, patterns)) {
                         scrubbedArray.add(SECRET_PLACEHOLDER);
                     } else if (item instanceof JSONObject) {
                         scrubbedArray.add(scrubJsonObject((JSONObject) item, patterns));

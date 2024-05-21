@@ -82,6 +82,19 @@ class SecretScrubberTest {
         assertEquals(expected, actual);
     }
 
+    @Test
+    @DisplayName("scrubs arrays using default expressions")
+    void testSecretScrubbingUtils_scrubs_arrays() {
+        String actual =
+                new SecretScrubber(envWithMaskingRegex("[\".*topsecret.*\"]"))
+                        .scrubStringifiedObject(
+                                "{\"some\": [{\"topsecret\":\"stuff\"}, {\"a\":1}]}");
+
+        String expected = "{\"some\":[{\"topsecret\":\"****\"},{\"a\":1}]}";
+
+        assertEquals(expected, actual);
+    }
+
     private Map<String, String> envWithMaskingRegex(String maskingRegex) {
         return new HashMap<String, String>() {
             {

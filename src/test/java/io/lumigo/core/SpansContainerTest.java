@@ -350,6 +350,9 @@ class SpansContainerTest {
         long startTime = System.currentTimeMillis();
         spansContainer.addHttpSpan(startTime, httpRequest, httpResponse);
 
+        // Trigger scrubbing
+        spansContainer.end();
+
         HttpSpan actualSpan = spansContainer.getHttpSpans().get(0);
         String expectedSpan =
                 "{\n"
