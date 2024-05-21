@@ -28,29 +28,27 @@ public class SecretScrubber {
 
     private JSONObject scrubJsonObject(JSONObject jsonObject, List<Pattern> patterns) {
         for (String key : jsonObject.keySet()) {
-            if (isSecret(key, patterns)) {
-                Object value = jsonObject.get(key);
+            Object value = jsonObject.get(key);
 
-                if (value instanceof String) {
-                    jsonObject.put(key, SECRET_PLACEHOLDER);
-                } else if (value instanceof JSONArray) {
-                    ArrayList<Object> scrubbedArray = new ArrayList<>();
+            if (value instanceof String && isSecret(key, patterns)) {
+                jsonObject.put(key, SECRET_PLACEHOLDER);
+            } else if (value instanceof JSONArray) {
+                ArrayList<Object> scrubbedArray = new ArrayList<>();
 
-                    for (Object item : (JSONArray) value) {
-                        if (item instanceof String) {
-                            scrubbedArray.add(SECRET_PLACEHOLDER);
-                        } else if (item instanceof JSONObject) {
-                            scrubbedArray.add(scrubJsonObject((JSONObject) item, patterns));
-                        } else {
-                            scrubbedArray.add(item);
-                        }
+                for (Object item : (JSONArray) value) {
+                    if (item instanceof String) {
+                        scrubbedArray.add(SECRET_PLACEHOLDER);
+                    } else if (item instanceof JSONObject) {
+                        scrubbedArray.add(scrubJsonObject((JSONObject) item, patterns));
+                    } else {
+                        scrubbedArray.add(item);
                     }
-
-                    jsonObject.put(key, scrubbedArray.toArray());
-
-                } else if (value instanceof JSONObject) {
-                    jsonObject.put(key, scrubJsonObject((JSONObject) value, patterns));
                 }
+
+                jsonObject.put(key, scrubbedArray.toArray());
+
+            } else if (value instanceof JSONObject) {
+                jsonObject.put(key, scrubJsonObject((JSONObject) value, patterns));
             }
         }
 
