@@ -14,6 +14,7 @@ import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.core.utils.SecretScrubber;
 import io.lumigo.core.utils.StringUtils;
 import io.lumigo.models.HttpSpan;
+import io.lumigo.models.Reportable;
 import io.lumigo.models.Span;
 import java.io.*;
 import java.util.*;
@@ -146,14 +147,12 @@ public class SpansContainer {
                         .readiness(AwsUtils.getFunctionReadiness().toString())
                         .envs(
                                 Configuration.getInstance().isLumigoVerboseMode()
-                                        ? JsonUtils.getObjectAsJsonString(
-                                                SpansContainer.secretScrubber.scrubEnv(env))
+                                        ? JsonUtils.getObjectAsJsonString(env)
                                         : null)
                         .event(
                                 Configuration.getInstance().isLumigoVerboseMode()
-                                        ? SpansContainer.secretScrubber.scrubBody(
-                                                JsonUtils.getObjectAsJsonString(
-                                                        EventParserFactory.parseEvent(event)))
+                                        ? JsonUtils.getObjectAsJsonString(
+                                                EventParserFactory.parseEvent(event))
                                         : null)
                         .build();
     }
@@ -180,8 +179,7 @@ public class SpansContainer {
                         .toBuilder()
                         .return_value(
                                 Configuration.getInstance().isLumigoVerboseMode()
-                                        ? SpansContainer.secretScrubber.scrubBody(
-                                                JsonUtils.getObjectAsJsonString(response))
+                                        ? JsonUtils.getObjectAsJsonString(response)
                                         : null)
                         .build());
     }
@@ -220,8 +218,8 @@ public class SpansContainer {
         return startFunctionSpan;
     }
 
-    public List<Object> getAllCollectedSpans() {
-        List<Object> spans = new LinkedList<>();
+    public List<Reportable> getAllCollectedSpans() {
+        List<Reportable> spans = new LinkedList<>();
         spans.add(endFunctionSpan);
         spans.addAll(httpSpans);
         return spans;
@@ -280,11 +278,8 @@ public class SpansContainer {
                                                         callIfVerbose(
                                                                 () ->
                                                                         extractHeaders(
-                                                                                SpansContainer
-                                                                                        .secretScrubber
-                                                                                        .scrubHeaders(
-                                                                                                request
-                                                                                                        .getAllHeaders()))))
+                                                                                request
+                                                                                        .getAllHeaders())))
                                                 .uri(
                                                         callIfVerbose(
                                                                 () -> request.getURI().toString()))
@@ -292,11 +287,8 @@ public class SpansContainer {
                                                 .body(
                                                         callIfVerbose(
                                                                 () ->
-                                                                        SpansContainer
-                                                                                .secretScrubber
-                                                                                .scrubBody(
-                                                                                        extractBodyFromRequest(
-                                                                                                request))))
+                                                                        extractBodyFromRequest(
+                                                                                request)))
                                                 .build())
                                 .response(
                                         HttpSpan.HttpData.builder()
@@ -304,19 +296,13 @@ public class SpansContainer {
                                                         callIfVerbose(
                                                                 () ->
                                                                         extractHeaders(
-                                                                                SpansContainer
-                                                                                        .secretScrubber
-                                                                                        .scrubHeaders(
-                                                                                                response
-                                                                                                        .getAllHeaders()))))
+                                                                                response
+                                                                                        .getAllHeaders())))
                                                 .body(
                                                         callIfVerbose(
                                                                 () ->
-                                                                        SpansContainer
-                                                                                .secretScrubber
-                                                                                .scrubBody(
-                                                                                        extractBodyFromResponse(
-                                                                                                response))))
+                                                                        extractBodyFromResponse(
+                                                                                response)))
                                                 .statusCode(
                                                         response.getStatusLine().getStatusCode())
                                                 .build())
@@ -536,63 +522,22 @@ public class SpansContainer {
         }
     }
 
-    private Object prepareToSend(Object span, boolean hasError) {
-        return reduceSpanSize(span, hasError);
+    private Reportable prepareToSend(Reportable span, boolean hasError) {
+        return reduceSpanSize(span.scrub(secretScrubber), hasError);
     }
 
-    private List<Object> prepareToSend(List<Object> spans, boolean hasError) {
-        for (Object span : spans) {
-            reduceSpanSize(span, hasError);
+    private List<Reportable> prepareToSend(List<Reportable> spans, boolean hasError) {
+        for (Reportable span : spans) {
+            reduceSpanSize(span.scrub(secretScrubber), hasError);
         }
         return spans;
     }
 
-    public Object reduceSpanSize(Object span, boolean hasError) {
+    public Reportable reduceSpanSize(Reportable span, boolean hasError) {
         int maxFieldSize =
                 hasError
                         ? Configuration.getInstance().maxSpanFieldSizeWhenError()
                         : Configuration.getInstance().maxSpanFieldSize();
-        if (span instanceof Span) {
-            Span functionSpan = (Span) span;
-            functionSpan.setEnvs(
-                    StringUtils.getMaxSizeString(
-                            functionSpan.getEnvs(),
-                            Configuration.getInstance().maxSpanFieldSize()));
-            functionSpan.setReturn_value(
-                    StringUtils.getMaxSizeString(functionSpan.getReturn_value(), maxFieldSize));
-            functionSpan.setEvent(
-                    StringUtils.getMaxSizeString(functionSpan.getEvent(), maxFieldSize));
-        } else if (span instanceof HttpSpan) {
-            HttpSpan httpSpan = (HttpSpan) span;
-            httpSpan.getInfo()
-                    .getHttpInfo()
-                    .getRequest()
-                    .setHeaders(
-                            StringUtils.getMaxSizeString(
-                                    httpSpan.getInfo().getHttpInfo().getRequest().getHeaders(),
-                                    maxFieldSize));
-            httpSpan.getInfo()
-                    .getHttpInfo()
-                    .getRequest()
-                    .setBody(
-                            StringUtils.getMaxSizeString(
-                                    httpSpan.getInfo().getHttpInfo().getRequest().getBody(),
-                                    maxFieldSize));
-            httpSpan.getInfo()
-                    .getHttpInfo()
-                    .getResponse()
-                    .setHeaders(
-                            StringUtils.getMaxSizeString(
-                                    httpSpan.getInfo().getHttpInfo().getResponse().getHeaders(),
-                                    maxFieldSize));
-            httpSpan.getInfo()
-                    .getHttpInfo()
-                    .getResponse()
-                    .setBody(
-                            StringUtils.getMaxSizeString(
-                                    httpSpan.getInfo().getHttpInfo().getResponse().getBody(),
-                                    maxFieldSize));
-        }
-        return span;
+        return span.reduceSize(maxFieldSize);
     }
 }

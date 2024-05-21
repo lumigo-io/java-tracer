@@ -1,6 +1,8 @@
 package io.lumigo.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.lumigo.core.utils.SecretScrubber;
+import io.lumigo.core.utils.StringUtils;
 import java.util.Collections;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -10,7 +12,7 @@ import lombok.Data;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Data(staticConstructor = "of")
-public class HttpSpan {
+public class HttpSpan implements Reportable {
     private Long started;
     private Long ended;
     private String id;
@@ -86,5 +88,68 @@ public class HttpSpan {
         private String uri;
         private Integer statusCode;
         private String method;
+    }
+
+    @Override
+    public Reportable scrub(SecretScrubber scrubber) {
+        this.getInfo()
+                .getHttpInfo()
+                .getRequest()
+                .setHeaders(
+                        scrubber.scrubStringifiedObject(
+                                this.getInfo().getHttpInfo().getRequest().getHeaders()));
+        this.getInfo()
+                .getHttpInfo()
+                .getRequest()
+                .setBody(
+                        scrubber.scrubStringifiedObject(
+                                this.getInfo().getHttpInfo().getRequest().getBody()));
+        this.getInfo()
+                .getHttpInfo()
+                .getResponse()
+                .setHeaders(
+                        scrubber.scrubStringifiedObject(
+                                this.getInfo().getHttpInfo().getResponse().getHeaders()));
+        this.getInfo()
+                .getHttpInfo()
+                .getResponse()
+                .setBody(
+                        scrubber.scrubStringifiedObject(
+                                this.getInfo().getHttpInfo().getResponse().getBody()));
+
+        return this;
+    }
+
+    @Override
+    public Reportable reduceSize(int maxFieldSize) {
+        this.getInfo()
+                .getHttpInfo()
+                .getRequest()
+                .setHeaders(
+                        StringUtils.getMaxSizeString(
+                                this.getInfo().getHttpInfo().getRequest().getHeaders(),
+                                maxFieldSize));
+        this.getInfo()
+                .getHttpInfo()
+                .getRequest()
+                .setBody(
+                        StringUtils.getMaxSizeString(
+                                this.getInfo().getHttpInfo().getRequest().getBody(), maxFieldSize));
+        this.getInfo()
+                .getHttpInfo()
+                .getResponse()
+                .setHeaders(
+                        StringUtils.getMaxSizeString(
+                                this.getInfo().getHttpInfo().getResponse().getHeaders(),
+                                maxFieldSize));
+        this.getInfo()
+                .getHttpInfo()
+                .getResponse()
+                .setBody(
+                        StringUtils.getMaxSizeString(
+                                this.getInfo().getHttpInfo().getResponse().getBody(),
+                                maxFieldSize));
+
+        return this;
     }
 }
