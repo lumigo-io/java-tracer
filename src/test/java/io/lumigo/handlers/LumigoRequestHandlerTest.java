@@ -15,6 +15,7 @@ import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.network.Reporter;
 import io.lumigo.core.utils.EnvUtil;
 import io.lumigo.core.utils.JsonUtils;
+import io.lumigo.models.Reportable;
 import io.lumigo.models.Span;
 import io.lumigo.testUtils.JsonTestUtils;
 import java.io.IOException;
@@ -452,10 +453,12 @@ class LumigoRequestHandlerTest {
 
         handler.handleRequest(null, null, context);
 
-        ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
-        ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
-        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture(), anyInt());
+        ArgumentCaptor<List<Reportable>> argumentCaptorAllSpans =
+                ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<Reportable> argumentCaptorStartSpan =
+                ArgumentCaptor.forClass(Reportable.class);
         verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture(), anyInt());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture(), anyInt());
 
         JSONAssert.assertEquals(
                 JsonUtils.getObjectAsJsonString(
