@@ -8,19 +8,18 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class SecretScrubber {
-    private SecretScrubbingPatternProvider secretScrubbingUtils;
+    private List<Pattern> scrubbingPatterns;
 
     private static final String SECRET_PLACEHOLDER = "****";
 
     public SecretScrubber(Map<String, String> env) {
-        this.secretScrubbingUtils = new SecretScrubbingPatternProvider(env);
+        this.scrubbingPatterns = new SecretScrubbingPatternProvider(env).getScrubbingPatterns();
     }
 
     public String scrubStringifiedObject(String stringifiedObject) {
         try {
             JSONObject jsonObject = new JSONObject(stringifiedObject);
-            return scrubJsonObject(jsonObject, secretScrubbingUtils.getScrubbingPatterns())
-                    .toString();
+            return scrubJsonObject(jsonObject, this.scrubbingPatterns).toString();
         } catch (Exception e) {
             return stringifiedObject;
         }
