@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public class SecretScrubbingPatternProvider {
-    private final Map<String, String> env;
     private static final JsonFactory JSON_FACTORY = new JsonFactory();
     private static final List<String> DEFAULT_PATTERN_STRINGS =
             Arrays.asList(
@@ -26,6 +25,7 @@ public class SecretScrubbingPatternProvider {
                     "Authorization");
     private static final List<Pattern> DEFAULT_PATTERNS =
             stringListToPatterns(DEFAULT_PATTERN_STRINGS);
+    private final List<Pattern> scrubbingPatterns;
 
     private static List<Pattern> stringListToPatterns(List<String> patternStrings) {
         ArrayList<Pattern> patterns = new ArrayList<>();
@@ -55,8 +55,8 @@ public class SecretScrubbingPatternProvider {
         }
     }
 
-    public List<Pattern> getBodyScrubbingPatterns() {
-        String regexStringifiedList = this.env.get("LUMIGO_SECRET_MASKING_REGEX");
+    private List<Pattern> buildBodyScrubbingPatterns(Map<String, String> env) {
+        String regexStringifiedList = env.get("LUMIGO_SECRET_MASKING_REGEX");
 
         if (Strings.isBlank(regexStringifiedList)) {
             return DEFAULT_PATTERNS;
@@ -69,7 +69,11 @@ public class SecretScrubbingPatternProvider {
         }
     }
 
+    public List<Pattern> getScrubbingPatterns() {
+        return this.scrubbingPatterns;
+    }
+
     public SecretScrubbingPatternProvider(Map<String, String> env) {
-        this.env = env;
+        this.scrubbingPatterns = buildBodyScrubbingPatterns(env);
     }
 }

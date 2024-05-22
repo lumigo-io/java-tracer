@@ -19,7 +19,7 @@ public class SecretScrubber {
     public String scrubStringifiedObject(String stringifiedObject) {
         try {
             JSONObject jsonObject = new JSONObject(stringifiedObject);
-            return scrubJsonObject(jsonObject, secretScrubbingUtils.getBodyScrubbingPatterns())
+            return scrubJsonObject(jsonObject, secretScrubbingUtils.getScrubbingPatterns())
                     .toString();
         } catch (Exception e) {
             return stringifiedObject;
