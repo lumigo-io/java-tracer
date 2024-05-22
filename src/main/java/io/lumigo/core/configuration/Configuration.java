@@ -27,6 +27,7 @@ public class Configuration {
     public static final String LUMIGO_MAX_RESPONSE_SIZE = "LUMIGO_MAX_RESPONSE_SIZE";
     public static final String LUMIGO_MAX_SIZE_FOR_REQUEST = "LUMIGO_MAX_SIZE_FOR_REQUEST";
     public static final String LUMIGO_INSTRUMENTATION = "LUMIGO_INSTRUMENTATION";
+    public static final String LUMIGO_SECRET_MASKING_REGEX = "LUMIGO_SECRET_MASKING_REGEX";
 
     private static Configuration instance;
     private LumigoConfiguration inlineConf;

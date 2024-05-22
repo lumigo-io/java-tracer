@@ -221,3 +221,4 @@ _meta
 .serverless
 package-lock.json
 src/main/resources/lumigo-agent.jar
+.vscode/

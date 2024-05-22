@@ -1,6 +1,7 @@
 package io.lumigo.core;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -17,6 +18,8 @@ import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.handlers.LumigoConfiguration;
 import io.lumigo.models.HttpSpan;
 import io.lumigo.models.Span;
+import io.lumigo.testUtils.JsonTestUtils;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,6 +32,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.message.BasicHeader;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -56,9 +60,15 @@ class SpansContainerTest {
     @Mock private EnvUtil envUtil;
     @Mock private Context context;
     @Mock Reporter reporter;
-    @Mock HttpResponse httpResponse;
+
+    @Mock(answer = RETURNS_DEEP_STUBS)
+    HttpResponse httpResponse;
+
     @Mock StatusLine statusLine;
-    @Mock HttpUriRequest httpRequest;
+
+    @Mock(answer = RETURNS_DEEP_STUBS)
+    HttpEntityEnclosingRequestBase httpRequest;
+
     @Mock Request awsRequest;
     @Mock com.amazonaws.http.HttpResponse awsHttpResponse;
 
@@ -83,7 +93,10 @@ class SpansContainerTest {
     @DisplayName("Check that start span include all relevant data")
     @Test
     void createStartSpan() throws Exception {
-        spansContainer.init(createMockedEnv(), reporter, context, null);
+        Map<String, String> env = createMockedEnv();
+        env.put("SOME_KEY", "s0m3t0k3y");
+
+        spansContainer.init(env, reporter, context, "{\"secret\":\"stuff\"}");
         spansContainer.start();
 
         Span actualSpan = spansContainer.getStartFunctionSpan();
@@ -94,14 +107,14 @@ class SpansContainerTest {
                         + "  \"ended\": 1557823871416,\n"
                         + "  \"runtime\": \"JAVA8\",\n"
                         + "  \"id\": \"3n2783hf7823hdui32_started\",\n"
-                        + "  \"type\": function,\n"
+                        + "  \"type\": \"function\",\n"
                         + "  \"memoryAllocated\": \"100\",\n"
                         + "  \"transactionId\": \"3\",\n"
                         + "  \"requestId\": \"3n2783hf7823hdui32\",\n"
                         + "  \"account\": \"1111\",\n"
                         + "  \"maxFinishTime\": 100,\n"
-                        + "  \"event\": null,\n"
-                        + "  \"envs\": \"{\\\"AWS_REGION\\\":\\\"us-west-2\\\",\\\"_X_AMZN_TRACE_ID\\\":\\\"Root=1-2-3;Another=456;Bla=789\\\",\\\"AWS_EXECUTION_ENV\\\":\\\"JAVA8\\\"}\",\n"
+                        + "  \"event\": \"{\\\"secret\\\":\\\"****\\\"}\",\n"
+                        + "  \"envs\": \"{\\\"AWS_REGION\\\":\\\"us-west-2\\\",\\\"_X_AMZN_TRACE_ID\\\":\\\"Root=1-2-3;Another=456;Bla=789\\\",\\\"AWS_EXECUTION_ENV\\\":\\\"JAVA8\\\",\\\"SOME_KEY\\\":\\\"****\\\"}\",\n"
                         + "  \"region\": \"us-west-2\",\n"
                         + "  \"reporter_rtt\": null,\n"
                         + "  \"error\": null,\n"
@@ -116,7 +129,7 @@ class SpansContainerTest {
                         + "    },\n"
                         + "  \"logStreamName\": \"2019/05/12/[$LATEST]7f67fc1238a941749d8126be19f0cdc6\",\n"
                         + "  \"logGroupName\": \"/aws/lambda/mocked_function_name\",\n"
-                        + "    \"triggeredBy\": null\n"
+                        + "    \"triggeredBy\": \"No recognized trigger\"\n"
                         + "  }\n"
                         + "}";
         long started = actualSpan.getStarted();
@@ -131,7 +144,8 @@ class SpansContainerTest {
                         new Customization(
                                 "maxFinishTime",
                                 (o1, o2) -> started + 100 == Long.valueOf(o1.toString())),
-                        new Customization("ended", (o1, o2) -> o2 != null)));
+                        new Customization("ended", (o1, o2) -> o2 != null),
+                        new Customization("envs", JsonTestUtils::compareJsonStrings)));
     }
 
     @DisplayName("End span which contains error")
@@ -190,6 +204,7 @@ class SpansContainerTest {
                         new Customization(
                                 "maxFinishTime",
                                 (o1, o2) -> started + 100 == Long.valueOf(o1.toString())),
+                        new Customization("envs", JsonTestUtils::compareJsonStrings),
                         new Customization("error.stacktrace", (o1, o2) -> o1 != null)));
     }
 
@@ -245,14 +260,18 @@ class SpansContainerTest {
                                 "maxFinishTime",
                                 (o1, o2) -> started + 100 == Long.valueOf(o1.toString())),
                         new Customization("token", (o1, o2) -> o1 != null),
+                        new Customization("envs", JsonTestUtils::compareJsonStrings),
                         new Customization("error.stacktrace", (o1, o2) -> o1 != null)));
     }
 
     @DisplayName("End span creation with return value")
     @Test
     void end_with_return_value() throws Exception {
-        spansContainer.init(createMockedEnv(), reporter, context, null);
-        spansContainer.end("RESULT");
+        Map<String, String> env = createMockedEnv();
+        env.put("Authorization", "secret$token");
+
+        spansContainer.init(env, reporter, context, null);
+        spansContainer.end("{\"credentials\":\"user:password\"}");
 
         Span actualSpan = spansContainer.getEndSpan();
         String expectedSpan =
@@ -269,12 +288,12 @@ class SpansContainerTest {
                         + "  \"account\": \"1111\",\n"
                         + "  \"maxFinishTime\": 100,\n"
                         + "  \"event\": null,\n"
-                        + "  \"envs\": \"{\\\"AWS_REGION\\\":\\\"us-west-2\\\",\\\"_X_AMZN_TRACE_ID\\\":\\\"Root=1-2-3;Another=456;Bla=789\\\",\\\"AWS_EXECUTION_ENV\\\":\\\"JAVA8\\\"}\",\n"
+                        + "  \"envs\": \"{\\\"AWS_EXECUTION_ENV\\\":\\\"JAVA8\\\",\\\"AWS_REGION\\\":\\\"us-west-2\\\",\\\"_X_AMZN_TRACE_ID\\\":\\\"Root=1-2-3;Another=456;Bla=789\\\",\\\"Authorization\\\":\\\"****\\\"}\",\n"
                         + "  \"region\": \"us-west-2\",\n"
                         + "  \"reporter_rtt\": null,\n"
                         + "  \"error\": null,\n"
                         + "  \"token\": null,\n"
-                        + "  \"return_value\": \"RESULT\",\n"
+                        + "  \"return_value\": \"{\\\"credentials\\\":\\\"****\\\"}\",\n"
                         + "  \"info\": {\n"
                         + "    \"tracer\": {\n"
                         + "      \"version\": \"1.0\"\n"
@@ -297,6 +316,7 @@ class SpansContainerTest {
                         new Customization("started", (o1, o2) -> o1 != null),
                         new Customization("ended", (o1, o2) -> o1 != null),
                         new Customization("token", (o1, o2) -> o1 != null),
+                        new Customization("envs", JsonTestUtils::compareJsonStrings),
                         new Customization(
                                 "maxFinishTime",
                                 (o1, o2) -> started + 100 == Long.valueOf(o1.toString())),
@@ -308,12 +328,30 @@ class SpansContainerTest {
     void add_http_span() throws Exception {
         spansContainer.init(createMockedEnv(), reporter, context, null);
         when(httpRequest.getURI()).thenReturn(URI.create("https://google.com"));
+        when(httpRequest.getEntity().getContent())
+                .thenReturn(new ByteArrayInputStream("{\"passphrase\":\"value\"}".getBytes()));
+        when(httpRequest.getAllHeaders())
+                .thenReturn(
+                        new Header[] {
+                            new BasicHeader("authorization", "token"),
+                            new BasicHeader("x-some-thing", "sent")
+                        });
         when(httpResponse.getStatusLine()).thenReturn(statusLine);
-        when(httpResponse.getAllHeaders()).thenReturn(new Header[0]);
+        when(httpResponse.getAllHeaders())
+                .thenReturn(
+                        new Header[] {
+                            new BasicHeader("credentials", "user:pazzword"),
+                            new BasicHeader("x-some-stuff", "returned")
+                        });
+        when(httpResponse.getEntity().getContent())
+                .thenReturn(new ByteArrayInputStream("{\"password\":\"value\"}".getBytes()));
         when(statusLine.getStatusCode()).thenReturn(200);
 
         long startTime = System.currentTimeMillis();
         spansContainer.addHttpSpan(startTime, httpRequest, httpResponse);
+
+        // Trigger scrubbing
+        spansContainer.end();
 
         HttpSpan actualSpan = spansContainer.getHttpSpans().get(0);
         String expectedSpan =
@@ -336,15 +374,15 @@ class SpansContainerTest {
                         + "      \"httpInfo\":{\n"
                         + "         \"host\":\"google.com\",\n"
                         + "         \"request\":{\n"
-                        + "            \"headers\":\"{}\",\n"
-                        + "            \"body\":null,\n"
+                        + "            \"headers\":\"{\\\"authorization\\\":\\\"****\\\",\\\"x-some-thing\\\":\\\"sent\\\"}\",\n"
+                        + "            \"body\":\"{\\\"passphrase\\\":\\\"****\\\"}\",\n"
                         + "            \"uri\":\"https://google.com\",\n"
                         + "            \"statusCode\":null,\n"
                         + "            \"method\":null\n"
                         + "         },\n"
                         + "         \"response\":{\n"
-                        + "            \"headers\":\"{}\",\n"
-                        + "            \"body\":null,\n"
+                        + "            \"headers\":\"{\\\"credentials\\\":\\\"****\\\",\\\"x-some-stuff\\\":\\\"returned\\\"}\",\n"
+                        + "            \"body\":\"{\\\"password\\\":\\\"****\\\"}\",\n"
                         + "            \"uri\":null,\n"
                         + "            \"statusCode\":200,\n"
                         + "            \"method\":null\n"
@@ -375,9 +413,13 @@ class SpansContainerTest {
         when(awsRequest.getHttpMethod()).thenReturn(HttpMethodName.GET);
         when(awsHttpResponse.getStatusCode()).thenReturn(200);
         when(awsHttpResponse.getHeaders()).thenReturn(headers);
-        Response<String> awsResponse = new Response<>("awsResponse", awsHttpResponse);
+        Response<String> awsResponse =
+                new Response<>("{\"passphrase\":\"some-token\"}", awsHttpResponse);
         long startTime = System.currentTimeMillis();
         spansContainer.addHttpSpan(startTime, awsRequest, awsResponse);
+
+        // Applies scrubbing
+        spansContainer.end();
 
         HttpSpan actualSpan = spansContainer.getHttpSpans().get(0);
         String expectedSpan =
@@ -410,7 +452,7 @@ class SpansContainerTest {
                         + "         },\n"
                         + "         \"response\":{\n"
                         + "            \"headers\":\"{\\\"x-amzn-requestid\\\":\\\"id123\\\"}\",\n"
-                        + "            \"body\":\"awsResponse\",\n"
+                        + "            \"body\":\"{\\\"passphrase\\\":\\\"****\\\"}\",\n"
                         + "            \"uri\":null,\n"
                         + "            \"statusCode\":200,\n"
                         + "            \"method\":null\n"
@@ -499,6 +541,7 @@ class SpansContainerTest {
     void add_aws_sdk_v2_http_span() throws Exception {
         Map<String, List<String>> headers = new HashMap<>();
         headers.put("x-amz-requestid", Collections.singletonList("id123"));
+        headers.put("credentials", Collections.singletonList("user:pass"));
 
         PublishRequest request = PublishRequest.builder().topicArn("topic").build();
         PublishResponse response =
@@ -531,6 +574,9 @@ class SpansContainerTest {
 
         spansContainer.addHttpSpan(startTime, requestContext, executionAttributes);
 
+        // Triggers scrubbing
+        spansContainer.end();
+
         HttpSpan actualSpan = spansContainer.getHttpSpans().get(0);
         String expectedSpan =
                 "{\n"
@@ -552,14 +598,14 @@ class SpansContainerTest {
                         + "      \"httpInfo\":{\n"
                         + "         \"host\":\"sns.amazonaws.com\",\n"
                         + "         \"request\":{\n"
-                        + "            \"headers\":\"{\\\"x-amz-requestid\\\":[\\\"id123\\\"]}\",\n"
+                        + "            \"headers\":\"{\\\"credentials\\\":[\\\"****\\\"],\\\"x-amz-requestid\\\":[\\\"id123\\\"]}\",\n"
                         + "            \"body\":null,\n"
                         + "            \"uri\":\"https://sns.amazonaws.com\",\n"
                         + "            \"statusCode\":null,\n"
                         + "            \"method\":GET\n"
                         + "         },\n"
                         + "         \"response\":{\n"
-                        + "            \"headers\":\"{\\\"x-amz-requestid\\\":[\\\"id123\\\"]}\",\n"
+                        + "            \"headers\":\"{\\\"credentials\\\":[\\\"****\\\"],\\\"x-amz-requestid\\\":[\\\"id123\\\"]}\",\n"
                         + "            \"body\":\"{\\\"messageId\\\":\\\"fee47356-6f6a-58c8-96dc-26d8aaa4631a\\\",\\\"sequenceNumber\\\":null}\", \n"
                         + "            \"uri\":null,\n"
                         + "            \"statusCode\":200,\n"
@@ -578,6 +624,8 @@ class SpansContainerTest {
                         new Customization("info.tracer.version", (o1, o2) -> o1 != null),
                         new Customization("id", (o1, o2) -> o1.equals("id123")),
                         new Customization("started", (o1, o2) -> o1 != null),
+                        new Customization(
+                                "info.httpInfo.response.body", JsonTestUtils::compareJsonStrings),
                         new Customization("ended", (o1, o2) -> o1 != null)));
     }
 
