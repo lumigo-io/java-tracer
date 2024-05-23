@@ -3,7 +3,7 @@ package io.lumigo.core.network;
 import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.core.utils.StringUtils;
-import io.lumigo.models.Reportable;
+import io.lumigo.models.BaseSpan;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -22,11 +22,11 @@ public class Reporter {
                         .build();
     }
 
-    public long reportSpans(Reportable span, int maxSize) throws IOException {
+    public long reportSpans(BaseSpan span, int maxSize) throws IOException {
         return reportSpans(Collections.singletonList(span), maxSize);
     }
 
-    public long reportSpans(List<Reportable> spans, int maxSize) throws IOException {
+    public long reportSpans(List<BaseSpan> spans, int maxSize) throws IOException {
         long time = System.currentTimeMillis();
         List<String> spansAsStringList = new LinkedList<>();
         int sizeCount = 0;

@@ -1,6 +1,7 @@
 package io.lumigo.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.lumigo.core.utils.SecretScrubber;
 import java.util.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -113,5 +114,15 @@ public class KafkaSpan implements BaseSpan {
         private String key;
         private String value;
         private Map<String, byte[]> headers;
+    }
+
+    @Override
+    public BaseSpan scrub(SecretScrubber scrubber) {
+        return null;
+    }
+
+    @Override
+    public BaseSpan reduceSize(int maxFieldSize) {
+        return null;
     }
 }

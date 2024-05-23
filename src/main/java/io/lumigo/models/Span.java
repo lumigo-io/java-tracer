@@ -14,7 +14,7 @@ import lombok.Data;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Data(staticConstructor = "of")
-public class Span implements Reportable {
+public class Span implements BaseSpan {
     private String name;
     private long started;
     private long ended;
@@ -90,24 +90,22 @@ public class Span implements Reportable {
     }
 
     @Override
-    public Reportable scrub(SecretScrubber scrubber) {
+    public Span scrub(SecretScrubber scrubber) {
         this.setEnvs(
                 JsonUtils.getObjectAsJsonString(scrubber.scrubStringifiedObject(this.getEnvs())));
         this.setEvent(
                 JsonUtils.getObjectAsJsonString(scrubber.scrubStringifiedObject(this.getEvent())));
         this.setReturn_value(scrubber.scrubStringifiedObject(this.getReturn_value()));
-
         return this;
     }
 
     @Override
-    public Reportable reduceSize(int maxFieldSize) {
+    public Span reduceSize(int maxFieldSize) {
         this.setEnvs(
                 StringUtils.getMaxSizeString(
                         this.getEnvs(), Configuration.getInstance().maxSpanFieldSize()));
         this.setReturn_value(StringUtils.getMaxSizeString(this.getReturn_value(), maxFieldSize));
         this.setEvent(StringUtils.getMaxSizeString(this.getEvent(), maxFieldSize));
-
         return this;
     }
 }

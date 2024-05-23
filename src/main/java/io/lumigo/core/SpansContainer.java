@@ -13,10 +13,9 @@ import io.lumigo.core.utils.EnvUtil;
 import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.core.utils.SecretScrubber;
 import io.lumigo.core.utils.StringUtils;
-import io.lumigo.models.HttpSpan;
-import io.lumigo.models.Reportable;
-import io.lumigo.models.Span;
 import io.lumigo.models.*;
+import io.lumigo.models.HttpSpan;
+import io.lumigo.models.Span;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -51,14 +50,13 @@ public class SpansContainer {
     private static final String FUNCTION_SPAN_TYPE = "function";
     private static final String HTTP_SPAN_TYPE = "http";
     public static final String KAFKA_SPAN_TYPE = "kafka";
-    private static final SecretScrubber secretScrubber = new SecretScrubber(new EnvUtil().getEnv());
 
     private Span baseSpan;
     private Span startFunctionSpan;
     private Long rttDuration;
     private Span endFunctionSpan;
     private Reporter reporter;
-
+    private SecretScrubber secretScrubber = new SecretScrubber(new EnvUtil().getEnv());
     @Getter private List<BaseSpan> spans = new LinkedList<>();
 
     private static final SpansContainer ourInstance = new SpansContainer();
@@ -83,6 +81,7 @@ public class SpansContainer {
     public void init(Map<String, String> env, Reporter reporter, Context context, Object event) {
         this.clear();
         this.reporter = reporter;
+        this.secretScrubber = new SecretScrubber(new EnvUtil().getEnv());
 
         int javaVersion = AwsUtils.parseJavaVersion(System.getProperty("java.version"));
         if (javaVersion > 11) {
@@ -231,8 +230,8 @@ public class SpansContainer {
         return startFunctionSpan;
     }
 
-    public List<Reportable> getAllCollectedSpans() {
-        List<Reportable> spans = new LinkedList<>();
+    public List<BaseSpan> getAllCollectedSpans() {
+        List<BaseSpan> spans = new LinkedList<>();
         spans.add(endFunctionSpan);
         spans.addAll(this.spans);
         return spans;
@@ -561,18 +560,18 @@ public class SpansContainer {
         }
     }
 
-    private Reportable prepareToSend(Reportable span, boolean hasError) {
+    private BaseSpan prepareToSend(BaseSpan span, boolean hasError) {
         return reduceSpanSize(span.scrub(secretScrubber), hasError);
     }
 
-    private List<Reportable> prepareToSend(List<Reportable> spans, boolean hasError) {
-        for (Reportable span : spans) {
+    private List<BaseSpan> prepareToSend(List<BaseSpan> spans, boolean hasError) {
+        for (BaseSpan span : spans) {
             reduceSpanSize(span.scrub(secretScrubber), hasError);
         }
         return spans;
     }
 
-    public Reportable reduceSpanSize(Reportable span, boolean hasError) {
+    public BaseSpan reduceSpanSize(BaseSpan span, boolean hasError) {
         int maxFieldSize =
                 hasError
                         ? Configuration.getInstance().maxSpanFieldSizeWhenError()

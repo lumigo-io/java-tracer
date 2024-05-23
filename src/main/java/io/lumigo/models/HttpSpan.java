@@ -91,7 +91,7 @@ public class HttpSpan implements BaseSpan {
     }
 
     @Override
-    public Reportable scrub(SecretScrubber scrubber) {
+    public BaseSpan scrub(SecretScrubber scrubber) {
         this.getInfo()
                 .getHttpInfo()
                 .getRequest()
@@ -121,7 +121,7 @@ public class HttpSpan implements BaseSpan {
     }
 
     @Override
-    public Reportable reduceSize(int maxFieldSize) {
+    public BaseSpan reduceSize(int maxFieldSize) {
         this.getInfo()
                 .getHttpInfo()
                 .getRequest()
