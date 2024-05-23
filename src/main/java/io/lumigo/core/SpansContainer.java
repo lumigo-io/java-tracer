@@ -52,7 +52,7 @@ public class SpansContainer {
     public static final String KAFKA_SPAN_TYPE = "kafka";
 
     private Span baseSpan;
-    private Span startFunctionSpan;
+    @Getter private Span startFunctionSpan;
     private Long rttDuration;
     private Span endFunctionSpan;
     private Reporter reporter;
@@ -179,7 +179,7 @@ public class SpansContainer {
 
         try {
             rttDuration =
-                    reporter.reportSpans(prepareToSend(startFunctionSpan, false), MAX_REQUEST_SIZE);
+                    reporter.reportSpans(prepareToSend(startFunctionSpan), MAX_REQUEST_SIZE);
         } catch (Throwable e) {
             Logger.error(e, "Failed to send start span");
         }
@@ -224,10 +224,6 @@ public class SpansContainer {
         reporter.reportSpans(
                 prepareToSend(getAllCollectedSpans(), endFunctionSpan.getError() != null),
                 MAX_REQUEST_SIZE);
-    }
-
-    public Span getStartFunctionSpan() {
-        return startFunctionSpan;
     }
 
     public List<BaseSpan> getAllCollectedSpans() {
@@ -560,8 +556,8 @@ public class SpansContainer {
         }
     }
 
-    private BaseSpan prepareToSend(BaseSpan span, boolean hasError) {
-        return reduceSpanSize(span.scrub(secretScrubber), hasError);
+    private BaseSpan prepareToSend(BaseSpan span) {
+        return reduceSpanSize(span.scrub(secretScrubber), false);
     }
 
     private List<BaseSpan> prepareToSend(List<BaseSpan> spans, boolean hasError) {

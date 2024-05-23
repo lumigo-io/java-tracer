@@ -13,7 +13,7 @@ import org.pmw.tinylog.Logger;
 
 public class Reporter {
 
-    private OkHttpClient client;
+    private final OkHttpClient client;
 
     public Reporter() {
         client =
@@ -44,7 +44,7 @@ public class Reporter {
             handledSpans++;
         }
 
-        if (Configuration.getInstance().isAwsEnvironment() && spansAsStringList.size() > 0) {
+        if (Configuration.getInstance().isAwsEnvironment() && !spansAsStringList.isEmpty()) {
             String spansAsString = "[" + String.join(",", spansAsStringList) + "]";
             Logger.debug("Reporting the spans: {}", spansAsString);
             RequestBody body =

@@ -3,8 +3,11 @@ package io.lumigo.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.lumigo.core.utils.SecretScrubber;
 import java.util.*;
+
+import io.lumigo.core.utils.StringUtils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 
 @Getter
@@ -27,7 +30,7 @@ public class KafkaSpan implements BaseSpan {
     private Info info;
 
     @Builder(toBuilder = true)
-    @Getter
+    @Data
     public static class Info {
         private KafkaSpan.Tracer tracer;
         private KafkaSpan.TraceId traceId;
@@ -40,7 +43,7 @@ public class KafkaSpan implements BaseSpan {
 
     @AllArgsConstructor
     @Builder(toBuilder = true)
-    @Getter
+    @Data
     public static class TraceId {
         @JsonProperty("Root")
         private String root;
@@ -48,7 +51,7 @@ public class KafkaSpan implements BaseSpan {
 
     @AllArgsConstructor
     @Builder(toBuilder = true)
-    @Getter
+    @Data
     public static class Tracer {
         private String version;
     }
@@ -57,10 +60,10 @@ public class KafkaSpan implements BaseSpan {
 
     @AllArgsConstructor
     @Builder(toBuilder = true)
-    @Getter
+    @Data
     public static class KafkaProducerInfo implements KafkaInfo {
         private String kafkaInfoType;
-        private List<String> bootstrapServers;
+        private String bootstrapServers;
         private String topic;
         private KafkaSpan.KafkaProducerRecord record;
         private KafkaSpan.KafkaProducerResponse response;
@@ -68,18 +71,18 @@ public class KafkaSpan implements BaseSpan {
 
     @AllArgsConstructor
     @Builder(toBuilder = true)
-    @Getter
+    @Data
     public static class KafkaProducerRecord {
-        private byte[] key;
-        private byte[] value;
-        private Map<String, byte[]> headers;
+        private String key;
+        private String value;
+        private String headers;
     }
 
     public interface KafkaProducerResponse {}
 
     @AllArgsConstructor
     @Builder(toBuilder = true)
-    @Getter
+    @Data
     public static class KafkaProducerSuccessResponse implements KafkaProducerResponse {
         private Integer partition;
         private Long offset;
@@ -87,14 +90,14 @@ public class KafkaSpan implements BaseSpan {
 
     @AllArgsConstructor
     @Builder(toBuilder = true)
-    @Getter
+    @Data
     public static class KafkaProducerErrorResponse implements KafkaProducerResponse {
         private String errorMessage;
     }
 
     @AllArgsConstructor
     @Builder(toBuilder = true)
-    @Getter
+    @Data
     public static class KafkaConsumerInfo implements KafkaInfo {
         private String kafkaInfoType;
         private List<String> bootstrapServers;
@@ -106,23 +109,65 @@ public class KafkaSpan implements BaseSpan {
 
     @AllArgsConstructor
     @Builder(toBuilder = true)
-    @Getter
+    @Data
     public static class KafkaConsumerRecord {
         private String topic;
         private Integer partition;
         private Long offset;
         private String key;
         private String value;
-        private Map<String, byte[]> headers;
+        private String headers;
     }
 
     @Override
     public BaseSpan scrub(SecretScrubber scrubber) {
-        return null;
+        if (this.info.kafkaInfo instanceof KafkaProducerInfo) {
+            KafkaProducerInfo kafkaProducerInfo = (KafkaProducerInfo) this.info.kafkaInfo;
+            if (kafkaProducerInfo.getRecord() != null) {
+                kafkaProducerInfo.getRecord().setKey(scrubber.scrubStringifiedObject(kafkaProducerInfo.getRecord().getKey()));
+                kafkaProducerInfo.getRecord().setValue(scrubber.scrubStringifiedObject(kafkaProducerInfo.getRecord().getValue()));
+                kafkaProducerInfo.getRecord().setHeaders(scrubber.scrubStringifiedObject(kafkaProducerInfo.getRecord().getHeaders()));
+            }
+            if (kafkaProducerInfo.getResponse() instanceof KafkaProducerErrorResponse) {
+                KafkaProducerErrorResponse kafkaProducerErrorResponse = (KafkaProducerErrorResponse) kafkaProducerInfo.getResponse();
+                kafkaProducerErrorResponse.setErrorMessage(scrubber.scrubStringifiedObject(kafkaProducerErrorResponse.getErrorMessage()));
+            }
+        } else if (this.info.kafkaInfo instanceof KafkaConsumerInfo) {
+            KafkaConsumerInfo kafkaConsumerInfo = (KafkaConsumerInfo) this.info.kafkaInfo;
+            if (kafkaConsumerInfo.getRecords() != null) {
+                for (KafkaConsumerRecord record : kafkaConsumerInfo.getRecords()) {
+                    record.setKey(scrubber.scrubStringifiedObject(record.getKey()));
+                    record.setValue(scrubber.scrubStringifiedObject(record.getValue()));
+                    record.setHeaders(scrubber.scrubStringifiedObject(record.getHeaders()));
+                }
+            }
+        }
+        return this;
     }
 
     @Override
     public BaseSpan reduceSize(int maxFieldSize) {
-        return null;
+        if (this.info.kafkaInfo instanceof KafkaProducerInfo) {
+            KafkaProducerInfo kafkaProducerInfo = (KafkaProducerInfo) this.info.kafkaInfo;
+            if (kafkaProducerInfo.getRecord() != null) {
+                kafkaProducerInfo.getRecord().setKey(StringUtils.getMaxSizeString(kafkaProducerInfo.getRecord().getKey(), maxFieldSize));
+                kafkaProducerInfo.getRecord().setValue(StringUtils.getMaxSizeString(kafkaProducerInfo.getRecord().getValue(), maxFieldSize));
+                kafkaProducerInfo.getRecord().setHeaders(StringUtils.getMaxSizeString(kafkaProducerInfo.getRecord().getHeaders(), maxFieldSize));
+            }
+            if (kafkaProducerInfo.getResponse() instanceof KafkaProducerErrorResponse) {
+                KafkaProducerErrorResponse kafkaProducerErrorResponse = (KafkaProducerErrorResponse) kafkaProducerInfo.getResponse();
+                kafkaProducerErrorResponse.setErrorMessage(StringUtils.getMaxSizeString(kafkaProducerErrorResponse.getErrorMessage(), maxFieldSize));
+            }
+        } else if (this.info.kafkaInfo instanceof KafkaConsumerInfo) {
+            KafkaConsumerInfo kafkaConsumerInfo = (KafkaConsumerInfo) this.info.kafkaInfo;
+            if (kafkaConsumerInfo.getRecords() != null) {
+                for (KafkaConsumerRecord record : kafkaConsumerInfo.getRecords()) {
+                    record.setKey(StringUtils.getMaxSizeString(record.getKey(), maxFieldSize));
+                    record.setValue(StringUtils.getMaxSizeString(record.getValue(), maxFieldSize));
+                    record.setHeaders(StringUtils.getMaxSizeString(record.getHeaders(), maxFieldSize));
+                }
+            }
+        }
+        return this;
     }
 }

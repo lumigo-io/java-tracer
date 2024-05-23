@@ -77,6 +77,7 @@ public class KafkaSpanFactoryTest {
     public void testCreateProduceSpan(boolean injectHeaders) throws Exception {
         ProducerRecord<String, String> producerRecord;
         String messageId;
+        String headers;
         if (injectHeaders) {
             producerRecord =
                     new ProducerRecord<>(
@@ -87,9 +88,11 @@ public class KafkaSpanFactoryTest {
                             Collections.singletonList(
                                     new RecordHeader("lumigoMessageId", "123".getBytes())));
             messageId = "\"123\"";
+            headers = "'{\"lumigoMessageId\":\"MTIz\"}'";
         } else {
             producerRecord = new ProducerRecord<>("topic", PARTITION, "key", "value");
             messageId = null;
+            headers = "'{}'";
         }
 
         KafkaSpan result =
@@ -120,9 +123,9 @@ public class KafkaSpanFactoryTest {
                         + "       \"traceId\":{\"Root\":\"1-2-3\"},"
                         + "       \"kafkaInfo\":"
                         + "           {"
-                        + "               \"bootstrapServers\": [\"bootstrap-servers:9092\"],"
+                        + "               \"bootstrapServers\": '[\"bootstrap-servers:9092\"]',"
                         + "               \"topic\":\"topic\","
-                        + "               \"record\": {\"key\":\"a2V5\",\"value\":\"dmFsdWU=\",\"headers\":{}},"
+                        + "               \"record\": {\"key\":\"key\",\"value\":\"value\",\"headers\":"+headers+"},"
                         + "               \"response\":{\"partition\":1,\"offset\":12345}"
                         + "           },"
                         + "       \"messageId\":"
@@ -149,6 +152,7 @@ public class KafkaSpanFactoryTest {
     public void testCreateProduceSpanWithError(boolean injectHeaders) throws Exception {
         ProducerRecord<String, String> producerRecord;
         String messageId;
+        String headers;
         if (injectHeaders) {
             producerRecord =
                     new ProducerRecord<>(
@@ -159,9 +163,11 @@ public class KafkaSpanFactoryTest {
                             Collections.singletonList(
                                     new RecordHeader("lumigoMessageId", "123".getBytes())));
             messageId = "\"123\"";
+            headers = "'{\"lumigoMessageId\":\"MTIz\"}'";
         } else {
             producerRecord = new ProducerRecord<>("topic", PARTITION, "key", "value");
             messageId = null;
+            headers = "'{}'";
         }
 
         KafkaSpan result =
@@ -192,9 +198,9 @@ public class KafkaSpanFactoryTest {
                         + "       \"traceId\":{\"Root\":\"1-2-3\"},"
                         + "       \"kafkaInfo\":"
                         + "           {"
-                        + "               \"bootstrapServers\": [\"bootstrap-servers:9092\"],"
+                        + "               \"bootstrapServers\": '[\"bootstrap-servers:9092\"]',"
                         + "               \"topic\":\"topic\","
-                        + "               \"record\": {\"key\":\"a2V5\",\"value\":\"dmFsdWU=\",\"headers\":{}},"
+                        + "               \"record\": {\"key\":\"key\",\"value\":\"value\",\"headers\":"+headers+"},"
                         + "               \"response\":{\"errorMessage\": \"Failed to produce message\"}"
                         + "           },"
                         + "       \"messageId\":"
@@ -249,7 +255,7 @@ public class KafkaSpanFactoryTest {
                         + "       \"consumerGroupId\":\"groupId\","
                         + "       \"recordsCount\":1,"
                         + "       \"topics\":[\"topic\"],"
-                        + "       \"records\":[{\"topic\":\"topic\",\"partition\":1,\"offset\":0,\"key\":\"key\",\"value\":\"value\",\"headers\":{}}]"
+                        + "       \"records\":[{\"topic\":\"topic\",\"partition\":1,\"offset\":0,\"key\":\"key\",\"value\":\"value\",\"headers\":'{}'}]"
                         + "       },"
                         + "   \"messageId\":null,"
                         + "   \"messageIds\":[],"
