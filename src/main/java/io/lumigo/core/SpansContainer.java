@@ -13,17 +13,25 @@ import io.lumigo.core.utils.EnvUtil;
 import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.core.utils.SecretScrubber;
 import io.lumigo.core.utils.StringUtils;
+import io.lumigo.models.*;
 import io.lumigo.models.HttpSpan;
-import io.lumigo.models.Reportable;
 import io.lumigo.models.Span;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.Callable;
+import lombok.Getter;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.internals.ConsumerMetadata;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.clients.producer.internals.ProducerMetadata;
+import org.apache.kafka.common.serialization.Serializer;
 import org.pmw.tinylog.Logger;
 import software.amazon.awssdk.awscore.AwsResponse;
 import software.amazon.awssdk.core.SdkResponse;
@@ -41,14 +49,16 @@ public class SpansContainer {
     private static final String AMZN_TRACE_ID = "_X_AMZN_TRACE_ID";
     private static final String FUNCTION_SPAN_TYPE = "function";
     private static final String HTTP_SPAN_TYPE = "http";
-    private static final SecretScrubber secretScrubber = new SecretScrubber(new EnvUtil().getEnv());
+    public static final String KAFKA_SPAN_TYPE = "kafka";
 
     private Span baseSpan;
-    private Span startFunctionSpan;
+    @Getter private Span startFunctionSpan;
     private Long rttDuration;
     private Span endFunctionSpan;
     private Reporter reporter;
-    private List<HttpSpan> httpSpans = new LinkedList<>();
+    private SecretScrubber secretScrubber = new SecretScrubber(new EnvUtil().getEnv());
+    @Getter private List<BaseSpan> spans = new LinkedList<>();
+
     private static final SpansContainer ourInstance = new SpansContainer();
 
     public static SpansContainer getInstance() {
@@ -63,7 +73,7 @@ public class SpansContainer {
         rttDuration = null;
         endFunctionSpan = null;
         reporter = null;
-        httpSpans = new LinkedList<>();
+        spans = new LinkedList<>();
     }
 
     private SpansContainer() {}
@@ -71,6 +81,7 @@ public class SpansContainer {
     public void init(Map<String, String> env, Reporter reporter, Context context, Object event) {
         this.clear();
         this.reporter = reporter;
+        this.secretScrubber = new SecretScrubber(new EnvUtil().getEnv());
 
         int javaVersion = AwsUtils.parseJavaVersion(System.getProperty("java.version"));
         if (javaVersion > 11) {
@@ -81,6 +92,7 @@ public class SpansContainer {
         Logger.debug("awsTracerId {}", awsTracerId);
 
         AwsUtils.TriggeredBy triggeredBy = AwsUtils.extractTriggeredByFromEvent(event);
+
         long startTime = System.currentTimeMillis();
         this.baseSpan =
                 Span.builder()
@@ -166,8 +178,7 @@ public class SpansContainer {
                         .build();
 
         try {
-            rttDuration =
-                    reporter.reportSpans(prepareToSend(startFunctionSpan, false), MAX_REQUEST_SIZE);
+            rttDuration = reporter.reportSpans(prepareToSend(startFunctionSpan), MAX_REQUEST_SIZE);
         } catch (Throwable e) {
             Logger.error(e, "Failed to send start span");
         }
@@ -214,23 +225,15 @@ public class SpansContainer {
                 MAX_REQUEST_SIZE);
     }
 
-    public Span getStartFunctionSpan() {
-        return startFunctionSpan;
-    }
-
-    public List<Reportable> getAllCollectedSpans() {
-        List<Reportable> spans = new LinkedList<>();
+    public List<BaseSpan> getAllCollectedSpans() {
+        List<BaseSpan> spans = new LinkedList<>();
         spans.add(endFunctionSpan);
-        spans.addAll(httpSpans);
+        spans.addAll(this.spans);
         return spans;
     }
 
     public Span getEndSpan() {
         return endFunctionSpan;
-    }
-
-    public List<HttpSpan> getHttpSpans() {
-        return httpSpans;
     }
 
     private String getStackTrace(Throwable throwable) {
@@ -307,7 +310,7 @@ public class SpansContainer {
                                                         response.getStatusLine().getStatusCode())
                                                 .build())
                                 .build());
-        httpSpans.add(httpSpan);
+        this.spans.add(httpSpan);
     }
 
     public void addHttpSpan(Long startTime, Request<?> request, Response<?> response) {
@@ -366,7 +369,7 @@ public class SpansContainer {
                                 .build());
         AwsSdkV1ParserFactory.getParser(request.getServiceName())
                 .safeParse(httpSpan, request, response);
-        httpSpans.add(httpSpan);
+        this.spans.add(httpSpan);
     }
 
     public void addHttpSpan(
@@ -435,7 +438,37 @@ public class SpansContainer {
                         executionAttributes.getAttribute(SdkExecutionAttribute.SERVICE_NAME))
                 .safeParse(httpSpan, context);
 
-        httpSpans.add(httpSpan);
+        this.spans.add(httpSpan);
+    }
+
+    public <K, V> void addKafkaProduceSpan(
+            Long startTime,
+            Serializer<K> keySerializer,
+            Serializer<V> valueSerializer,
+            ProducerMetadata producerMetadata,
+            ProducerRecord<K, V> record,
+            RecordMetadata recordMetadata,
+            Exception exception) {
+        this.spans.add(
+                KafkaSpanFactory.createProduce(
+                        this.baseSpan,
+                        startTime,
+                        keySerializer,
+                        valueSerializer,
+                        producerMetadata,
+                        record,
+                        recordMetadata,
+                        exception));
+    }
+
+    public void addKafkaConsumeSpan(
+            Long startTime,
+            KafkaConsumer<?, ?> consumer,
+            ConsumerMetadata consumerMetadata,
+            ConsumerRecords<?, ?> consumerRecords) {
+        this.spans.add(
+                KafkaSpanFactory.createConsume(
+                        this.baseSpan, startTime, consumer, consumerMetadata, consumerRecords));
     }
 
     private static String extractHeaders(Map<String, String> headers) {
@@ -522,18 +555,18 @@ public class SpansContainer {
         }
     }
 
-    private Reportable prepareToSend(Reportable span, boolean hasError) {
-        return reduceSpanSize(span.scrub(secretScrubber), hasError);
+    private BaseSpan prepareToSend(BaseSpan span) {
+        return reduceSpanSize(span.scrub(secretScrubber), false);
     }
 
-    private List<Reportable> prepareToSend(List<Reportable> spans, boolean hasError) {
-        for (Reportable span : spans) {
+    private List<BaseSpan> prepareToSend(List<BaseSpan> spans, boolean hasError) {
+        for (BaseSpan span : spans) {
             reduceSpanSize(span.scrub(secretScrubber), hasError);
         }
         return spans;
     }
 
-    public Reportable reduceSpanSize(Reportable span, boolean hasError) {
+    public BaseSpan reduceSpanSize(BaseSpan span, boolean hasError) {
         int maxFieldSize =
                 hasError
                         ? Configuration.getInstance().maxSpanFieldSizeWhenError()

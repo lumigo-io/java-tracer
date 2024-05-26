@@ -3,7 +3,7 @@ package io.lumigo.core.network;
 import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.core.utils.StringUtils;
-import io.lumigo.models.Reportable;
+import io.lumigo.models.BaseSpan;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -13,7 +13,7 @@ import org.pmw.tinylog.Logger;
 
 public class Reporter {
 
-    private OkHttpClient client;
+    private final OkHttpClient client;
 
     public Reporter() {
         client =
@@ -22,11 +22,11 @@ public class Reporter {
                         .build();
     }
 
-    public long reportSpans(Reportable span, int maxSize) throws IOException {
+    public long reportSpans(BaseSpan span, int maxSize) throws IOException {
         return reportSpans(Collections.singletonList(span), maxSize);
     }
 
-    public long reportSpans(List<Reportable> spans, int maxSize) throws IOException {
+    public long reportSpans(List<BaseSpan> spans, int maxSize) throws IOException {
         long time = System.currentTimeMillis();
         List<String> spansAsStringList = new LinkedList<>();
         int sizeCount = 0;
@@ -44,7 +44,7 @@ public class Reporter {
             handledSpans++;
         }
 
-        if (Configuration.getInstance().isAwsEnvironment() && spansAsStringList.size() > 0) {
+        if (Configuration.getInstance().isAwsEnvironment() && !spansAsStringList.isEmpty()) {
             String spansAsString = "[" + String.join(",", spansAsStringList) + "]";
             Logger.debug("Reporting the spans: {}", spansAsString);
             RequestBody body =

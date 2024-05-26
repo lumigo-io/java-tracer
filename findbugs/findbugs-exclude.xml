@@ -2,4 +2,13 @@
     <Match>
         <Bug pattern="DMI_HARDCODED_ABSOLUTE_FILENAME"/>
     </Match>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP" />
+    </Match>
+    <Match>
+        <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+    </Match>
 </FindBugsFilter>

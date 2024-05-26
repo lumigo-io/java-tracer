@@ -12,7 +12,7 @@ import lombok.Data;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Data(staticConstructor = "of")
-public class HttpSpan implements Reportable {
+public class HttpSpan implements BaseSpan {
     private Long started;
     private Long ended;
     private String id;
@@ -91,7 +91,7 @@ public class HttpSpan implements Reportable {
     }
 
     @Override
-    public Reportable scrub(SecretScrubber scrubber) {
+    public BaseSpan scrub(SecretScrubber scrubber) {
         this.getInfo()
                 .getHttpInfo()
                 .getRequest()
@@ -121,7 +121,7 @@ public class HttpSpan implements Reportable {
     }
 
     @Override
-    public Reportable reduceSize(int maxFieldSize) {
+    public BaseSpan reduceSize(int maxFieldSize) {
         this.getInfo()
                 .getHttpInfo()
                 .getRequest()
