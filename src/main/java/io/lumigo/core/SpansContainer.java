@@ -178,8 +178,7 @@ public class SpansContainer {
                         .build();
 
         try {
-            rttDuration =
-                    reporter.reportSpans(prepareToSend(startFunctionSpan), MAX_REQUEST_SIZE);
+            rttDuration = reporter.reportSpans(prepareToSend(startFunctionSpan), MAX_REQUEST_SIZE);
         } catch (Throwable e) {
             Logger.error(e, "Failed to send start span");
         }

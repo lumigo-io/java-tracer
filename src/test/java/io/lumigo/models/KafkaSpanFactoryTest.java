@@ -125,7 +125,9 @@ public class KafkaSpanFactoryTest {
                         + "           {"
                         + "               \"bootstrapServers\": '[\"bootstrap-servers:9092\"]',"
                         + "               \"topic\":\"topic\","
-                        + "               \"record\": {\"key\":\"key\",\"value\":\"value\",\"headers\":"+headers+"},"
+                        + "               \"record\": {\"key\":\"key\",\"value\":\"value\",\"headers\":"
+                        + headers
+                        + "},"
                         + "               \"response\":{\"partition\":1,\"offset\":12345}"
                         + "           },"
                         + "       \"messageId\":"
@@ -200,7 +202,9 @@ public class KafkaSpanFactoryTest {
                         + "           {"
                         + "               \"bootstrapServers\": '[\"bootstrap-servers:9092\"]',"
                         + "               \"topic\":\"topic\","
-                        + "               \"record\": {\"key\":\"key\",\"value\":\"value\",\"headers\":"+headers+"},"
+                        + "               \"record\": {\"key\":\"key\",\"value\":\"value\",\"headers\":"
+                        + headers
+                        + "},"
                         + "               \"response\":{\"errorMessage\": \"Failed to produce message\"}"
                         + "           },"
                         + "       \"messageId\":"

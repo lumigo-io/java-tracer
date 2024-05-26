@@ -2,12 +2,11 @@ package io.lumigo.models;
 
 import static io.lumigo.core.SpansContainer.KAFKA_SPAN_TYPE;
 
+import io.lumigo.core.utils.JsonUtils;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import io.lumigo.core.utils.JsonUtils;
 import lombok.experimental.UtilityClass;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -37,8 +36,22 @@ public class KafkaSpanFactory {
         String topic = record.topic();
         KafkaSpan.KafkaProducerRecord producerRecord =
                 KafkaSpan.KafkaProducerRecord.builder()
-                        .key(new String(keySerializer.serialize(record.topic(), record.headers(), record.key()), Charset.defaultCharset()).trim())
-                        .value(new String(valueSerializer.serialize(record.topic(), record.headers(), record.value()), Charset.defaultCharset()).trim())
+                        .key(
+                                new String(
+                                                keySerializer.serialize(
+                                                        record.topic(),
+                                                        record.headers(),
+                                                        record.key()),
+                                                Charset.defaultCharset())
+                                        .trim())
+                        .value(
+                                new String(
+                                                valueSerializer.serialize(
+                                                        record.topic(),
+                                                        record.headers(),
+                                                        record.value()),
+                                                Charset.defaultCharset())
+                                        .trim())
                         .headers(extractHeaders(record.headers()))
                         .build();
 
@@ -87,7 +100,9 @@ public class KafkaSpanFactory {
                                 .kafkaInfo(
                                         KafkaSpan.KafkaProducerInfo.builder()
                                                 .kafkaInfoType(KafkaSpan.KAFKA_PRODUCER_TYPE)
-                                                .bootstrapServers(JsonUtils.getObjectAsJsonString(bootstrapServers))
+                                                .bootstrapServers(
+                                                        JsonUtils.getObjectAsJsonString(
+                                                                bootstrapServers))
                                                 .topic(topic)
                                                 .record(producerRecord)
                                                 .response(response)
@@ -166,7 +181,8 @@ public class KafkaSpanFactory {
     }
 
     private static String extractHeaders(Headers headers) {
-        return JsonUtils.getObjectAsJsonString(Arrays.stream(headers.toArray())
-                .collect(Collectors.toMap(Header::key, Header::value)));
+        return JsonUtils.getObjectAsJsonString(
+                Arrays.stream(headers.toArray())
+                        .collect(Collectors.toMap(Header::key, Header::value)));
     }
 }

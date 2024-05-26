@@ -2,9 +2,8 @@ package io.lumigo.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.lumigo.core.utils.SecretScrubber;
-import java.util.*;
-
 import io.lumigo.core.utils.StringUtils;
+import java.util.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -124,13 +123,28 @@ public class KafkaSpan implements BaseSpan {
         if (this.info.kafkaInfo instanceof KafkaProducerInfo) {
             KafkaProducerInfo kafkaProducerInfo = (KafkaProducerInfo) this.info.kafkaInfo;
             if (kafkaProducerInfo.getRecord() != null) {
-                kafkaProducerInfo.getRecord().setKey(scrubber.scrubStringifiedObject(kafkaProducerInfo.getRecord().getKey()));
-                kafkaProducerInfo.getRecord().setValue(scrubber.scrubStringifiedObject(kafkaProducerInfo.getRecord().getValue()));
-                kafkaProducerInfo.getRecord().setHeaders(scrubber.scrubStringifiedObject(kafkaProducerInfo.getRecord().getHeaders()));
+                kafkaProducerInfo
+                        .getRecord()
+                        .setKey(
+                                scrubber.scrubStringifiedObject(
+                                        kafkaProducerInfo.getRecord().getKey()));
+                kafkaProducerInfo
+                        .getRecord()
+                        .setValue(
+                                scrubber.scrubStringifiedObject(
+                                        kafkaProducerInfo.getRecord().getValue()));
+                kafkaProducerInfo
+                        .getRecord()
+                        .setHeaders(
+                                scrubber.scrubStringifiedObject(
+                                        kafkaProducerInfo.getRecord().getHeaders()));
             }
             if (kafkaProducerInfo.getResponse() instanceof KafkaProducerErrorResponse) {
-                KafkaProducerErrorResponse kafkaProducerErrorResponse = (KafkaProducerErrorResponse) kafkaProducerInfo.getResponse();
-                kafkaProducerErrorResponse.setErrorMessage(scrubber.scrubStringifiedObject(kafkaProducerErrorResponse.getErrorMessage()));
+                KafkaProducerErrorResponse kafkaProducerErrorResponse =
+                        (KafkaProducerErrorResponse) kafkaProducerInfo.getResponse();
+                kafkaProducerErrorResponse.setErrorMessage(
+                        scrubber.scrubStringifiedObject(
+                                kafkaProducerErrorResponse.getErrorMessage()));
             }
         } else if (this.info.kafkaInfo instanceof KafkaConsumerInfo) {
             KafkaConsumerInfo kafkaConsumerInfo = (KafkaConsumerInfo) this.info.kafkaInfo;
@@ -149,14 +163,34 @@ public class KafkaSpan implements BaseSpan {
     public BaseSpan reduceSize(int maxFieldSize) {
         if (this.info.kafkaInfo instanceof KafkaProducerInfo) {
             KafkaProducerInfo kafkaProducerInfo = (KafkaProducerInfo) this.info.kafkaInfo;
+            kafkaProducerInfo.setBootstrapServers(
+                    StringUtils.getMaxSizeString(
+                            kafkaProducerInfo.getBootstrapServers(), maxFieldSize));
+            kafkaProducerInfo.setTopic(
+                    StringUtils.getMaxSizeString(kafkaProducerInfo.getTopic(), maxFieldSize));
             if (kafkaProducerInfo.getRecord() != null) {
-                kafkaProducerInfo.getRecord().setKey(StringUtils.getMaxSizeString(kafkaProducerInfo.getRecord().getKey(), maxFieldSize));
-                kafkaProducerInfo.getRecord().setValue(StringUtils.getMaxSizeString(kafkaProducerInfo.getRecord().getValue(), maxFieldSize));
-                kafkaProducerInfo.getRecord().setHeaders(StringUtils.getMaxSizeString(kafkaProducerInfo.getRecord().getHeaders(), maxFieldSize));
+                kafkaProducerInfo
+                        .getRecord()
+                        .setKey(
+                                StringUtils.getMaxSizeString(
+                                        kafkaProducerInfo.getRecord().getKey(), maxFieldSize));
+                kafkaProducerInfo
+                        .getRecord()
+                        .setValue(
+                                StringUtils.getMaxSizeString(
+                                        kafkaProducerInfo.getRecord().getValue(), maxFieldSize));
+                kafkaProducerInfo
+                        .getRecord()
+                        .setHeaders(
+                                StringUtils.getMaxSizeString(
+                                        kafkaProducerInfo.getRecord().getHeaders(), maxFieldSize));
             }
             if (kafkaProducerInfo.getResponse() instanceof KafkaProducerErrorResponse) {
-                KafkaProducerErrorResponse kafkaProducerErrorResponse = (KafkaProducerErrorResponse) kafkaProducerInfo.getResponse();
-                kafkaProducerErrorResponse.setErrorMessage(StringUtils.getMaxSizeString(kafkaProducerErrorResponse.getErrorMessage(), maxFieldSize));
+                KafkaProducerErrorResponse kafkaProducerErrorResponse =
+                        (KafkaProducerErrorResponse) kafkaProducerInfo.getResponse();
+                kafkaProducerErrorResponse.setErrorMessage(
+                        StringUtils.getMaxSizeString(
+                                kafkaProducerErrorResponse.getErrorMessage(), maxFieldSize));
             }
         } else if (this.info.kafkaInfo instanceof KafkaConsumerInfo) {
             KafkaConsumerInfo kafkaConsumerInfo = (KafkaConsumerInfo) this.info.kafkaInfo;
@@ -164,7 +198,8 @@ public class KafkaSpan implements BaseSpan {
                 for (KafkaConsumerRecord record : kafkaConsumerInfo.getRecords()) {
                     record.setKey(StringUtils.getMaxSizeString(record.getKey(), maxFieldSize));
                     record.setValue(StringUtils.getMaxSizeString(record.getValue(), maxFieldSize));
-                    record.setHeaders(StringUtils.getMaxSizeString(record.getHeaders(), maxFieldSize));
+                    record.setHeaders(
+                            StringUtils.getMaxSizeString(record.getHeaders(), maxFieldSize));
                 }
             }
         }

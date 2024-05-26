@@ -1,5 +1,3 @@
 package io.lumigo.models;
 
-public interface BaseSpan extends Reportable<BaseSpan> {
-
-}
+public interface BaseSpan extends Reportable<BaseSpan> {}
