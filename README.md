@@ -98,14 +98,31 @@ class MyFunction implements RequestHandler<String, String> {
     }
 ```
 
-### Support Java 11 and Above 
+### Support Java 11 and Above
 
 Add the environment variable `JAVA_TOOL_OPTIONS` to your Lambda functions and set it to
 `-Djdk.attach.allowAttachSelf=true` in addition to the manual code mentioned above.
 
 ### Supported Instrumentation Libraries
 
-- Aws SDK V1 
+- Aws SDK V1
 - Aws SDK V2
 - Apache HTTP Client
 - Apache Kafka
+
+### Secret scrubbing
+
+The tracer will automatically scrub values for keys matching the following regex patterns:
+- `.*pass.*`
+- `.*key.*`
+- `.*secret.*`
+- `.*credential.*`
+- `.*passphrase.*`
+- `SessionToken`
+- `x-amz-security-token`
+- `Signature`
+- `Authorization`
+
+from the payload, at any depth.
+This behavior can be overridden by setting the `LUMIGO_SECRET_MASKING_REGEX` environment variable to a JSON array of regex patterns to match, e.g.: `[".+top@secret.+", ".pazzword.+"]`.
+* Note - providing a bad regex pattern (e.g., invalid JSON string) will result in an error and fallback to the default patterns.
