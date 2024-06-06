@@ -7,9 +7,10 @@
 Supported Runtimes: Java 8, Java 11, Java 17, Java 21
 
 ## Building With Lumigo
+Include lumigo java tracer dependency
 
 ### Maven
-Include lumigo java tracer dependency, for [Maven](https://maven.apache.org) projects, use:
+For [Maven](https://maven.apache.org) projects, use:
 
 ```xml
 <repositories>
@@ -32,6 +33,24 @@ Include lumigo java tracer dependency, for [Maven](https://maven.apache.org) pro
   <artifactId>lumigo-agent</artifactId>
   <version>1.0.44</version>
 </dependency>
+```
+
+### Gradle
+For [Gradle](https://gradle.org) projects, use:
+
+```groovy
+repositories {
+    maven {
+        url 'https://raw.githubusercontent.com/lumigo-io/java-tracer/master/local-repository/'
+    }
+}
+```
+
+```groovy
+dependencies {
+    implementation 'io.lumigo:java-tracer:1.0.44'
+    implementation 'io.lumigo:lumigo-agent:1.0.44'
+}
 ```
 
 Find the latest version here (the format of the version will be n.n.n):
