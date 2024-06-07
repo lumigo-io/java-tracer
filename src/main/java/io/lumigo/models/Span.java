@@ -3,6 +3,8 @@ package io.lumigo.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -49,6 +51,7 @@ public class Span {
         private String stage;
         private String messageId;
         private List<String> messageIds;
+        private List<Map<String, String>> tags;
         private long approxEventCreationTime;
     }
 

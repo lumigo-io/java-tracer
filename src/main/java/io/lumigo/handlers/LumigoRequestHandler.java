@@ -7,6 +7,8 @@ import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.instrumentation.agent.Installer;
 import io.lumigo.core.network.Reporter;
 import io.lumigo.core.utils.EnvUtil;
+
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -73,4 +75,16 @@ public abstract class LumigoRequestHandler<INPUT, OUTPUT> implements RequestHand
     }
 
     public abstract OUTPUT doHandleRequest(INPUT input, Context context);
+
+    public void addExecutionTag(String key, String value) {
+        spansContainer.addExecutionTag(key, value);
+    }
+
+    public void clearExecutionTags() {
+        spansContainer.clearExecutionTags();
+    }
+
+    public Map<String, String> getExecutionTags() {
+        return spansContainer.getExecutionTags();
+    }
 }
