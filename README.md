@@ -131,7 +131,7 @@ Add the environment variable `JAVA_TOOL_OPTIONS` to your Lambda functions and se
 
 ### Secret scrubbing
 
-The tracer will automatically scrub values for keys matching the following regex patterns:
+The tracer will automatically scrub values for keys in payload objects such as HTTP request / response body,  Lambda events, return value etc. that match (case-sensitively) the following regex patterns at any depth:
 - `.*pass.*`
 - `.*key.*`
 - `.*secret.*`
@@ -141,7 +141,47 @@ The tracer will automatically scrub values for keys matching the following regex
 - `x-amz-security-token`
 - `Signature`
 - `Authorization`
+This behavior can be overridden by setting the `LUMIGO_SECRET_MASKING_REGEX` environment variable to a JSON array of regex patterns to match, e.g.: `[".+top.secret.+", ".pazzword.+"]`.
 
-from the payload, at any depth.
-This behavior can be overridden by setting the `LUMIGO_SECRET_MASKING_REGEX` environment variable to a JSON array of regex patterns to match, e.g.: `[".+top@secret.+", ".pazzword.+"]`.
-* Note - providing a bad regex pattern (e.g., invalid JSON string) will result in an error and fallback to the default patterns.
+**Note:** providing a bad regex pattern (e.g., invalid JSON string) will result in an error and fallback to the default patterns.
+
+#### Escaping special characters
+When the patterns contain special characters such as double quotes (`"`) or backslashes (`\`), those should be escaped with a backslash (`\`).
+
+For example, the pattern for keys with whitespaces and quotes like `"key\s+spaced"` becomes `\"key\\\\s+spaced\"`. That's because each double quotes turns into `\"`, and the `\s+` expression requires the backslash character to be escaped both in the string context (`\s+` => `\\s+`) and again in a JSON string context (`\\s+` => `\\\\s+`). When placed into the env-var as an array-item, this becomes:
+```
+["\\"key\\\\s+spaced\\""]
+```
+
+#### Examples
+
+`LUMIGO_SECRET_MASKING_REGEX` set to `[".+top\\\\s+secret.+", ".+password.+"]` for a payload object like:
+```json
+{
+    "top    secret": {
+        "password": "123456"
+    },
+    "top secret object": {
+        "this will not be scrubbed since the parent is an object": "123456"
+    },
+    "password": "123456",
+    "top secret:": "123456",
+    "not so secret": "value",
+    "ToP sEcReT": "is case sensitive"
+}
+```
+will result in the following payload shown in the Lumigo platform:
+```json
+{
+    "top    secret": {
+        "password": "****"
+    },
+    "top secret object": {
+        "this will not be scrubbed since the parent is an object": "123456"
+    },
+    "password": "****",
+    "top secret:": "****",
+    "not so secret": "value",
+    "ToP sEcReT": "is case sensitive"
+}
+```
