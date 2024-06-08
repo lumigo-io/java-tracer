@@ -1,15 +1,16 @@
 # Java Tracer
 
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/lumigo-io/java-tracer/tree/master.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/lumigo-io/java-tracer/tree/master)
-![Version](https://img.shields.io/badge/version-1.0.44-green.svg)
+![Version](https://img.shields.io/badge/version-1.0.45-green.svg)
 [![codecov](https://codecov.io/gh/lumigo-io/java-tracer/branch/master/graph/badge.svg?token=D3IZ5hQwaQ)](https://codecov.io/gh/lumigo-io/java-tracer)
 
 Supported Runtimes: Java 8, Java 11, Java 17, Java 21
 
 ## Building With Lumigo
+Include lumigo java tracer dependency
 
 ### Maven
-Include lumigo java tracer dependency, for [Maven](https://maven.apache.org) projects, use:
+For [Maven](https://maven.apache.org) projects, use:
 
 ```xml
 <repositories>
@@ -24,14 +25,32 @@ Include lumigo java tracer dependency, for [Maven](https://maven.apache.org) pro
 <dependency>
   <groupId>io.lumigo</groupId>
   <artifactId>java-tracer</artifactId>
-  <version>1.0.44</version>
+  <version>1.0.45</version>
 </dependency>
 
 <dependency>
   <groupId>io.lumigo</groupId>
   <artifactId>lumigo-agent</artifactId>
-  <version>1.0.44</version>
+  <version>1.0.45</version>
 </dependency>
+```
+
+### Gradle
+For [Gradle](https://gradle.org) projects, use:
+
+```groovy
+repositories {
+    maven {
+        url 'https://raw.githubusercontent.com/lumigo-io/java-tracer/master/local-repository/'
+    }
+}
+```
+
+```groovy
+dependencies {
+    implementation 'io.lumigo:java-tracer:1.0.45'
+    implementation 'io.lumigo:lumigo-agent:1.0.45'
+}
 ```
 
 Find the latest version here (the format of the version will be n.n.n):
