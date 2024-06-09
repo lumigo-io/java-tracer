@@ -141,9 +141,11 @@ The tracer will automatically scrub values for keys in payload objects such as H
 - `x-amz-security-token`
 - `Signature`
 - `Authorization`
-This behavior can be overridden by setting the `LUMIGO_SECRET_MASKING_REGEX` environment variable to a JSON array of regex patterns to match, e.g.: `[".+top.secret.+", ".pazzword.+"]`.
+This behavior can be overridden by setting the `LUMIGO_SECRET_MASKING_REGEX` environment variable to a JSON array of regex patterns to match, e.g.: `[".+top.secret.+", ".+pazzword.+"]`.
 
-**Note:** providing a bad regex pattern (e.g., invalid JSON string) will result in an error and fallback to the default patterns.
+#### Notes
+1. providing a bad regex pattern (e.g., invalid JSON string) will result in an error and fallback to the default patterns.
+2. Only values that are strings are redacted - objects, numbers etc. will stay intact even though their keys match the patterns.
 
 #### Escaping special characters
 When the patterns contain special characters such as double quotes (`"`) or backslashes (`\`), those should be escaped with a backslash (`\`).
@@ -155,7 +157,7 @@ For example, the pattern for keys with whitespaces and quotes like `"key\s+space
 
 #### Examples
 
-`LUMIGO_SECRET_MASKING_REGEX` set to `[".+top\\\\s+secret.+", ".+password.+"]` for a payload object like:
+`LUMIGO_SECRET_MASKING_REGEX` set to `[".*top\\\\s+secret.*", ".*password.*"]` for a payload object like:
 ```json
 {
     "top    secret": {
