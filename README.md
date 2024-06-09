@@ -141,6 +141,7 @@ The tracer will automatically scrub values for keys in payload objects such as H
 - `x-amz-security-token`
 - `Signature`
 - `Authorization`
+
 This behavior can be overridden by setting the `LUMIGO_SECRET_MASKING_REGEX` environment variable to a JSON array of regex patterns to match, e.g.: `[".+top.secret.+", ".+pazzword.+"]`.
 
 #### Notes
