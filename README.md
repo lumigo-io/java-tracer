@@ -1,7 +1,7 @@
 # Java Tracer
 
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/lumigo-io/java-tracer/tree/master.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/lumigo-io/java-tracer/tree/master)
-![Version](https://img.shields.io/badge/version-1.0.45-green.svg)
+![Version](https://img.shields.io/badge/version-1.0.46-green.svg)
 [![codecov](https://codecov.io/gh/lumigo-io/java-tracer/branch/master/graph/badge.svg?token=D3IZ5hQwaQ)](https://codecov.io/gh/lumigo-io/java-tracer)
 
 Supported Runtimes: Java 8, Java 11, Java 17, Java 21
@@ -25,13 +25,13 @@ For [Maven](https://maven.apache.org) projects, use:
 <dependency>
   <groupId>io.lumigo</groupId>
   <artifactId>java-tracer</artifactId>
-  <version>1.0.45</version>
+  <version>1.0.46</version>
 </dependency>
 
 <dependency>
   <groupId>io.lumigo</groupId>
   <artifactId>lumigo-agent</artifactId>
-  <version>1.0.45</version>
+  <version>1.0.46</version>
 </dependency>
 ```
 
@@ -48,8 +48,8 @@ repositories {
 
 ```groovy
 dependencies {
-    implementation 'io.lumigo:java-tracer:1.0.45'
-    implementation 'io.lumigo:lumigo-agent:1.0.45'
+    implementation 'io.lumigo:java-tracer:1.0.46'
+    implementation 'io.lumigo:lumigo-agent:1.0.46'
 }
 ```
 
