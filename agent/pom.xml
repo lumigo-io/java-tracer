@@ -12,7 +12,7 @@
     </properties>
     <groupId>io.lumigo</groupId>
     <artifactId>lumigo-agent</artifactId>
-    <version>1.0.46</version>
+    <version>1.0.47</version>
 
     <name>Lumigo java tracer agent</name>
     <description>The Lumigo java tracer for serverless functions</description>
@@ -22,7 +22,7 @@
         <url>https://github.com/lumigo-io/java-tracer</url>
         <connection>scm:git:https://github.com:lumigo-io/java-tracer.git</connection>
         <developerConnection>scm:git:https://github.com:lumigo-io/java-tracer.git</developerConnection>
-        <tag>1.0.46</tag>
+        <tag>1.0.47</tag>
     </scm>
 
     <developers>

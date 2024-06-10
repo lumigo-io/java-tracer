@@ -86,7 +86,7 @@ public class Configuration {
     }
 
     public String getLumigoTracerVersion() {
-        return "1.0.46";
+        return "1.0.47";
     }
 
     public Duration getLumigoTimeout() {
