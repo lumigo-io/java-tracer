@@ -10,8 +10,7 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 @UtilityClass
 public class AwsSdkV2Utils {
 
-    public String calculateItemHash(
-            Map<String, software.amazon.awssdk.services.dynamodb.model.AttributeValue> item) {
+    public String calculateItemHash(Map<String, AttributeValue> item) {
         Map<String, Object> simpleMap = AwsSdkV2Utils.convertAttributeMapToSimpleMap(item);
         return StringUtils.buildMd5Hash(JsonUtils.getObjectAsJsonString(simpleMap));
     }

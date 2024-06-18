@@ -1,25 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>io.lumigo</groupId>
     <artifactId>java-tracer</artifactId>
-    <version>1.0.42</version>
+    <version>1.0.47</version>
     <packaging>jar</packaging>
-
     <name>Lumigo java tracer</name>
     <description>The Lumigo java tracer for serverless functions</description>
     <url>https://lumigo.io/</url>
-
     <scm>
         <url>https://github.com/lumigo-io/java-tracer</url>
         <connection>scm:git:https://github.com:lumigo-io/java-tracer.git</connection>
         <developerConnection>scm:git:https://github.com:lumigo-io/java-tracer.git</developerConnection>
-        <tag>1.0.42</tag>
+        <tag>1.0.47</tag>
     </scm>
-
     <developers>
         <developer>
             <name>Lumigo Dev Team</name>
@@ -28,12 +22,10 @@
             <organizationUrl>https://lumigo.io/</organizationUrl>
         </developer>
     </developers>
-
     <organization>
         <name>Lumigo</name>
         <url>https://lumigo.io/</url>
     </organization>
-
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -41,8 +33,6 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-
-
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
@@ -53,8 +43,6 @@
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
-
-
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -80,7 +68,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-events</artifactId>
-            <version>2.2.6</version>
+            <version>3.11.5</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
@@ -145,6 +133,13 @@
             <version>2.25.45</version>
         </dependency>
 
+        <!-- Kafka dependencies -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+
         <!-- Tracer dependencies -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -159,7 +154,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.22</version>
+            <version>1.18.32</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -182,7 +177,11 @@
             <artifactId>byte-buddy-agent</artifactId>
             <version>1.14.14</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20210307</version>
+        </dependency>
         <!-- Testing dependencies -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -233,7 +232,7 @@
                 <includes>
                     <include>**/lumigo-version.txt</include>
                 </includes>
-        </resource>
+            </resource>
         </resources>
         <plugins>
             <!-- Used to make it so the JavaDoc and sources are included. -->
@@ -267,8 +266,7 @@
                 </executions>
             </plugin>
             <!-- End of sources/javadoc inclusion. -->
-
-            <!-- Use for running tests-->
+            <!-- Use for running tests -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -297,12 +295,11 @@
                 <version>3.0.5</version>
                 <configuration>
                     <!--
-                        Enables analysis which takes more memory but finds more bugs.
-                        If you run out of memory, changes the value of the effort element
-                        to 'Low'.
-                    -->
+                         Enables analysis which takes more memory but finds more bugs.
+                         If you run out of memory, changes the value of the effort element
+                         to 'Low'.
+                         -->
                     <effort>Max</effort>
-
                     <!-- Reports all bugs (other values are medium and max) -->
                     <threshold>Low</threshold>
                     <!-- Produces XML report -->
@@ -312,9 +309,7 @@
                     <excludeFilterFile>findbugs/findbugs-exclude.xml</excludeFilterFile>
                 </configuration>
                 <executions>
-                    <!--
-                        Ensures that FindBugs inspects source code when project is compiled.
-                    -->
+                    <!-- Ensures that FindBugs inspects source code when project is compiled. -->
                     <execution>
                         <id>analyze-compile</id>
                         <phase>compile</phase>
@@ -327,7 +322,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.3</version>
+                <version>0.8.11</version>
                 <executions>
                     <execution>
                         <goals>

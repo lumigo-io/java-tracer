@@ -2,6 +2,8 @@ package io.lumigo.handlers;
 
 import static io.lumigo.core.utils.AwsUtils.COLD_START_KEY;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 import com.amazonaws.services.lambda.runtime.Context;
@@ -13,7 +15,9 @@ import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.network.Reporter;
 import io.lumigo.core.utils.EnvUtil;
 import io.lumigo.core.utils.JsonUtils;
+import io.lumigo.models.BaseSpan;
 import io.lumigo.models.Span;
+import io.lumigo.testUtils.JsonTestUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -147,6 +151,7 @@ class LumigoRequestHandlerTest {
             return LumigoRequestExecutor.execute(kinesisEvent, context, supplier);
         }
     }
+
     /**
      * *************************************
      *
@@ -243,7 +248,9 @@ class LumigoRequestHandlerTest {
                         new Customization("info.messageIds", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
-                        new Customization("ended", (o1, o2) -> o2 != null)));
+                        new Customization("ended", (o1, o2) -> o2 != null),
+                        new Customization("event", JsonTestUtils::compareJsonStrings),
+                        new Customization("envs", JsonTestUtils::compareJsonStrings)));
         Span endSpan = getEndSpan("Response", null);
         endSpan.setReporter_rtt(999L);
         JSONAssert.assertEquals(
@@ -257,7 +264,9 @@ class LumigoRequestHandlerTest {
                         new Customization("info.messageIds", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
-                        new Customization("ended", (o1, o2) -> o2 != null)));
+                        new Customization("ended", (o1, o2) -> o2 != null),
+                        new Customization("event", JsonTestUtils::compareJsonStrings),
+                        new Customization("envs", JsonTestUtils::compareJsonStrings)));
     }
 
     @DisplayName(
@@ -288,7 +297,9 @@ class LumigoRequestHandlerTest {
                         new Customization("info.messageIds", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
-                        new Customization("ended", (o1, o2) -> o2 != null)));
+                        new Customization("ended", (o1, o2) -> o2 != null),
+                        new Customization("event", JsonTestUtils::compareJsonStrings),
+                        new Customization("envs", JsonTestUtils::compareJsonStrings)));
         JSONAssert.assertEquals(
                 JsonUtils.getObjectAsJsonString(
                         getEndSpan(null, new UnsupportedOperationException())),
@@ -302,13 +313,15 @@ class LumigoRequestHandlerTest {
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("error.stacktrace", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
-                        new Customization("ended", (o1, o2) -> o2 != null)));
+                        new Customization("ended", (o1, o2) -> o2 != null),
+                        new Customization("event", JsonTestUtils::compareJsonStrings),
+                        new Customization("envs", JsonTestUtils::compareJsonStrings)));
     }
 
     @DisplayName(
             "Create a handler that return a response, Lumigo tracer is configuration is inline and tracer send relevant spans")
     @Test
-    public void LumigoRequestHandler_with_inline_configuration_return_reponse_happy_flow()
+    public void LumigoRequestHandler_with_inline_configuration_return_response_happy_flow()
             throws Exception {
         HandlerStaticInit handler = new HandlerStaticInit();
         handler.setEnvUtil(envUtil);
@@ -440,10 +453,10 @@ class LumigoRequestHandlerTest {
 
         handler.handleRequest(null, null, context);
 
-        ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
-        ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
-        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture(), anyInt());
+        ArgumentCaptor<List<BaseSpan>> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<BaseSpan> argumentCaptorStartSpan = ArgumentCaptor.forClass(BaseSpan.class);
         verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture(), anyInt());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture(), anyInt());
 
         JSONAssert.assertEquals(
                 JsonUtils.getObjectAsJsonString(
@@ -454,7 +467,9 @@ class LumigoRequestHandlerTest {
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
-                        new Customization("ended", (o1, o2) -> o2 != null)));
+                        new Customization("ended", (o1, o2) -> o2 != null),
+                        new Customization("envs", JsonTestUtils::compareJsonStrings)));
+
         JSONAssert.assertEquals(
                 JsonUtils.getObjectAsJsonString(
                         getEndSpan(null, null, false)
@@ -469,7 +484,8 @@ class LumigoRequestHandlerTest {
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
-                        new Customization("ended", (o1, o2) -> o2 != null)));
+                        new Customization("ended", (o1, o2) -> o2 != null),
+                        new Customization("envs", JsonTestUtils::compareJsonStrings)));
     }
 
     @DisplayName("Create a handler that throw exception, Lumigo tracer send spans successfully")
@@ -498,7 +514,8 @@ class LumigoRequestHandlerTest {
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
-                        new Customization("ended", (o1, o2) -> o2 != null)));
+                        new Customization("ended", (o1, o2) -> o2 != null),
+                        new Customization("envs", JsonTestUtils::compareJsonStrings)));
         JSONAssert.assertEquals(
                 JsonUtils.getObjectAsJsonString(
                         getEndSpan(null, new UnsupportedOperationException(), false)
@@ -514,7 +531,8 @@ class LumigoRequestHandlerTest {
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("error.stacktrace", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
-                        new Customization("ended", (o1, o2) -> o2 != null)));
+                        new Customization("ended", (o1, o2) -> o2 != null),
+                        new Customization("envs", JsonTestUtils::compareJsonStrings)));
     }
 
     @DisplayName(
@@ -744,7 +762,10 @@ class LumigoRequestHandlerTest {
                         new Customization("info.messageIds", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
-                        new Customization("ended", (o1, o2) -> o2 != null)));
+                        new Customization("ended", (o1, o2) -> o2 != null),
+                        new Customization("event", JsonTestUtils::compareJsonStrings),
+                        new Customization("envs", JsonTestUtils::compareJsonStrings)));
+
         Span endSpan = getEndSpan("Response", null);
         endSpan.setReporter_rtt(999L);
         JSONAssert.assertEquals(
@@ -758,7 +779,9 @@ class LumigoRequestHandlerTest {
                         new Customization("info.messageIds", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
-                        new Customization("ended", (o1, o2) -> o2 != null)));
+                        new Customization("ended", (o1, o2) -> o2 != null),
+                        new Customization("event", JsonTestUtils::compareJsonStrings),
+                        new Customization("envs", JsonTestUtils::compareJsonStrings)));
     }
 
     @DisplayName(
@@ -789,7 +812,9 @@ class LumigoRequestHandlerTest {
                         new Customization("info.messageIds", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
-                        new Customization("ended", (o1, o2) -> o2 != null)));
+                        new Customization("ended", (o1, o2) -> o2 != null),
+                        new Customization("event", JsonTestUtils::compareJsonStrings),
+                        new Customization("envs", JsonTestUtils::compareJsonStrings)));
         JSONAssert.assertEquals(
                 JsonUtils.getObjectAsJsonString(
                         getEndSpan(null, new UnsupportedOperationException())),
@@ -803,7 +828,9 @@ class LumigoRequestHandlerTest {
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("error.stacktrace", (o1, o2) -> o2 != null),
-                        new Customization("ended", (o1, o2) -> o2 != null)));
+                        new Customization("ended", (o1, o2) -> o2 != null),
+                        new Customization("event", JsonTestUtils::compareJsonStrings),
+                        new Customization("envs", JsonTestUtils::compareJsonStrings)));
     }
 
     @DisplayName(

@@ -92,7 +92,7 @@ class ApacheHttpInstrumentationTest {
 
         ApacheHttpInstrumentation.ApacheHttpAdvice.methodExit(request, response);
 
-        assertEquals(1, SpansContainer.getInstance().getHttpSpans().size());
+        assertEquals(1, SpansContainer.getInstance().getSpans().size());
         assertNotNull(ApacheHttpInstrumentation.ApacheHttpAdvice.handled.get(request.hashCode()));
     }
 

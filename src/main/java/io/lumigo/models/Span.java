@@ -1,6 +1,10 @@
 package io.lumigo.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.lumigo.core.configuration.Configuration;
+import io.lumigo.core.utils.JsonUtils;
+import io.lumigo.core.utils.SecretScrubber;
+import io.lumigo.core.utils.StringUtils;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -12,7 +16,7 @@ import lombok.Data;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Data(staticConstructor = "of")
-public class Span {
+public class Span implements BaseSpan {
     private String name;
     private long started;
     private long ended;
@@ -86,5 +90,25 @@ public class Span {
         public String toString() {
             return name().toLowerCase(Locale.ENGLISH);
         }
+    }
+
+    @Override
+    public Span scrub(SecretScrubber scrubber) {
+        this.setEnvs(
+                JsonUtils.getObjectAsJsonString(scrubber.scrubStringifiedObject(this.getEnvs())));
+        this.setEvent(
+                JsonUtils.getObjectAsJsonString(scrubber.scrubStringifiedObject(this.getEvent())));
+        this.setReturn_value(scrubber.scrubStringifiedObject(this.getReturn_value()));
+        return this;
+    }
+
+    @Override
+    public Span reduceSize(int maxFieldSize) {
+        this.setEnvs(
+                StringUtils.getMaxSizeString(
+                        this.getEnvs(), Configuration.getInstance().maxSpanFieldSize()));
+        this.setReturn_value(StringUtils.getMaxSizeString(this.getReturn_value(), maxFieldSize));
+        this.setEvent(StringUtils.getMaxSizeString(this.getEvent(), maxFieldSize));
+        return this;
     }
 }

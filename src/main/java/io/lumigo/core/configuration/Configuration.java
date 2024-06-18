@@ -27,6 +27,8 @@ public class Configuration {
     public static final String LUMIGO_MAX_RESPONSE_SIZE = "LUMIGO_MAX_RESPONSE_SIZE";
     public static final String LUMIGO_MAX_SIZE_FOR_REQUEST = "LUMIGO_MAX_SIZE_FOR_REQUEST";
     public static final String LUMIGO_INSTRUMENTATION = "LUMIGO_INSTRUMENTATION";
+    public static final String LUMIGO_SECRET_MASKING_REGEX = "LUMIGO_SECRET_MASKING_REGEX";
+    public static final String LUMIGO_MAX_BATCH_MESSAGE_IDS = "LUMIGO_MAX_BATCH_MESSAGE_IDS";
 
     private static Configuration instance;
     private LumigoConfiguration inlineConf;
@@ -84,7 +86,7 @@ public class Configuration {
     }
 
     public String getLumigoTracerVersion() {
-        return "1.0.42";
+        return "1.0.47";
     }
 
     public Duration getLumigoTimeout() {
@@ -135,5 +137,13 @@ public class Configuration {
         return envUtil.getIntegerEnv(
                 LUMIGO_MAX_SIZE_FOR_REQUEST,
                 envUtil.getIntegerEnv(LUMIGO_MAX_RESPONSE_SIZE, 1024 * 500));
+    }
+
+    public int maxBatchMessageIds() {
+        int value = envUtil.getIntegerEnv(LUMIGO_MAX_BATCH_MESSAGE_IDS, 20);
+        if (value == 0) {
+            value = 20;
+        }
+        return value;
     }
 }

@@ -249,6 +249,21 @@ class AwsUtilsTest {
                 true);
     }
 
+    @Test
+    void test_extractTriggeredByFromEvent_KafkaEvent() throws JSONException {
+        Object event = awsLambdaEventGenerator.kafkaEvent();
+
+        JSONAssert.assertEquals(
+                "{"
+                        + "\"triggeredBy\": \"kafka\", "
+                        + "\"arn\": \"arn:aws:kafka:us-west-2:779055952581:cluster/MskLambdaStackCluster/8fff24de-4f6c-44ca-b072-61d7a1b450a4-2\", "
+                        + "\"resource\": \"msk-topic\", "
+                        + "\"messageIds\": [\"NjA1ZTU0YWItMA==\"]"
+                        + "}",
+                JsonUtils.getObjectAsJsonString(AwsUtils.extractTriggeredByFromEvent(event)),
+                true);
+    }
+
     @ParameterizedTest
     @CsvSource({
         "1.5.0, 5",

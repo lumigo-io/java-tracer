@@ -3,10 +3,10 @@ package infa;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.amazonaws.services.dynamodbv2.model.StreamRecord;
 import com.amazonaws.services.lambda.runtime.events.*;
-import com.amazonaws.services.s3.event.S3EventNotification;
+import com.amazonaws.services.lambda.runtime.events.models.dynamodb.AttributeValue;
+import com.amazonaws.services.lambda.runtime.events.models.dynamodb.StreamRecord;
+import com.amazonaws.services.lambda.runtime.events.models.s3.*;
 import com.sun.tools.javac.util.List;
 import java.util.Collections;
 import java.util.Date;
@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AwsLambdaEventGenerator {
-
     public S3Event s3Event() {
         S3Event s3Event = mock(S3Event.class);
         S3EventNotification.S3Entity s3Entity = mock(S3EventNotification.S3Entity.class);
@@ -133,8 +132,7 @@ public class AwsLambdaEventGenerator {
     }
 
     public CloudWatchLogsEvent cloudWatchLogsEvent() {
-        CloudWatchLogsEvent cloudWatchLogsEvent = mock(CloudWatchLogsEvent.class);
-        return cloudWatchLogsEvent;
+        return mock(CloudWatchLogsEvent.class);
     }
 
     public ScheduledEvent scheduledEvent() {
@@ -144,22 +142,42 @@ public class AwsLambdaEventGenerator {
     }
 
     public CloudFrontEvent cloudFrontEvent() {
-        CloudFrontEvent event = mock(CloudFrontEvent.class);
-        return event;
+        return mock(CloudFrontEvent.class);
     }
 
     public CodeCommitEvent codeCommitEvent() {
-        CodeCommitEvent event = mock(CodeCommitEvent.class);
-        return event;
+        return mock(CodeCommitEvent.class);
     }
 
     public LexEvent lexEvent() {
-        LexEvent event = mock(LexEvent.class);
-        return event;
+        return mock(LexEvent.class);
     }
 
     public CognitoEvent cognitoEvent() {
-        CognitoEvent event = mock(CognitoEvent.class);
-        return event;
+        return mock(CognitoEvent.class);
+    }
+
+    public KafkaEvent kafkaEvent() {
+        return new KafkaEvent(
+                Collections.singletonMap(
+                        "msk-topic-0",
+                        Collections.singletonList(
+                                KafkaEvent.KafkaEventRecord.builder()
+                                        .withTopic("msk-topic")
+                                        .withPartition(0)
+                                        .withOffset(1612)
+                                        .withTimestamp(1716147063028L)
+                                        .withTimestampType("CREATE_TIME")
+                                        .withKey("a2V5")
+                                        .withValue("TWVzc2FnZSBhdCAxNzE2MTQ3MDYzMDE1")
+                                        .withHeaders(
+                                                Collections.singletonList(
+                                                        Collections.singletonMap(
+                                                                "lumigoMessageId",
+                                                                "NjA1ZTU0YWItMA==".getBytes())))
+                                        .build())),
+                "aws:kafka",
+                "arn:aws:kafka:us-west-2:779055952581:cluster/MskLambdaStackCluster/8fff24de-4f6c-44ca-b072-61d7a1b450a4-2",
+                "b-2.msklambdastackcluster.29ysmg.c2.kafka.us-west-2.amazonaws.com:9098,b-1.msklambdastackcluster.29ysmg.c2.kafka.us-west-2.amazonaws.com:9098");
     }
 }
