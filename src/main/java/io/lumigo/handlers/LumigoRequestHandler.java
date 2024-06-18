@@ -75,16 +75,4 @@ public abstract class LumigoRequestHandler<INPUT, OUTPUT> implements RequestHand
     }
 
     public abstract OUTPUT doHandleRequest(INPUT input, Context context);
-
-    public void addExecutionTag(String key, String value) {
-        spansContainer.addExecutionTag(key, value);
-    }
-
-    public void clearExecutionTags() {
-        spansContainer.clearExecutionTags();
-    }
-
-    public Map<String, String> getExecutionTags() {
-        return spansContainer.getExecutionTags();
-    }
 }

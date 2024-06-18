@@ -17,7 +17,6 @@ import io.lumigo.models.Span;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -64,6 +63,7 @@ public class SpansContainer {
         endFunctionSpan = null;
         reporter = null;
         httpSpans = new LinkedList<>();
+        ExecutionTags.clear();  // Clear execution tags
     }
 
     private SpansContainer() {}
@@ -583,17 +583,5 @@ public class SpansContainer {
                                     maxFieldSize));
         }
         return span;
-    }
-
-    public void addExecutionTag(String key, String value) {
-        getInstance().addExecutionTag(key, value);
-    }
-
-    public void clearExecutionTags() {
-        getInstance().clearExecutionTags();
-    }
-
-    public Map<String, String> getExecutionTags() {
-        return getInstance().getExecutionTags();
     }
 }

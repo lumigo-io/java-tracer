@@ -14,6 +14,17 @@ public class ExecutionTags {
 
     private static final List<Map<String, String>> tags = new ArrayList<>();
 
+    private ExecutionTags() {}
+
+    private static class Holder {
+        private static final ExecutionTags INSTANCE = new ExecutionTags();
+    }
+
+    // Method to return the singleton instance
+    private static ExecutionTags getInstance() {
+        return Holder.INSTANCE;
+    }
+
     private static boolean validateTag(String key, String value, boolean shouldLogErrors) {
         key = String.valueOf(key);
         value = String.valueOf(value);
@@ -60,6 +71,7 @@ public class ExecutionTags {
                 Logger.error(ADD_TAG_ERROR_MSG_PREFIX);
             }
             Logger.error(err.getMessage());
+            Logger.error(String.format("%s - %s", ADD_TAG_ERROR_MSG_PREFIX, err.getMessage()));
         }
     }
 
