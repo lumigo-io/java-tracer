@@ -37,7 +37,11 @@ public class Agent {
             if ("lib".equalsIgnoreCase(agentArgs)) {
                 urls = getUrls();
             } else {
-                urls = new URL[] {new File("/var/task/").toURI().toURL(), new File(LUMIGO_JAVA_TRACER_PATH).toURI().toURL()};
+                urls =
+                        new URL[] {
+                            new File("/var/task/").toURI().toURL(),
+                            new File(LUMIGO_JAVA_TRACER_PATH).toURI().toURL()
+                        };
             }
             installTracerJar(inst);
             URLClassLoader newClassLoader = new URLClassLoader(urls, null);
@@ -52,7 +56,7 @@ public class Agent {
     }
 
     private static void installTracerJar(Instrumentation inst) {
-        try (JarFile jar = new JarFile(new File(new File(LUMIGO_JAVA_TRACER_PATH).toURI()))){
+        try (JarFile jar = new JarFile(new File(new File(LUMIGO_JAVA_TRACER_PATH).toURI()))) {
             inst.appendToSystemClassLoaderSearch(jar);
         } catch (Exception e) {
             e.printStackTrace();

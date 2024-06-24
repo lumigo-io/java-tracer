@@ -1,7 +1,8 @@
 package io.lumigo.core.instrumentation.impl;
 
-import com.amazonaws.services.lambda.runtime.Context;
+import static net.bytebuddy.matcher.ElementMatchers.*;
 
+import com.amazonaws.services.lambda.runtime.Context;
 import io.lumigo.core.SpansContainer;
 import io.lumigo.core.instrumentation.LumigoInstrumentationApi;
 import io.lumigo.core.instrumentation.agent.Loader;
@@ -14,15 +15,19 @@ import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.pmw.tinylog.Logger;
 
-import static net.bytebuddy.matcher.ElementMatchers.*;
-
 public class AwsLambdaRequestHandlerInstrumentation implements LumigoInstrumentationApi {
     @Override
     public ElementMatcher<TypeDescription> getTypeMatcher() {
         return hasSuperType(named("com.amazonaws.services.lambda.runtime.RequestHandler"))
-                // we don't want to instrument handlers that implement our interfaces because they are already instrumented
-                .and(not(hasSuperType(named("io.lumigo.handlers.LumigoRequestHandler")))
-                .and(not(hasSuperType(named("io.lumigo.handlers.LumigoRequestStreamHandler")))));
+                // we don't want to instrument handlers that implement our interfaces because they
+                // are already instrumented
+                .and(
+                        not(hasSuperType(named("io.lumigo.handlers.LumigoRequestHandler")))
+                                .and(
+                                        not(
+                                                hasSuperType(
+                                                        named(
+                                                                "io.lumigo.handlers.LumigoRequestStreamHandler")))));
     }
 
     @Override
@@ -31,9 +36,13 @@ public class AwsLambdaRequestHandlerInstrumentation implements LumigoInstrumenta
                 .include(Loader.class.getClassLoader())
                 .advice(
                         isMethod()
-                        .and(isPublic())
-                        .and(named("handleRequest"))
-                        .and(takesArgument(1, named("com.amazonaws.services.lambda.runtime.Context"))),
+                                .and(isPublic())
+                                .and(named("handleRequest"))
+                                .and(
+                                        takesArgument(
+                                                1,
+                                                named(
+                                                        "com.amazonaws.services.lambda.runtime.Context"))),
                         HandleRequestAdvice.class.getName());
     }
 
@@ -43,8 +52,7 @@ public class AwsLambdaRequestHandlerInstrumentation implements LumigoInstrumenta
         public static void methodEnter(
                 @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object input,
                 @Advice.Argument(1) Context context,
-                @Advice.Local("lumigoSpansContainer") SpansContainer spansContainer
-        ) {
+                @Advice.Local("lumigoSpansContainer") SpansContainer spansContainer) {
             try {
                 spansContainer = SpansContainer.getInstance();
                 spansContainer.init(new EnvUtil().getEnv(), new Reporter(), context, input);

@@ -1,13 +1,8 @@
 package io.lumigo.core.instrumentation.agent;
 
-import static net.bytebuddy.matcher.ElementMatchers.nameStartsWith;
-import static net.bytebuddy.matcher.ElementMatchers.not;
-
 import io.lumigo.core.instrumentation.impl.*;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import org.pmw.tinylog.Logger;
-
-import java.util.Arrays;
 
 @SuppressWarnings("unused")
 public class Loader {
