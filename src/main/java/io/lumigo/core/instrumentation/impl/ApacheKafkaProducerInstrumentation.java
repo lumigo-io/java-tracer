@@ -78,7 +78,7 @@ public class ApacheKafkaProducerInstrumentation implements LumigoInstrumentation
                                         .toString()
                                         .substring(0, 10)
                                         .getBytes(StandardCharsets.UTF_8));
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 Logger.error(e);
             }
         }

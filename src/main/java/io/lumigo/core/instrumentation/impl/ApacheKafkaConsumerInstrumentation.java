@@ -48,7 +48,7 @@ public class ApacheKafkaConsumerInstrumentation implements LumigoInstrumentation
         public static void methodEnter(@Advice.FieldValue("clientId") String clientId) {
             try {
                 startTimeMap.put(clientId, System.currentTimeMillis());
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 Logger.error(e);
             }
         }
