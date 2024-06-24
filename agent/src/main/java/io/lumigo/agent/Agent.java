@@ -4,7 +4,6 @@ import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
@@ -23,8 +22,9 @@ public class Agent {
     public static String LUMIGO_JAVA_TRACER_PATH = "/opt/lumigo/lumigo-tracer.jar";
 
     public static void premain(String agentArgs, Instrumentation inst) {
-        agentmain(agentArgs, inst);
-        // TODO handle switch off
+        if (!isKillSwitchOn()) {
+            agentmain(agentArgs, inst);
+        }
     }
 
     public static void agentmain(String agentArgs, Instrumentation inst) {
@@ -37,10 +37,7 @@ public class Agent {
             if ("lib".equalsIgnoreCase(agentArgs)) {
                 urls = getUrls();
             } else {
-                List<URL> jars = new LinkedList<>();
-                jars.add(new File("/var/task/").toURI().toURL());
-                jars.add(new File(LUMIGO_JAVA_TRACER_PATH).toURI().toURL());
-                urls = jars.toArray(new URL[jars.size()]);
+                urls = new URL[] {new File("/var/task/").toURI().toURL(), new File(LUMIGO_JAVA_TRACER_PATH).toURI().toURL()};
             }
             installTracerJar(inst);
             URLClassLoader newClassLoader = new URLClassLoader(urls, null);
@@ -58,7 +55,6 @@ public class Agent {
         try (JarFile jar = new JarFile(new File(new File(LUMIGO_JAVA_TRACER_PATH).toURI()))){
             inst.appendToSystemClassLoaderSearch(jar);
         } catch (Exception e) {
-            System.out.println("Failed to append java tracer jar to system class loader: " + LUMIGO_JAVA_TRACER_PATH);
             e.printStackTrace();
         }
     }
@@ -83,5 +79,10 @@ public class Agent {
             e.printStackTrace();
         }
         return jars.toArray(new URL[jars.size()]);
+    }
+
+    public static boolean isKillSwitchOn() {
+        String value = System.getenv("LUMIGO_SWITCH_OFF");
+        return "true".equalsIgnoreCase(value);
     }
 }
