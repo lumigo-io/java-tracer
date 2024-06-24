@@ -21,9 +21,6 @@ import org.apache.kafka.common.serialization.Serializer;
 import org.pmw.tinylog.Logger;
 
 public class ApacheKafkaProducerInstrumentation implements LumigoInstrumentationApi {
-
-    public static final String INSTRUMENTATION_PACKAGE_PREFIX = "org.apache.kafka.clients.producer";
-
     @Override
     public ElementMatcher<TypeDescription> getTypeMatcher() {
         return named("org.apache.kafka.clients.producer.KafkaProducer");
@@ -50,6 +47,7 @@ public class ApacheKafkaProducerInstrumentation implements LumigoInstrumentation
                         ApacheKafkaProducerAdvice.class.getName());
     }
 
+    @SuppressWarnings("unused")
     public static class ApacheKafkaProducerAdvice {
         public static final SpansContainer spansContainer = SpansContainer.getInstance();
 

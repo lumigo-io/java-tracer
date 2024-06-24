@@ -55,7 +55,7 @@ public class Agent {
     }
 
     private static void installTracerJar(Instrumentation inst) {
-        try (JarFile jar = new JarFile(new File(new URI(LUMIGO_JAVA_TRACER_PATH)))){
+        try (JarFile jar = new JarFile(new File(new File(LUMIGO_JAVA_TRACER_PATH).toURI()))){
             inst.appendToSystemClassLoaderSearch(jar);
         } catch (Exception e) {
             System.out.println("Failed to append java tracer jar to system class loader: " + LUMIGO_JAVA_TRACER_PATH);

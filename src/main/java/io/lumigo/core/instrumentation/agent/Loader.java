@@ -28,30 +28,6 @@ public class Loader {
                 new AgentBuilder.Default()
                         .disableClassFormatChanges()
                         .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
-//                        .ignore(
-//                                not(nameStartsWith("com.amazonaws.http.AmazonHttpClient"))
-//                                        .and(not(nameStartsWith("org.apache.http.impl.client")))
-//                                        .and(
-//                                                not(
-//                                                        nameStartsWith(
-//                                                                AmazonHttpClientV2Instrumentation
-//                                                                        .INSTRUMENTATION_PACKAGE_PREFIX)))
-//                                        .and(
-//                                                not(
-//                                                        nameStartsWith(
-//                                                                ApacheKafkaProducerInstrumentation
-//                                                                        .INSTRUMENTATION_PACKAGE_PREFIX)))
-//                                        .and(
-//                                                not(
-//                                                        nameStartsWith(
-//                                                                ApacheKafkaConsumerInstrumentation
-//                                                                        .INSTRUMENTATION_PACKAGE_PREFIX)))
-//                                        .and(
-//                                                not(
-//                                                        nameStartsWith(
-//                                                                AwsLambdaRequestHandlerInstrumentation
-//                                                                        .INSTRUMENTATION_PACKAGE_PREFIX)))
-//                        )
                         .type(apacheHttpInstrumentation.getTypeMatcher())
                         .transform(apacheHttpInstrumentation.getTransformer())
                         .type(amazonHttpClientInstrumentation.getTypeMatcher())
