@@ -40,6 +40,26 @@ mvn -f agent/pom.xml nexus-staging:release
 mvn -Dmaven.test.skip=true -Dfindbugs.skip=true clean deploy
 mvn nexus-staging:release
 
+echo "Creating lumigo-java-tracer layer"
+./scripts/prepare_layer_files.sh
+
+echo "Creating layer latest version arn table md file (LAYERS.md)"
+commit_version="$(git describe --abbrev=0 --tags)"
+../utils/common_bash/create_layer.sh \
+    --layer-name lumigo-java-tracer \
+    --region ALL \
+    --package-folder python \
+    --version "$commit_version" \
+    --runtimes "java11 java17 java21"
+
+cd ../larn && npm i -g
+larn -r java11 -n layers/LAYERS.md --filter lumigo-java-tracer -p ~/java-tracer
+cd ../java-tracer
+
+git add layers/LAYERS.md
+git commit -m "docs: update layers md [skip ci]"
+git push origin master
+
 echo "Create release tag"
 push_tags
 
