@@ -53,7 +53,7 @@ commit_version="$(git describe --abbrev=0 --tags)"
     --runtimes "java11 java17 java21"
 
 cd ../larn && npm i -g
-larn -r java11 -n layers/LAYERS.md --filter lumigo-java-tracer -p ~/java-tracer
+larn -r java11 -n layers/LAYERS --filter lumigo-java-tracer -p ~/java-tracer
 cd ../java-tracer
 
 git add layers/LAYERS.md
