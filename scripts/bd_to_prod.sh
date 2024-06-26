@@ -22,6 +22,16 @@ echo "        \/           \/  /_____/         \/            ";
 echo
 echo "Deploy lumigo-java-tracer to maven repository server"
 
+enc_location=../common-resources/encrypted_files/credentials_production.enc
+if [[ ! -f ${enc_location} ]]
+then
+    echo "$enc_location not found"
+    exit 1
+fi
+echo "Creating new credential files"
+mkdir -p ~/.aws
+echo ${KEY} | gpg --batch -d --passphrase-fd 0 ${enc_location} > ~/.aws/credentials
+
 setup_git
 echo "Getting latest changes from git"
 changes=$(git log $(git describe --tags --abbrev=0)..HEAD --oneline)

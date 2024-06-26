@@ -100,4 +100,5 @@ jobs:
       - lumigo-orb/checkout_code
       - run: mvn clean install
       - run: ../utils/common_bash/defaults/code_cov.sh
+      - run: cd .. && git clone git@github.com:lumigo-io/larn.git
       - run: ./scripts/bd_to_prod.sh
