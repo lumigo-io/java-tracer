@@ -16,9 +16,6 @@ import org.apache.kafka.clients.consumer.internals.ConsumerMetadata;
 import org.pmw.tinylog.Logger;
 
 public class ApacheKafkaConsumerInstrumentation implements LumigoInstrumentationApi {
-
-    public static final String INSTRUMENTATION_PACKAGE_PREFIX = "org.apache.kafka.clients.consumer";
-
     @Override
     public ElementMatcher<TypeDescription> getTypeMatcher() {
         return named("org.apache.kafka.clients.consumer.KafkaConsumer");
@@ -48,7 +45,7 @@ public class ApacheKafkaConsumerInstrumentation implements LumigoInstrumentation
         public static void methodEnter(@Advice.FieldValue("clientId") String clientId) {
             try {
                 startTimeMap.put(clientId, System.currentTimeMillis());
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 Logger.error(e);
             }
         }

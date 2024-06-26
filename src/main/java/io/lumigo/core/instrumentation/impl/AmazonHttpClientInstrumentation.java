@@ -43,7 +43,7 @@ public class AmazonHttpClientInstrumentation implements LumigoInstrumentationApi
                 String patchedRoot = spansContainer.getPatchedRoot();
                 request.getHeaders().put("X-Amzn-Trace-Id", patchedRoot);
                 startTimeMap.put(request.hashCode(), System.currentTimeMillis());
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 Logger.error(e, "Failed to send data on http requests");
             }
         }

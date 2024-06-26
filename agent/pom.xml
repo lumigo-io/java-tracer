@@ -32,12 +32,6 @@
             <organization>Lumigo</organization>
             <organizationUrl>https://lumigo.io/</organizationUrl>
         </developer>
-        <developer>
-            <name>Uri Parush</name>
-            <email>uri@lumigo.io</email>
-            <organization>Lumigo</organization>
-            <organizationUrl>https://lumigo.io</organizationUrl>
-        </developer>
     </developers>
 
     <organization>
@@ -104,9 +98,12 @@
                     <archive>
                         <manifestEntries>
                             <Agent-Class>io.lumigo.agent.Agent</Agent-Class>
-                            <Can-Redefine-Classes>false</Can-Redefine-Classes>
+                            <Main-Class>io.lumigo.agent.Agent</Main-Class>
+                            <Premain-Class>io.lumigo.agent.Agent</Premain-Class>
+                            <Can-Redefine-Classes>true</Can-Redefine-Classes>
                             <Can-Retransform-Classes>true</Can-Retransform-Classes>
                             <Can-Set-Native-Method-Prefix>false</Can-Set-Native-Method-Prefix>
+                            <Implementation-Vendor>Lumigo</Implementation-Vendor>
                         </manifestEntries>
                     </archive>
                 </configuration>
