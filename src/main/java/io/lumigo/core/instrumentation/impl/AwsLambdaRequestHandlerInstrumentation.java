@@ -48,14 +48,14 @@ public class AwsLambdaRequestHandlerInstrumentation implements LumigoInstrumenta
 
     @SuppressWarnings("unused")
     public static class HandleRequestAdvice {
+        public static final SpansContainer spansContainer = SpansContainer.getInstance();
+
         @Advice.OnMethodEnter(suppress = Throwable.class)
         public static void methodEnter(
                 @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object input,
-                @Advice.Argument(1) Context context,
-                @Advice.Local("lumigoSpansContainer") SpansContainer spansContainer) {
+                @Advice.Argument(1) Context context) {
             try {
                 Logger.debug("Start AwsLambdaRequestHandlerInstrumentation$HandleRequestAdvice");
-                spansContainer = SpansContainer.getInstance();
                 spansContainer.init(new EnvUtil().getEnv(), new Reporter(), context, input);
                 spansContainer.start();
                 Logger.debug("Finish sending start message and instrumentation");
@@ -67,8 +67,7 @@ public class AwsLambdaRequestHandlerInstrumentation implements LumigoInstrumenta
         @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
         public static void methodExit(
                 @Advice.Return(readOnly = false) Object returnValue,
-                @Advice.Thrown Throwable throwable,
-                @Advice.Local("lumigoSpansContainer") SpansContainer spansContainer) {
+                @Advice.Thrown Throwable throwable) {
             try {
                 if (throwable != null) {
                     spansContainer.endWithException(throwable);
