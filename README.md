@@ -92,7 +92,7 @@ Find the latest version here (the format of the version will be n.n.n):
 ## Lambda Auto tracing with lambda layer
 
 * Add to your lambda a new layer with the arn from here
-* Add environment variable `JAVA_TOOL_OPTIONS` and set it to `-javaagent:/opt/lumigo/lumigo-agent.jar` (This is instead of the flag for more than java11 support)
+* Add environment variable `JAVA_TOOL_OPTIONS` and set it to `-javaagent:/opt/lumigo-java/lumigo-agent.jar` (This is instead of the flag for more than java11 support)
 * Add the `LUMIGO_TRACER_TOKEN` env var.
 
 

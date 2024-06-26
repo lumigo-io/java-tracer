@@ -19,7 +19,7 @@ public class Agent {
 
     private static boolean initialized = false;
 
-    public static String LUMIGO_JAVA_TRACER_PATH = "/opt/lumigo/lumigo-tracer.jar";
+    public static String LUMIGO_JAVA_TRACER_PATH = "/opt/lumigo-java/lumigo-tracer.jar";
 
     public static void premain(String agentArgs, Instrumentation inst) {
         if (!isKillSwitchOn()) {

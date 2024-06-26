@@ -48,7 +48,7 @@ commit_version="$(git describe --abbrev=0 --tags)"
 ../utils/common_bash/create_layer.sh \
     --layer-name lumigo-java-tracer \
     --region ALL \
-    --package-folder python \
+    --package-folder lumigo-java \
     --version "$commit_version" \
     --runtimes "java11 java17 java21"
 

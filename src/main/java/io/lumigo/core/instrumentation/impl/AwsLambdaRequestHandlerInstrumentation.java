@@ -54,6 +54,7 @@ public class AwsLambdaRequestHandlerInstrumentation implements LumigoInstrumenta
                 @Advice.Argument(1) Context context,
                 @Advice.Local("lumigoSpansContainer") SpansContainer spansContainer) {
             try {
+                Logger.debug("Start AwsLambdaRequestHandlerInstrumentation$HandleRequestAdvice");
                 spansContainer = SpansContainer.getInstance();
                 spansContainer.init(new EnvUtil().getEnv(), new Reporter(), context, input);
                 spansContainer.start();
