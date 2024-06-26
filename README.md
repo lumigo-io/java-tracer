@@ -104,6 +104,15 @@ There are 2 way to pass configuration properties
 
 Adding `LUMIGO_TRACER_TOKEN` environment variables
 
+#### Execution Tags
+
+Execution tags can be added by utilizing `ExecutionTags` Module
+
+```java
+ExecutionTags.addTag("key", "value", true);
+```
+
+
 #### Static code initiation
 
 ```java

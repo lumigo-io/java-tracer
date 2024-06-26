@@ -9,6 +9,7 @@ import io.lumigo.core.parsers.event.EventParserFactory;
 import io.lumigo.core.parsers.v1.AwsSdkV1ParserFactory;
 import io.lumigo.core.parsers.v2.AwsSdkV2ParserFactory;
 import io.lumigo.core.utils.AwsUtils;
+import io.lumigo.core.utils.ExecutionTags;
 import io.lumigo.core.utils.EnvUtil;
 import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.core.utils.SecretScrubber;
@@ -19,6 +20,7 @@ import io.lumigo.models.Span;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.Callable;
+
 import lombok.Getter;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -73,7 +75,9 @@ public class SpansContainer {
         rttDuration = null;
         endFunctionSpan = null;
         reporter = null;
+        httpSpans = new LinkedList<>();
         spans = new LinkedList<>();
+        ExecutionTags.clear();
     }
 
     private SpansContainer() {}
@@ -108,8 +112,8 @@ public class SpansContainer {
                         .maxFinishTime(
                                 startTime
                                         + ((context.getRemainingTimeInMillis() > 0)
-                                                ? context.getRemainingTimeInMillis()
-                                                : MAX_LAMBDA_TIME))
+                                        ? context.getRemainingTimeInMillis()
+                                        : MAX_LAMBDA_TIME))
                         .transactionId(AwsUtils.extractAwsTraceTransactionId(awsTracerId))
                         .info(
                                 Span.Info.builder()
@@ -164,7 +168,7 @@ public class SpansContainer {
                         .event(
                                 Configuration.getInstance().isLumigoVerboseMode()
                                         ? JsonUtils.getObjectAsJsonString(
-                                                EventParserFactory.parseEvent(event))
+                                        EventParserFactory.parseEvent(event))
                                         : null)
                         .build();
     }
@@ -213,12 +217,17 @@ public class SpansContainer {
     }
 
     private void end(Span endFunctionSpan) throws IOException {
+        List<Map<String, String>> executionTags = ExecutionTags.getTags();
         this.endFunctionSpan =
                 endFunctionSpan
                         .toBuilder()
                         .reporter_rtt(rttDuration)
                         .ended(System.currentTimeMillis())
                         .id(this.baseSpan.getId())
+                        .info(
+                                endFunctionSpan.getInfo().toBuilder()
+                                        .tags(executionTags)
+                                        .build())
                         .build();
         reporter.reportSpans(
                 prepareToSend(getAllCollectedSpans(), endFunctionSpan.getError() != null),
@@ -428,8 +437,7 @@ public class SpansContainer {
                                                                                 context
                                                                                         .response())))
                                                 .statusCode(context.httpResponse().statusCode())
-                                                .build())
-                                .build());
+                                                .build());
 
         Logger.debug(
                 "Trying to extract aws custom properties for service: "
