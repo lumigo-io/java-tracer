@@ -4,8 +4,8 @@
     <servers>
         <server>
             <id>ossrh</id>
-            <username>aviadmor</username>
-            <password>${env.JIRA_SONATYPE}</password>
+            <username>${env.SONATYPE_USERNAME}</username>
+            <password>${env.SONATYPE_PASSWORD}</password>
         </server>
     </servers>
     <profiles>
