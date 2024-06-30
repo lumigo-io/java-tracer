@@ -33,7 +33,7 @@ public class AmazonHttpClientV2Instrumentation implements LumigoInstrumentationA
                 .include(Loader.class.getClassLoader())
                 .advice(
                         isMethod().and(named("resolveExecutionInterceptors")),
-                        AmazonHttpClientV2Advice.class.getName());
+                        AmazonHttpClientV2Instrumentation.class.getName() + "$AmazonHttpClientV2Advice");
     }
 
     @SuppressWarnings("unused")
@@ -61,7 +61,11 @@ public class AmazonHttpClientV2Instrumentation implements LumigoInstrumentationA
             public void beforeExecution(
                     final Context.BeforeExecution context,
                     final ExecutionAttributes executionAttributes) {
-                startTimeMap.put(context.request().hashCode(), System.currentTimeMillis());
+                try {
+                    startTimeMap.put(context.request().hashCode(), System.currentTimeMillis());
+                } catch (Throwable e) {
+                    Logger.error(e, "Failed save trace context");
+                }
             }
 
             @Override

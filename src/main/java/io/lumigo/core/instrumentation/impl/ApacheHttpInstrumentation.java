@@ -36,7 +36,7 @@ public class ApacheHttpInstrumentation implements LumigoInstrumentationApi {
                                                                 0,
                                                                 named(
                                                                         "org.apache.http.client.methods.HttpUriRequest")))),
-                        ApacheHttpAdvice.class.getName());
+                        ApacheHttpInstrumentation.class.getName() + "$ApacheHttpAdvice");
     }
 
     public static class ApacheHttpAdvice {

@@ -34,9 +34,10 @@ public class ApacheKafkaConsumerInstrumentation implements LumigoInstrumentation
                                         returns(
                                                 named(
                                                         "org.apache.kafka.clients.consumer.ConsumerRecords"))),
-                        ApacheKafkaConsumerAdvice.class.getName());
+                        ApacheKafkaConsumerInstrumentation.class.getName() + "$ApacheKafkaConsumerAdvice");
     }
 
+    @SuppressWarnings("unused")
     public static class ApacheKafkaConsumerAdvice {
         public static final SpansContainer spansContainer = SpansContainer.getInstance();
         public static final LRUCache<String, Long> startTimeMap = new LRUCache<>(1000);
