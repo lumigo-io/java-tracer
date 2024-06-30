@@ -26,7 +26,10 @@ public class AmazonHttpClientInstrumentation implements LumigoInstrumentationApi
     public AgentBuilder.Transformer.ForAdvice getTransformer() {
         return new AgentBuilder.Transformer.ForAdvice()
                 .include(Loader.class.getClassLoader())
-                .advice(isMethod().and(named("execute")), AmazonHttpClientInstrumentation.class.getName() + "$AmazonHttpClientAdvice");
+                .advice(
+                        isMethod().and(named("execute")),
+                        AmazonHttpClientInstrumentation.class.getName()
+                                + "$AmazonHttpClientAdvice");
     }
 
     public static class AmazonHttpClientAdvice {

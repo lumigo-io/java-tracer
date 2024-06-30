@@ -15,7 +15,6 @@ import org.pmw.tinylog.Logger;
 import software.amazon.awssdk.core.interceptor.Context;
 import software.amazon.awssdk.core.interceptor.ExecutionAttributes;
 import software.amazon.awssdk.core.interceptor.ExecutionInterceptor;
-import software.amazon.awssdk.http.SdkHttpRequest;
 
 public class AmazonHttpClientV2Instrumentation implements LumigoInstrumentationApi {
 
@@ -33,7 +32,8 @@ public class AmazonHttpClientV2Instrumentation implements LumigoInstrumentationA
                 .include(Loader.class.getClassLoader())
                 .advice(
                         isMethod().and(named("resolveExecutionInterceptors")),
-                        AmazonHttpClientV2Instrumentation.class.getName() + "$AmazonHttpClientV2Advice");
+                        AmazonHttpClientV2Instrumentation.class.getName()
+                                + "$AmazonHttpClientV2Advice");
     }
 
     @SuppressWarnings("unused")
@@ -66,19 +66,6 @@ public class AmazonHttpClientV2Instrumentation implements LumigoInstrumentationA
                 } catch (Throwable e) {
                     Logger.error(e, "Failed save trace context");
                 }
-            }
-
-            @Override
-            public SdkHttpRequest modifyHttpRequest(
-                    Context.ModifyHttpRequest context, ExecutionAttributes executionAttributes) {
-                try {
-                    SdkHttpRequest.Builder requestBuilder = context.httpRequest().toBuilder();
-                    requestBuilder.appendHeader("X-Amzn-Trace-Id", spansContainer.getPatchedRoot());
-                    return requestBuilder.build();
-                } catch (Throwable e) {
-                    Logger.debug("Unable to inject trace header", e);
-                }
-                return context.httpRequest();
             }
 
             @Override

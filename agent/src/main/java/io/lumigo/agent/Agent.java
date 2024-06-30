@@ -2,6 +2,7 @@ package io.lumigo.agent;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -37,15 +38,17 @@ public class Agent {
             if ("lib".equalsIgnoreCase(agentArgs)) {
                 urls = getUrls();
             } else {
-                urls =
-                        new URL[] {
-                            new File("/var/task/").toURI().toURL(),
-                            new File(LUMIGO_JAVA_TRACER_PATH).toURI().toURL()
-                        };
+                List<URL> jars = new LinkedList<>();
+                jars.add(new File("/var/task/").toURI().toURL());
+                if (isAutoTrace()) {
+                    jars.add(new File(LUMIGO_JAVA_TRACER_PATH).toURI().toURL());
+                }
+                urls = jars.toArray(new URL[jars.size()]);
             }
-            installTracerJar(inst);
-            URLClassLoader newClassLoader = new URLClassLoader(urls, null);
-            Thread.currentThread().setContextClassLoader(newClassLoader);
+            URLClassLoader newClassLoader = new URLClassLoader(urls, getParentClassLoader());
+            if (isAutoTrace()) {
+                installTracerJar(inst);
+            }
             final Class<?> loader =
                     newClassLoader.loadClass("io.lumigo.core.instrumentation.agent.Loader");
             final Method instrument = loader.getMethod("instrument", Instrumentation.class);
@@ -88,5 +91,27 @@ public class Agent {
     public static boolean isKillSwitchOn() {
         String value = System.getenv("LUMIGO_SWITCH_OFF");
         return "true".equalsIgnoreCase(value);
+    }
+
+    public static boolean isAutoTrace() {
+        String value = System.getenv("JAVA_TOOL_OPTIONS");
+        return !value.contains("allowAttachSelf=true");
+    }
+
+    public static ClassLoader getParentClassLoader() {
+        /*
+         Must invoke ClassLoader.getPlatformClassLoader by reflection to remain
+         compatible with java 8.
+        */
+        try {
+            Method method = ClassLoader.class.getDeclaredMethod("getPlatformClassLoader");
+            return (ClassLoader) method.invoke(null);
+        } catch (InvocationTargetException
+                | NoSuchMethodException
+                | IllegalAccessException exception) {
+            System.out.println(
+                    "Failed to get platform class loader falling back to system class loader");
+            return ClassLoader.getSystemClassLoader();
+        }
     }
 }

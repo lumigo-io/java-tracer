@@ -34,7 +34,8 @@ public class ApacheKafkaConsumerInstrumentation implements LumigoInstrumentation
                                         returns(
                                                 named(
                                                         "org.apache.kafka.clients.consumer.ConsumerRecords"))),
-                        ApacheKafkaConsumerInstrumentation.class.getName() + "$ApacheKafkaConsumerAdvice");
+                        ApacheKafkaConsumerInstrumentation.class.getName()
+                                + "$ApacheKafkaConsumerAdvice");
     }
 
     @SuppressWarnings("unused")

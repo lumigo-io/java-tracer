@@ -44,7 +44,8 @@ public class ApacheKafkaProducerInstrumentation implements LumigoInstrumentation
                                                                 1,
                                                                 named(
                                                                         "org.apache.kafka.clients.producer.Callback")))),
-                        ApacheKafkaProducerInstrumentation.class.getName() + "$ApacheKafkaProducerAdvice");
+                        ApacheKafkaProducerInstrumentation.class.getName()
+                                + "$ApacheKafkaProducerAdvice");
     }
 
     @SuppressWarnings("unused")
