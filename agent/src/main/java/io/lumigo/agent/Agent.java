@@ -2,7 +2,6 @@ package io.lumigo.agent;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -98,5 +97,4 @@ public class Agent {
         String value = System.getenv("JAVA_TOOL_OPTIONS");
         return !value.contains("allowAttachSelf=true");
     }
-
 }
