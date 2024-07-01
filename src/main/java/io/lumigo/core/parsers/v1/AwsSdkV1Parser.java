@@ -17,7 +17,7 @@ public interface AwsSdkV1Parser {
             parse(span, request, response);
             Logger.debug("Finish parsing aws v1 request using: " + getParserType());
         } catch (Throwable e) {
-            Logger.error("Failed to parse extra aws v1 data using parser: " + getParserType(), e);
+            Logger.error(e, "Failed to parse extra aws v1 data using parser: " + getParserType());
         }
     }
 
