@@ -19,7 +19,6 @@ public class AwsLambdaRequestHandlerInstrumentation implements LumigoInstrumenta
     @Override
     public ElementMatcher<TypeDescription> getTypeMatcher() {
         return hasSuperType(named("com.amazonaws.services.lambda.runtime.RequestHandler"))
-                .and(isInterface())
                 // we don't want to instrument handlers that implement our interfaces because they
                 // are already instrumented
                 .and(
