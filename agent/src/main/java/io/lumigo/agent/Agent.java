@@ -41,14 +41,12 @@ public class Agent {
                 jars.add(new File("/var/task/").toURI().toURL());
                 if (isAutoTrace()) {
                     jars.add(new File(LUMIGO_JAVA_TRACER_PATH).toURI().toURL());
+                    installTracerJar(inst);
                 }
                 urls = jars.toArray(new URL[jars.size()]);
             }
             URLClassLoader newClassLoader = new URLClassLoader(urls);
             Thread.currentThread().setContextClassLoader(newClassLoader);
-            if (isAutoTrace()) {
-                installTracerJar(inst);
-            }
             final Class<?> loader =
                     newClassLoader.loadClass("io.lumigo.core.instrumentation.agent.Loader");
             final Method instrument = loader.getMethod("instrument", Instrumentation.class);
