@@ -45,7 +45,8 @@ public class Agent {
                 }
                 urls = jars.toArray(new URL[jars.size()]);
             }
-            URLClassLoader newClassLoader = new URLClassLoader(urls, getParentClassLoader());
+            URLClassLoader newClassLoader = new URLClassLoader(urls);
+            Thread.currentThread().setContextClassLoader(newClassLoader);
             if (isAutoTrace()) {
                 installTracerJar(inst);
             }
@@ -98,20 +99,4 @@ public class Agent {
         return !value.contains("allowAttachSelf=true");
     }
 
-    public static ClassLoader getParentClassLoader() {
-        /*
-         Must invoke ClassLoader.getPlatformClassLoader by reflection to remain
-         compatible with java 8.
-        */
-        try {
-            Method method = ClassLoader.class.getDeclaredMethod("getPlatformClassLoader");
-            return (ClassLoader) method.invoke(null);
-        } catch (InvocationTargetException
-                | NoSuchMethodException
-                | IllegalAccessException exception) {
-            System.out.println(
-                    "Failed to get platform class loader falling back to system class loader");
-            return ClassLoader.getSystemClassLoader();
-        }
-    }
 }
