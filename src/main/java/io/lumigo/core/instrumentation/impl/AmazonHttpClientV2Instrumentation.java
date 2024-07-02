@@ -29,7 +29,7 @@ public class AmazonHttpClientV2Instrumentation implements LumigoInstrumentationA
     @Override
     public AgentBuilder.Transformer.ForAdvice getTransformer() {
         return new AgentBuilder.Transformer.ForAdvice()
-                .include(Loader.class.getClassLoader())
+                .include(ClassLoader.getSystemClassLoader())
                 .advice(
                         isMethod().and(named("resolveExecutionInterceptors")),
                         AmazonHttpClientV2Instrumentation.class.getName()
