@@ -8,5 +8,5 @@ public interface LumigoInstrumentationApi {
 
     ElementMatcher<TypeDescription> getTypeMatcher();
 
-    AgentBuilder.Transformer.ForAdvice getTransformer();
+    AgentBuilder.Transformer.ForAdvice getTransformer(ClassLoader classLoader);
 }

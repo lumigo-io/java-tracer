@@ -45,12 +45,11 @@ public class Agent {
                 }
                 urls = jars.toArray(new URL[jars.size()]);
             }
-            URLClassLoader newClassLoader = new URLClassLoader(urls);
-            Thread.currentThread().setContextClassLoader(newClassLoader);
-            final Class<?> loader =
-                    newClassLoader.loadClass("io.lumigo.core.instrumentation.agent.Loader");
-            final Method instrument = loader.getMethod("instrument", Instrumentation.class);
-            instrument.invoke(null, inst);
+            URLClassLoader agentClassLoader = new AgentClassLoader(urls, ClassLoader.getSystemClassLoader());
+            final Class<?> instrumentationLoader =
+                    agentClassLoader.loadClass("io.lumigo.core.instrumentation.agent.Loader");
+            final Method instrument = instrumentationLoader.getMethod("instrument", Instrumentation.class, ClassLoader.class);
+            instrument.invoke(null, inst, agentClassLoader);
         } catch (Exception e) {
             e.printStackTrace();
         }

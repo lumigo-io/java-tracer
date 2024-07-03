@@ -6,7 +6,7 @@ import org.pmw.tinylog.Logger;
 
 @SuppressWarnings("unused")
 public class Loader {
-    public static void instrument(java.lang.instrument.Instrumentation inst) {
+    public static void instrument(java.lang.instrument.Instrumentation inst, ClassLoader classLoader) {
         Logger.debug("Start Instrumentation");
         ApacheHttpInstrumentation apacheHttpInstrumentation = new ApacheHttpInstrumentation();
         AmazonHttpClientInstrumentation amazonHttpClientInstrumentation =
@@ -24,17 +24,20 @@ public class Loader {
                         .disableClassFormatChanges()
                         .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
                         .type(apacheHttpInstrumentation.getTypeMatcher())
-                        .transform(apacheHttpInstrumentation.getTransformer())
+                        .transform(apacheHttpInstrumentation.getTransformer(classLoader))
                         .type(amazonHttpClientInstrumentation.getTypeMatcher())
-                        .transform(amazonHttpClientInstrumentation.getTransformer())
+                        .transform(amazonHttpClientInstrumentation.getTransformer(classLoader))
                         .type(amazonHttpClientV2Instrumentation.getTypeMatcher())
-                        .transform(amazonHttpClientV2Instrumentation.getTransformer())
+                        .transform(amazonHttpClientV2Instrumentation.getTransformer(classLoader))
                         .type(apacheKafkaInstrumentation.getTypeMatcher())
-                        .transform(apacheKafkaInstrumentation.getTransformer())
+                        .transform(apacheKafkaInstrumentation.getTransformer(classLoader))
                         .type(apacheKafkaConsumerInstrumentation.getTypeMatcher())
-                        .transform(apacheKafkaConsumerInstrumentation.getTransformer())
+                        .transform(apacheKafkaConsumerInstrumentation.getTransformer(classLoader))
                         .type(awsLambdaRequestHandlerInstrumentation.getTypeMatcher())
-                        .transform(awsLambdaRequestHandlerInstrumentation.getTransformer());
+                        .transform(awsLambdaRequestHandlerInstrumentation.getTransformer(classLoader))
+                        .with(AgentBuilder.Listener.StreamWriting.toSystemError())
+                        .with(AgentBuilder.InstallationListener.StreamWriting.toSystemError())
+                ;
 
         builder.installOn(inst);
         Logger.debug("Finish Instrumentation");

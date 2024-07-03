@@ -12,6 +12,7 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.pmw.tinylog.Logger;
+import software.amazon.awssdk.core.client.builder.SdkDefaultClientBuilder;
 import software.amazon.awssdk.core.interceptor.Context;
 import software.amazon.awssdk.core.interceptor.ExecutionAttributes;
 import software.amazon.awssdk.core.interceptor.ExecutionInterceptor;
@@ -27,9 +28,9 @@ public class AmazonHttpClientV2Instrumentation implements LumigoInstrumentationA
     }
 
     @Override
-    public AgentBuilder.Transformer.ForAdvice getTransformer() {
+    public AgentBuilder.Transformer.ForAdvice getTransformer(ClassLoader classLoader) {
         return new AgentBuilder.Transformer.ForAdvice()
-                .include(ClassLoader.getSystemClassLoader())
+                .include(classLoader)
                 .advice(
                         isMethod().and(named("resolveExecutionInterceptors")),
                         AmazonHttpClientV2Instrumentation.class.getName()

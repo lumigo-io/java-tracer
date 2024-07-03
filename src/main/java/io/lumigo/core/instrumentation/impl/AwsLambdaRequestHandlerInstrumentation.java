@@ -31,9 +31,9 @@ public class AwsLambdaRequestHandlerInstrumentation implements LumigoInstrumenta
     }
 
     @Override
-    public AgentBuilder.Transformer.ForAdvice getTransformer() {
+    public AgentBuilder.Transformer.ForAdvice getTransformer(ClassLoader classLoader) {
         return new AgentBuilder.Transformer.ForAdvice()
-                .include(ClassLoader.getSystemClassLoader())
+                .include(classLoader)
                 .advice(
                         isMethod()
                                 .and(isPublic())
