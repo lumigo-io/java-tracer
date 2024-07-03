@@ -16,7 +16,7 @@ public interface AwsSdkV2Parser {
             Logger.debug("Finish parsing aws v2 request using: " + getParserType());
         } catch (Throwable e) {
             Logger.error(
-                    "Failed to parse extra aws sdk v2 data using parser: " + getParserType(), e);
+                    e, "Failed to parse extra aws sdk v2 data using parser: " + getParserType());
         }
     }
 }

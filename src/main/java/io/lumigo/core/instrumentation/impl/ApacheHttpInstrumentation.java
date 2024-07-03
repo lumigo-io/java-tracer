@@ -23,9 +23,9 @@ public class ApacheHttpInstrumentation implements LumigoInstrumentationApi {
     }
 
     @Override
-    public AgentBuilder.Transformer.ForAdvice getTransformer() {
+    public AgentBuilder.Transformer.ForAdvice getTransformer(ClassLoader classLoader) {
         return new AgentBuilder.Transformer.ForAdvice()
-                .include(Loader.class.getClassLoader())
+                .include(classLoader)
                 .advice(
                         isMethod()
                                 .and(named("execute"))
@@ -36,7 +36,7 @@ public class ApacheHttpInstrumentation implements LumigoInstrumentationApi {
                                                                 0,
                                                                 named(
                                                                         "org.apache.http.client.methods.HttpUriRequest")))),
-                        ApacheHttpAdvice.class.getName());
+                        ApacheHttpInstrumentation.class.getName() + "$ApacheHttpAdvice");
     }
 
     public static class ApacheHttpAdvice {

@@ -287,7 +287,7 @@ public class AwsUtils {
             // So we only parse the first part.
             return Integer.parseInt(parts[0]);
         } catch (Exception e) {
-            Logger.error("Failed to parse java version", e);
+            Logger.error(e, "Failed to parse java version");
             return -1;
         }
     }

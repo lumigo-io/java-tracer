@@ -94,7 +94,7 @@ Find the latest version here (the format of the version will be n.n.n):
 * Add to your lambda a new layer with the arn from here
 * Add environment variable `JAVA_TOOL_OPTIONS` and set it to `-javaagent:/opt/lumigo-java/lumigo-agent.jar` (This is instead of the flag for more than java11 support)
 * Add the `LUMIGO_TRACER_TOKEN` env var.
-
+* NOTE: because of lambda internal implementation you need to specify the handler with the method name (e.g. `com.example.Handler::handleRequest`) 
 
 ### Configuration
 
@@ -131,7 +131,7 @@ Add the environment variable `JAVA_TOOL_OPTIONS` to your Lambda functions and se
 
 ### Supported Instrumentation Libraries
 
-- Aws SDK V1
+- Aws SDK V1 (Supported only from dependency and not from the auto trace with lambda layer)
 - Aws SDK V2
 - Apache HTTP Client
 - Apache Kafka

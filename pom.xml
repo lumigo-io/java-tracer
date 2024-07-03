@@ -84,7 +84,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
-            <version>1.12.261</version>
+            <version>1.11.505</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -99,42 +99,32 @@
             <version>1.11.551</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-            <version>3.14.2</version>
-        </dependency>
 
         <!-- AWS sdk V2 dependencies -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
-            <artifactId>core</artifactId>
+            <artifactId>lambda</artifactId>
             <version>2.25.45</version>
-            <type>pom</type>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>dynamodb</artifactId>
             <version>2.25.45</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>sqs</artifactId>
             <version>2.25.45</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>sns</artifactId>
             <version>2.25.45</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>kinesis</artifactId>
             <version>2.25.45</version>
-            <scope>provided</scope>
         </dependency>
 
         <!-- Kafka dependencies -->
@@ -142,10 +132,14 @@
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
             <version>3.1.0</version>
-            <scope>provided</scope>
         </dependency>
 
         <!-- Tracer dependencies -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>3.14.2</version>
+        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>

@@ -27,9 +27,9 @@ public class ApacheKafkaProducerInstrumentation implements LumigoInstrumentation
     }
 
     @Override
-    public AgentBuilder.Transformer.ForAdvice getTransformer() {
+    public AgentBuilder.Transformer.ForAdvice getTransformer(ClassLoader classLoader) {
         return new AgentBuilder.Transformer.ForAdvice()
-                .include(Loader.class.getClassLoader())
+                .include(classLoader)
                 .advice(
                         isMethod()
                                 .and(isPublic())
@@ -44,7 +44,8 @@ public class ApacheKafkaProducerInstrumentation implements LumigoInstrumentation
                                                                 1,
                                                                 named(
                                                                         "org.apache.kafka.clients.producer.Callback")))),
-                        ApacheKafkaProducerAdvice.class.getName());
+                        ApacheKafkaProducerInstrumentation.class.getName()
+                                + "$ApacheKafkaProducerAdvice");
     }
 
     @SuppressWarnings("unused")
