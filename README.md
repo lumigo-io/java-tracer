@@ -195,3 +195,4 @@ will result in the following payload shown in the Lumigo platform:
     "ToP sEcReT": "is case sensitive"
 }
 ```
+
