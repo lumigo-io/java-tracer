@@ -31,9 +31,9 @@ public class AwsLambdaRequestHandlerInstrumentation implements LumigoInstrumenta
     }
 
     @Override
-    public AgentBuilder.Transformer.ForAdvice getTransformer() {
+    public AgentBuilder.Transformer.ForAdvice getTransformer(ClassLoader classLoader) {
         return new AgentBuilder.Transformer.ForAdvice()
-                .include(Loader.class.getClassLoader())
+                .include(classLoader)
                 .advice(
                         isMethod()
                                 .and(isPublic())
@@ -43,7 +43,8 @@ public class AwsLambdaRequestHandlerInstrumentation implements LumigoInstrumenta
                                                 1,
                                                 named(
                                                         "com.amazonaws.services.lambda.runtime.Context"))),
-                        HandleRequestAdvice.class.getName());
+                        AwsLambdaRequestHandlerInstrumentation.class.getName()
+                                + "$HandleRequestAdvice");
     }
 
     @SuppressWarnings("unused")

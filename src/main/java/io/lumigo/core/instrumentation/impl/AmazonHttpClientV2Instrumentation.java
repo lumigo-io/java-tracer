@@ -12,10 +12,10 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.pmw.tinylog.Logger;
+import software.amazon.awssdk.core.client.builder.SdkDefaultClientBuilder;
 import software.amazon.awssdk.core.interceptor.Context;
 import software.amazon.awssdk.core.interceptor.ExecutionAttributes;
 import software.amazon.awssdk.core.interceptor.ExecutionInterceptor;
-import software.amazon.awssdk.http.SdkHttpRequest;
 
 public class AmazonHttpClientV2Instrumentation implements LumigoInstrumentationApi {
 
@@ -28,12 +28,13 @@ public class AmazonHttpClientV2Instrumentation implements LumigoInstrumentationA
     }
 
     @Override
-    public AgentBuilder.Transformer.ForAdvice getTransformer() {
+    public AgentBuilder.Transformer.ForAdvice getTransformer(ClassLoader classLoader) {
         return new AgentBuilder.Transformer.ForAdvice()
-                .include(Loader.class.getClassLoader())
+                .include(classLoader)
                 .advice(
                         isMethod().and(named("resolveExecutionInterceptors")),
-                        AmazonHttpClientV2Advice.class.getName());
+                        AmazonHttpClientV2Instrumentation.class.getName()
+                                + "$AmazonHttpClientV2Advice");
     }
 
     @SuppressWarnings("unused")
@@ -61,20 +62,11 @@ public class AmazonHttpClientV2Instrumentation implements LumigoInstrumentationA
             public void beforeExecution(
                     final Context.BeforeExecution context,
                     final ExecutionAttributes executionAttributes) {
-                startTimeMap.put(context.request().hashCode(), System.currentTimeMillis());
-            }
-
-            @Override
-            public SdkHttpRequest modifyHttpRequest(
-                    Context.ModifyHttpRequest context, ExecutionAttributes executionAttributes) {
                 try {
-                    SdkHttpRequest.Builder requestBuilder = context.httpRequest().toBuilder();
-                    requestBuilder.appendHeader("X-Amzn-Trace-Id", spansContainer.getPatchedRoot());
-                    return requestBuilder.build();
+                    startTimeMap.put(context.request().hashCode(), System.currentTimeMillis());
                 } catch (Throwable e) {
-                    Logger.debug("Unable to inject trace header", e);
+                    Logger.error(e, "Failed save trace context");
                 }
-                return context.httpRequest();
             }
 
             @Override

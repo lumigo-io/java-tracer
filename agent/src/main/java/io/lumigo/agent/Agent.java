@@ -37,19 +37,19 @@ public class Agent {
             if ("lib".equalsIgnoreCase(agentArgs)) {
                 urls = getUrls();
             } else {
-                urls =
-                        new URL[] {
-                            new File("/var/task/").toURI().toURL(),
-                            new File(LUMIGO_JAVA_TRACER_PATH).toURI().toURL()
-                        };
+                List<URL> jars = new LinkedList<>();
+                jars.add(new File("/var/task/").toURI().toURL());
+                if (isAutoTrace()) {
+                    jars.add(new File(LUMIGO_JAVA_TRACER_PATH).toURI().toURL());
+                    installTracerJar(inst);
+                }
+                urls = jars.toArray(new URL[jars.size()]);
             }
-            installTracerJar(inst);
-            URLClassLoader newClassLoader = new URLClassLoader(urls, null);
-            Thread.currentThread().setContextClassLoader(newClassLoader);
-            final Class<?> loader =
-                    newClassLoader.loadClass("io.lumigo.core.instrumentation.agent.Loader");
-            final Method instrument = loader.getMethod("instrument", Instrumentation.class);
-            instrument.invoke(null, inst);
+            URLClassLoader agentClassLoader = new AgentClassLoader(urls, ClassLoader.getSystemClassLoader());
+            final Class<?> instrumentationLoader =
+                    agentClassLoader.loadClass("io.lumigo.core.instrumentation.agent.Loader");
+            final Method instrument = instrumentationLoader.getMethod("instrument", Instrumentation.class, ClassLoader.class);
+            instrument.invoke(null, inst, agentClassLoader);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -88,5 +88,10 @@ public class Agent {
     public static boolean isKillSwitchOn() {
         String value = System.getenv("LUMIGO_SWITCH_OFF");
         return "true".equalsIgnoreCase(value);
+    }
+
+    public static boolean isAutoTrace() {
+        String value = System.getenv("JAVA_TOOL_OPTIONS");
+        return !value.contains("allowAttachSelf=true");
     }
 }
