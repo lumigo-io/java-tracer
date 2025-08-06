@@ -7,8 +7,6 @@ import io.lumigo.core.utils.SecretScrubber;
 import io.lumigo.core.utils.StringUtils;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -55,7 +53,7 @@ public class Span implements BaseSpan {
         private String stage;
         private String messageId;
         private List<String> messageIds;
-        private List<Map<String, String>> tags;
+        private List<ExecutionTag> tags;
         private long approxEventCreationTime;
     }
 
@@ -81,6 +79,14 @@ public class Span implements BaseSpan {
         private String type;
         private String message;
         private String stacktrace;
+    }
+
+    @AllArgsConstructor
+    @Builder(toBuilder = true)
+    @Data(staticConstructor = "of")
+    public static class ExecutionTag {
+        private String key;
+        private String value;
     }
 
     public enum READINESS {

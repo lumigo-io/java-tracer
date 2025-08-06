@@ -246,6 +246,7 @@ class LumigoRequestHandlerTest {
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("info.messageId", (o1, o2) -> o2 != null),
                         new Customization("info.messageIds", (o1, o2) -> o2 != null),
+                        new Customization("info.tags", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null),
@@ -262,6 +263,7 @@ class LumigoRequestHandlerTest {
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("info.messageId", (o1, o2) -> o2 != null),
                         new Customization("info.messageIds", (o1, o2) -> o2 != null),
+                        new Customization("info.tags", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null),
@@ -295,6 +297,7 @@ class LumigoRequestHandlerTest {
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("info.messageId", (o1, o2) -> o2 != null),
                         new Customization("info.messageIds", (o1, o2) -> o2 != null),
+                        new Customization("info.tags", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null),
@@ -310,6 +313,7 @@ class LumigoRequestHandlerTest {
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("info.messageId", (o1, o2) -> o2 != null),
                         new Customization("info.messageIds", (o1, o2) -> o2 != null),
+                        new Customization("info.tags", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("error.stacktrace", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
@@ -349,6 +353,7 @@ class LumigoRequestHandlerTest {
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("info.messageId", (o1, o2) -> o2 != null),
                         new Customization("info.messageIds", (o1, o2) -> o2 != null),
+                        new Customization("info.tags", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
@@ -368,6 +373,7 @@ class LumigoRequestHandlerTest {
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("info.messageId", (o1, o2) -> o2 != null),
                         new Customization("info.messageIds", (o1, o2) -> o2 != null),
+                        new Customization("info.tags", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("error.stacktrace", (o1, o2) -> o2 != null),
@@ -465,6 +471,7 @@ class LumigoRequestHandlerTest {
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
+                        new Customization("info.tags", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null),
@@ -482,6 +489,7 @@ class LumigoRequestHandlerTest {
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
+                        new Customization("info.tags", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null),
@@ -528,6 +536,7 @@ class LumigoRequestHandlerTest {
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
+                        new Customization("info.tags", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("error.stacktrace", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
@@ -563,6 +572,7 @@ class LumigoRequestHandlerTest {
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
+                        new Customization("info.tags", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null)));
@@ -581,6 +591,7 @@ class LumigoRequestHandlerTest {
                 new CustomComparator(
                         JSONCompareMode.LENIENT,
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
+                        new Customization("info.tags", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("error.stacktrace", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
@@ -777,6 +788,7 @@ class LumigoRequestHandlerTest {
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("info.messageId", (o1, o2) -> o2 != null),
                         new Customization("info.messageIds", (o1, o2) -> o2 != null),
+                        new Customization("info.tags", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null),
@@ -810,6 +822,7 @@ class LumigoRequestHandlerTest {
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("info.messageId", (o1, o2) -> o2 != null),
                         new Customization("info.messageIds", (o1, o2) -> o2 != null),
+                        new Customization("info.tags", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null),
@@ -825,12 +838,14 @@ class LumigoRequestHandlerTest {
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("info.messageId", (o1, o2) -> o2 != null),
                         new Customization("info.messageIds", (o1, o2) -> o2 != null),
+                        new Customization("info.tags", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("error.stacktrace", (o1, o2) -> o2 != null),
                         new Customization("ended", (o1, o2) -> o2 != null),
                         new Customization("event", JsonTestUtils::compareJsonStrings),
-                        new Customization("envs", JsonTestUtils::compareJsonStrings)));
+                        new Customization("envs", JsonTestUtils::compareJsonStrings),
+                        new Customization("info.tags", JsonTestUtils::compareJsonStrings)));
     }
 
     @DisplayName(
@@ -883,6 +898,7 @@ class LumigoRequestHandlerTest {
                         new Customization("info.tracer.version", (o1, o2) -> o2 != null),
                         new Customization("info.messageId", (o1, o2) -> o2 != null),
                         new Customization("info.messageIds", (o1, o2) -> o2 != null),
+                        new Customization("info.tags", (o1, o2) -> o2 != null),
                         new Customization("maxFinishTime", (o1, o2) -> o2 != null),
                         new Customization("started", (o1, o2) -> o2 != null),
                         new Customization("error.stacktrace", (o1, o2) -> o2 != null),
