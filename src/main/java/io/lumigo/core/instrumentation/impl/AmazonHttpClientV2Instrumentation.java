@@ -36,17 +36,20 @@ public class AmazonHttpClientV2Instrumentation implements LumigoInstrumentationA
                         AmazonHttpClientV2Advice.class.getName());
     }
 
+    @SuppressWarnings("unused")
     public static class AmazonHttpClientV2Advice {
         @Advice.OnMethodExit(suppress = Throwable.class)
         public static void methodExit(
                 @Advice.Return final List<ExecutionInterceptor> interceptors) {
-            Logger.debug("Added Lumigo TracingExecutionInterceptor");
+            Logger.debug("At AmazonHttpClientV2Instrumentation$AmazonHttpClientV2Advice");
             for (ExecutionInterceptor interceptor : interceptors) {
                 if (interceptor instanceof TracingExecutionInterceptor) {
+                    Logger.debug("Lumigo TracingExecutionInterceptor already exists, skipping...");
                     return; // list already has our interceptor, return to builder
                 }
             }
             interceptors.add(new TracingExecutionInterceptor());
+            Logger.debug("Added Lumigo TracingExecutionInterceptor");
         }
 
         public static class TracingExecutionInterceptor implements ExecutionInterceptor {

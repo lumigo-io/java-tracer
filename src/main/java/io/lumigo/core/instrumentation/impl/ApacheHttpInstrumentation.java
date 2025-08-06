@@ -59,7 +59,7 @@ public class ApacheHttpInstrumentation implements LumigoInstrumentationApi {
                     return;
                 }
                 startTimeMap.put(request.hashCode(), System.currentTimeMillis());
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 Logger.error(e);
             }
         }

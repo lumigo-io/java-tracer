@@ -22,6 +22,16 @@ echo "        \/           \/  /_____/         \/            ";
 echo
 echo "Deploy lumigo-java-tracer to maven repository server"
 
+enc_location=../common-resources/encrypted_files/credentials_production.enc
+if [[ ! -f ${enc_location} ]]
+then
+    echo "$enc_location not found"
+    exit 1
+fi
+echo "Creating new credential files"
+mkdir -p ~/.aws
+echo ${KEY} | gpg --batch -d --passphrase-fd 0 ${enc_location} > ~/.aws/credentials
+
 setup_git
 echo "Getting latest changes from git"
 changes=$(git log $(git describe --tags --abbrev=0)..HEAD --oneline)
@@ -39,6 +49,26 @@ mvn -f agent/pom.xml clean deploy
 mvn -f agent/pom.xml nexus-staging:release
 mvn -Dmaven.test.skip=true -Dfindbugs.skip=true clean deploy
 mvn nexus-staging:release
+
+echo "Creating lumigo-java-tracer layer"
+./scripts/prepare_layer_files.sh
+
+echo "Creating layer latest version arn table md file (LAYERS.md)"
+commit_version="$(git describe --abbrev=0 --tags)"
+../utils/common_bash/create_layer.sh \
+    --layer-name lumigo-java-tracer \
+    --region ALL \
+    --package-folder lumigo-java \
+    --version "$commit_version" \
+    --runtimes "java11 java17 java21"
+
+cd ../larn && npm i -g
+larn -r java11 -n layers/LAYERS --filter lumigo-java-tracer -p ~/java-tracer
+cd ../java-tracer
+
+git add layers/LAYERS.md
+git commit -m "docs: update layers md [skip ci]"
+git push origin master
 
 echo "Create release tag"
 push_tags

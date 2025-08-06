@@ -12,7 +12,7 @@
     </properties>
     <groupId>io.lumigo</groupId>
     <artifactId>lumigo-agent</artifactId>
-    <version>1.0.47</version>
+    <version>1.0.49</version>
 
     <name>Lumigo java tracer agent</name>
     <description>The Lumigo java tracer for serverless functions</description>
@@ -22,7 +22,7 @@
         <url>https://github.com/lumigo-io/java-tracer</url>
         <connection>scm:git:https://github.com:lumigo-io/java-tracer.git</connection>
         <developerConnection>scm:git:https://github.com:lumigo-io/java-tracer.git</developerConnection>
-        <tag>1.0.47</tag>
+        <tag>1.0.49</tag>
     </scm>
 
     <developers>
@@ -31,12 +31,6 @@
             <email>dev@lumigo.io</email>
             <organization>Lumigo</organization>
             <organizationUrl>https://lumigo.io/</organizationUrl>
-        </developer>
-        <developer>
-            <name>Uri Parush</name>
-            <email>uri@lumigo.io</email>
-            <organization>Lumigo</organization>
-            <organizationUrl>https://lumigo.io</organizationUrl>
         </developer>
     </developers>
 
@@ -104,9 +98,12 @@
                     <archive>
                         <manifestEntries>
                             <Agent-Class>io.lumigo.agent.Agent</Agent-Class>
-                            <Can-Redefine-Classes>false</Can-Redefine-Classes>
+                            <Main-Class>io.lumigo.agent.Agent</Main-Class>
+                            <Premain-Class>io.lumigo.agent.Agent</Premain-Class>
+                            <Can-Redefine-Classes>true</Can-Redefine-Classes>
                             <Can-Retransform-Classes>true</Can-Retransform-Classes>
                             <Can-Set-Native-Method-Prefix>false</Can-Set-Native-Method-Prefix>
+                            <Implementation-Vendor>Lumigo</Implementation-Vendor>
                         </manifestEntries>
                     </archive>
                 </configuration>
