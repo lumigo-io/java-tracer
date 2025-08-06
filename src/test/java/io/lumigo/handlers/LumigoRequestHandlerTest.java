@@ -10,6 +10,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.lumigo.core.ExecutionTags;
 import io.lumigo.core.SpansContainer;
 import io.lumigo.core.configuration.Configuration;
 import io.lumigo.core.network.Reporter;
@@ -978,5 +979,80 @@ class LumigoRequestHandlerTest {
         assertNull(handler.handleRequest(kinesisEvent, context));
 
         verify(spansContainerMock, Mockito.times(0)).start();
+    }
+
+    static class HandlerWithExecutionTags implements RequestHandler<KinesisEvent, String> {
+        @Override
+        public String handleRequest(KinesisEvent kinesisEvent, Context context) {
+            // Add execution tags during the request handling
+            ExecutionTags.add("user_id", "12345");
+            ExecutionTags.add("user_type", "admin");
+            return "Response with tags";
+        }
+    }
+
+    @DisplayName(
+            "Create a handler that adds execution tags and verifies they are present in the end span")
+    @Test
+    public void LumigoRequestHandler_with_execution_tags() throws Exception {
+        HandlerWithExecutionTags handler = new HandlerWithExecutionTags();
+        LumigoRequestExecutor.getInstance().setEnvUtil(envUtil);
+        LumigoRequestExecutor.getInstance().setReporter(reporter);
+        Configuration.getInstance().setEnvUtil(envUtil);
+        when(reporter.reportSpans((Span) any(), anyInt())).thenReturn(999L);
+
+        String response =
+                LumigoRequestExecutor.execute(
+                        kinesisEvent, context, () -> handler.handleRequest(kinesisEvent, context));
+
+        ArgumentCaptor<List> argumentCaptorAllSpans = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<Span> argumentCaptorStartSpan = ArgumentCaptor.forClass(Span.class);
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorAllSpans.capture(), anyInt());
+        verify(reporter, Mockito.times(1)).reportSpans(argumentCaptorStartSpan.capture(), anyInt());
+
+        assertEquals("Response with tags", response);
+
+        // Get the end span from the captured arguments
+        List<BaseSpan> allSpans = argumentCaptorAllSpans.getAllValues().get(0);
+        Span endSpan = (Span) allSpans.get(0);
+
+        // Verify that execution tags are present in the end span
+        assertNotNull(endSpan.getInfo().getTags(), "Execution tags should not be null");
+        assertEquals(2, endSpan.getInfo().getTags().size(), "Should have 2 execution tags");
+
+        // Verify specific tags are present
+        boolean hasUserId =
+                endSpan.getInfo().getTags().stream()
+                        .anyMatch(
+                                tag ->
+                                        "user_id".equals(tag.getKey())
+                                                && "12345".equals(tag.getValue()));
+        assertTrue(hasUserId, "Should have user_id tag with value 12345");
+
+        boolean hasUserType =
+                endSpan.getInfo().getTags().stream()
+                        .anyMatch(
+                                tag ->
+                                        "user_type".equals(tag.getKey())
+                                                && "admin".equals(tag.getValue()));
+        assertTrue(hasUserType, "Should have user_type tag with value admin");
+
+        // Verify the span structure matches expected format
+        Span expectedEndSpan = getEndSpan("Response with tags", null);
+        expectedEndSpan.setReporter_rtt(999L); // Set the expected reporter_rtt value
+        JSONAssert.assertEquals(
+                JsonUtils.getObjectAsJsonString(expectedEndSpan),
+                JsonUtils.getObjectAsJsonString(endSpan),
+                new CustomComparator(
+                        JSONCompareMode.LENIENT,
+                        new Customization("info.tracer.version", (o1, o2) -> o2 != null),
+                        new Customization("info.messageId", (o1, o2) -> o2 != null),
+                        new Customization("info.messageIds", (o1, o2) -> o2 != null),
+                        new Customization("info.tags", (o1, o2) -> o2 != null),
+                        new Customization("started", (o1, o2) -> o2 != null),
+                        new Customization("maxFinishTime", (o1, o2) -> o2 != null),
+                        new Customization("ended", (o1, o2) -> o2 != null),
+                        new Customization("event", JsonTestUtils::compareJsonStrings),
+                        new Customization("envs", JsonTestUtils::compareJsonStrings)));
     }
 }
