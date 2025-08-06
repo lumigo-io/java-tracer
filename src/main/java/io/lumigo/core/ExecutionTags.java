@@ -1,11 +1,12 @@
-package io.lumigo.core.utils;
+package io.lumigo.core;
 
 import io.lumigo.models.Span.ExecutionTag;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.pmw.tinylog.Logger;
 
-public class ExecutionTags {
+public final class ExecutionTags {
     private static final int MAX_TAG_KEY_LEN = 100;
     private static final int MAX_TAG_VALUE_LEN = 100;
     private static final int MAX_TAGS = 50;
@@ -16,8 +17,21 @@ public class ExecutionTags {
 
     private ExecutionTags() {}
 
-    public static ExecutionTags getInstance() {
+    public static void add(String key, String value) {
+        getInstance().addTagInternal(key, value);
+    }
+
+    // Package-private methods for internal consumption
+    static ExecutionTags getInstance() {
         return ourInstance;
+    }
+
+    static List<ExecutionTag> getTags() {
+        return Collections.unmodifiableList(new ArrayList<>(getInstance().tags));
+    }
+
+    static void clear() {
+        getInstance().tags.clear();
     }
 
     private boolean validateTag(String key, String value) {
@@ -51,7 +65,7 @@ public class ExecutionTags {
         return (val == null) ? null : String.valueOf(val);
     }
 
-    public void addTag(String key, String value, boolean shouldLogErrors) {
+    private void addTagInternal(String key, String value) {
         try {
             Logger.debug(String.format("Adding tag: %s - %s", key, value));
             if (!validateTag(key, value)) {
@@ -66,13 +80,5 @@ public class ExecutionTags {
         } catch (Exception err) {
             Logger.error(String.format("%s - %s", ADD_TAG_ERROR_MSG_PREFIX, err.getMessage()));
         }
-    }
-
-    public List<ExecutionTag> getTags() {
-        return new ArrayList<>(tags);
-    }
-
-    public void clear() {
-        this.tags.clear();
     }
 }

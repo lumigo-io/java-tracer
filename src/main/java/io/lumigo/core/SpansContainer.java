@@ -10,7 +10,6 @@ import io.lumigo.core.parsers.v1.AwsSdkV1ParserFactory;
 import io.lumigo.core.parsers.v2.AwsSdkV2ParserFactory;
 import io.lumigo.core.utils.AwsUtils;
 import io.lumigo.core.utils.EnvUtil;
-import io.lumigo.core.utils.ExecutionTags;
 import io.lumigo.core.utils.JsonUtils;
 import io.lumigo.core.utils.SecretScrubber;
 import io.lumigo.core.utils.StringUtils;
@@ -61,7 +60,6 @@ public class SpansContainer {
     @Getter private List<BaseSpan> spans = new LinkedList<>();
 
     private static final SpansContainer ourInstance = new SpansContainer();
-    private ExecutionTags executionTags = ExecutionTags.getInstance();
 
     public static SpansContainer getInstance() {
         return ourInstance;
@@ -76,7 +74,7 @@ public class SpansContainer {
         endFunctionSpan = null;
         reporter = null;
         spans = new LinkedList<>();
-        executionTags.clear();
+        ExecutionTags.clear();
     }
 
     private SpansContainer() {}
@@ -226,7 +224,7 @@ public class SpansContainer {
                                 endFunctionSpan
                                         .getInfo()
                                         .toBuilder()
-                                        .tags(executionTags.getTags())
+                                        .tags(ExecutionTags.getTags())
                                         .build())
                         .build();
         reporter.reportSpans(
