@@ -74,6 +74,7 @@ public class SpansContainer {
         endFunctionSpan = null;
         reporter = null;
         spans = new LinkedList<>();
+        ExecutionTags.clear();
     }
 
     private SpansContainer() {}
@@ -219,6 +220,12 @@ public class SpansContainer {
                         .reporter_rtt(rttDuration)
                         .ended(System.currentTimeMillis())
                         .id(this.baseSpan.getId())
+                        .info(
+                                endFunctionSpan
+                                        .getInfo()
+                                        .toBuilder()
+                                        .tags(ExecutionTags.getTags())
+                                        .build())
                         .build();
         reporter.reportSpans(
                 prepareToSend(getAllCollectedSpans(), endFunctionSpan.getError() != null),
@@ -430,7 +437,6 @@ public class SpansContainer {
                                                 .statusCode(context.httpResponse().statusCode())
                                                 .build())
                                 .build());
-
         Logger.debug(
                 "Trying to extract aws custom properties for service: "
                         + executionAttributes.getAttribute(SdkExecutionAttribute.SERVICE_NAME));

@@ -53,6 +53,7 @@ public class Span implements BaseSpan {
         private String stage;
         private String messageId;
         private List<String> messageIds;
+        private List<ExecutionTag> tags;
         private long approxEventCreationTime;
     }
 
@@ -78,6 +79,14 @@ public class Span implements BaseSpan {
         private String type;
         private String message;
         private String stacktrace;
+    }
+
+    @AllArgsConstructor
+    @Builder(toBuilder = true)
+    @Data(staticConstructor = "of")
+    public static class ExecutionTag {
+        private String key;
+        private String value;
     }
 
     public enum READINESS {
