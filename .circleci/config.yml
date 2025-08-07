@@ -18,6 +18,7 @@ workflows:
         lumigo_orb_version: *lumigo_orb_version
 
     - test:
+        venv_python_version: "3.9"
         context:
           - common
           - java
