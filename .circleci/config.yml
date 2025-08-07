@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  lumigo-orb: &lumigo_orb_version lumigo/lumigo-orb@volatile
+  lumigo-orb: &lumigo_orb_version lumigo/lumigo-orb@dev:c7858b2
 
 defaults: &defaults
   working_directory: ~/java-tracer
@@ -18,7 +18,6 @@ workflows:
         lumigo_orb_version: *lumigo_orb_version
 
     - test:
-        venv_python_version: "3.9"
         context:
           - common
           - java
